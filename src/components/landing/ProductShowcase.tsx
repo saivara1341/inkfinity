@@ -1,14 +1,16 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { ContactRound, FileText, GalleryVerticalEnd, RectangleHorizontal, Sticker, IdCard, Paintbrush } from "lucide-react";
+import { type LucideIcon } from "lucide-react";
 
-const products = [
-  { name: "Visiting Cards", description: "Premium business cards from ₹1.50/card", icon: "💼", slug: "visiting-cards" },
-  { name: "Flyers", description: "Eye-catching flyers from ₹3/piece", icon: "📄", slug: "flyers" },
-  { name: "Posters", description: "High-quality posters from ₹49", icon: "🖼️", slug: "posters" },
-  { name: "Banners", description: "Large format banners from ₹199", icon: "🏳️", slug: "banners" },
-  { name: "Stickers", description: "Custom stickers from ₹2/piece", icon: "🏷️", slug: "stickers" },
-  { name: "ID Cards", description: "Professional ID cards from ₹25", icon: "🪪", slug: "id-cards" },
-  { name: "Custom Prints", description: "Any custom print job you need", icon: "🎨", slug: "custom" },
+const products: { name: string; description: string; Icon: LucideIcon; slug: string }[] = [
+  { name: "Visiting Cards", description: "Premium business cards from ₹1.50/card", Icon: ContactRound, slug: "visiting-cards" },
+  { name: "Flyers", description: "Eye-catching flyers from ₹3/piece", Icon: FileText, slug: "flyers" },
+  { name: "Posters", description: "High-quality posters from ₹49", Icon: GalleryVerticalEnd, slug: "posters" },
+  { name: "Banners", description: "Large format banners from ₹199", Icon: RectangleHorizontal, slug: "banners" },
+  { name: "Stickers", description: "Custom stickers from ₹2/piece", Icon: Sticker, slug: "stickers" },
+  { name: "ID Cards", description: "Professional ID cards from ₹25", Icon: IdCard, slug: "id-cards" },
+  { name: "Custom Prints", description: "Any custom print job you need", Icon: Paintbrush, slug: "custom" },
 ];
 
 const ProductShowcase = () => {
@@ -42,7 +44,9 @@ const ProductShowcase = () => {
                 to={`/catalog/${product.slug}`}
                 className="block bg-card rounded-xl p-6 border border-border shadow-card hover:shadow-elevated hover:border-accent/30 transition-all group text-center"
               >
-                <span className="text-4xl mb-4 block">{product.icon}</span>
+                <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-accent/20 transition-colors">
+                  <product.Icon className="w-7 h-7 text-accent" />
+                </div>
                 <h3 className="font-display font-semibold text-foreground mb-1">{product.name}</h3>
                 <p className="text-xs text-muted-foreground">{product.description}</p>
               </Link>

@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Printer, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);

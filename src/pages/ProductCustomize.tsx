@@ -409,6 +409,7 @@ const ProductCustomize = () => {
                   label={product.name}
                 />
               </div>
+            </div>
 
             {/* Right - Summary */}
             <div className="lg:col-span-1">

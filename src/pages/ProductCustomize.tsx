@@ -9,6 +9,9 @@ import {
   Crop, FileImage, IndianRupee, ChevronRight, Info,
   CheckCircle2, ArrowLeft, Clock
 } from "lucide-react";
+import ProductPreview3D from "@/components/ProductPreview3D";
+import AIDesignGenerator from "@/components/AIDesignGenerator";
+import QuotationGenerator from "@/components/QuotationGenerator";
 import { getSubcategoryById, getAllSubcategories } from "@/data/printingProducts";
 import type { PrintSize, PaperType, FinishType } from "@/data/printingProducts";
 
@@ -42,6 +45,7 @@ const ProductCustomize = () => {
   const [quantity, setQuantity] = useState(product?.minQty || 100);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [aiDesignUrl, setAiDesignUrl] = useState<string | null>(null);
   const [validation, setValidation] = useState<FileValidation | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [printSides, setPrintSides] = useState<"single" | "double">("single");
@@ -382,13 +386,28 @@ const ProductCustomize = () => {
                 
                 <input ref={fileInputRef} type="file" accept=".png,.jpg,.jpeg,.pdf" onChange={handleFileUpload} className="hidden" />
                 
-                {/* Design generation teaser */}
-                <div className="mt-4 p-3 bg-accent/5 rounded-lg border border-accent/20">
-                  <p className="text-sm text-foreground font-medium">🎨 Don't have a design?</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    AI-powered design generation coming soon! We'll create multiple design options based on your requirements.
-                  </p>
+                {/* AI Design Generator */}
+                <div className="mt-4">
+                  <AIDesignGenerator
+                    productType={product.categoryName}
+                    onDesignSelected={(url) => {
+                      setAiDesignUrl(url);
+                      setPreviewUrl(url);
+                    }}
+                  />
                 </div>
+              </div>
+
+              {/* 3D Preview */}
+              <div className="bg-card rounded-xl border border-border p-5 shadow-card">
+                <h3 className="font-display font-semibold text-foreground mb-4">360° Product Preview</h3>
+                <ProductPreview3D
+                  productType={product.categoryId.includes("banner") || product.categoryId.includes("flex") ? "banner" : "card"}
+                  width={selectedSize.widthMM}
+                  height={selectedSize.heightMM}
+                  imageUrl={previewUrl || aiDesignUrl}
+                  label={product.name}
+                />
               </div>
             </div>
 
@@ -468,6 +487,20 @@ const ProductCustomize = () => {
                   <p className="text-xs text-muted-foreground mt-1">
                     🖨️ {product.printingMethods[0]?.label}
                   </p>
+                </div>
+
+                {/* Quotation */}
+                <div className="mt-4">
+                  <QuotationGenerator
+                    items={[{
+                      name: product.name,
+                      specifications: `${selectedSize.label} • ${selectedPaper.label} • ${selectedFinish.label} • ${printSides}-sided`,
+                      quantity,
+                      unitPrice: parseFloat(price.perUnit),
+                      total: parseInt(price.total),
+                    }]}
+                    deliveryCharge={quantity > 500 ? 0 : 99}
+                  />
                 </div>
               </div>
             </div>

@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Printer, Mail, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { getRoleBasedPath } from "@/hooks/useRoleRedirect";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -22,12 +24,15 @@ const Login = () => {
     }
     setLoading(true);
     const { error } = await signIn(email, password);
-    setLoading(false);
     if (error) {
+      setLoading(false);
       toast({ title: "Login failed", description: error.message, variant: "destructive" });
     } else {
+      const { data: { user } } = await supabase.auth.getUser();
+      const path = user ? await getRoleBasedPath(user.id) : "/dashboard";
+      setLoading(false);
       toast({ title: "Welcome back!" });
-      navigate("/dashboard");
+      navigate(path);
     }
   };
 

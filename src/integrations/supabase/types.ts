@@ -14,16 +14,332 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      design_generations: {
+        Row: {
+          business_details: Json | null
+          created_at: string
+          generated_images: string[] | null
+          id: string
+          product_category: string
+          prompt: string
+          selected_image_url: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          business_details?: Json | null
+          created_at?: string
+          generated_images?: string[] | null
+          id?: string
+          product_category: string
+          prompt: string
+          selected_image_url?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          business_details?: Json | null
+          created_at?: string
+          generated_images?: string[] | null
+          id?: string
+          product_category?: string
+          prompt?: string
+          selected_image_url?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          created_at: string
+          customer_id: string | null
+          delivery_address: string | null
+          delivery_charge: number
+          design_file_url: string | null
+          estimated_delivery: string | null
+          grand_total: number
+          gst_amount: number
+          id: string
+          notes: string | null
+          order_number: string
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          product_category: string
+          product_name: string
+          quantity: number
+          shop_id: string | null
+          specifications: Json
+          status: Database["public"]["Enums"]["order_status"]
+          total_price: number
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id?: string | null
+          delivery_address?: string | null
+          delivery_charge?: number
+          design_file_url?: string | null
+          estimated_delivery?: string | null
+          grand_total: number
+          gst_amount?: number
+          id?: string
+          notes?: string | null
+          order_number: string
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          product_category: string
+          product_name: string
+          quantity: number
+          shop_id?: string | null
+          specifications?: Json
+          status?: Database["public"]["Enums"]["order_status"]
+          total_price: number
+          unit_price: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string | null
+          delivery_address?: string | null
+          delivery_charge?: number
+          design_file_url?: string | null
+          estimated_delivery?: string | null
+          grand_total?: number
+          gst_amount?: number
+          id?: string
+          notes?: string | null
+          order_number?: string
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          product_category?: string
+          product_name?: string
+          quantity?: number
+          shop_id?: string | null
+          specifications?: Json
+          status?: Database["public"]["Enums"]["order_status"]
+          total_price?: number
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          avatar_url: string | null
+          business_name: string | null
+          city: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          pincode: string | null
+          state: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          avatar_url?: string | null
+          business_name?: string | null
+          city?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          pincode?: string | null
+          state?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          avatar_url?: string | null
+          business_name?: string | null
+          city?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          pincode?: string | null
+          state?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      quotations: {
+        Row: {
+          created_at: string
+          customer_id: string | null
+          delivery_charge: number | null
+          grand_total: number
+          gst_amount: number
+          gst_rate: number
+          id: string
+          items: Json
+          notes: string | null
+          quotation_number: string
+          shop_id: string | null
+          status: string
+          subtotal: number
+          updated_at: string
+          valid_until: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id?: string | null
+          delivery_charge?: number | null
+          grand_total: number
+          gst_amount: number
+          gst_rate?: number
+          id?: string
+          items?: Json
+          notes?: string | null
+          quotation_number: string
+          shop_id?: string | null
+          status?: string
+          subtotal: number
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string | null
+          delivery_charge?: number | null
+          grand_total?: number
+          gst_amount?: number
+          gst_rate?: number
+          id?: string
+          items?: Json
+          notes?: string | null
+          quotation_number?: string
+          shop_id?: string | null
+          status?: string
+          subtotal?: number
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotations_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shops: {
+        Row: {
+          address: string | null
+          city: string
+          created_at: string
+          description: string | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          is_verified: boolean | null
+          logo_url: string | null
+          name: string
+          owner_id: string
+          phone: string | null
+          pincode: string
+          rating: number | null
+          services: string[] | null
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city: string
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          logo_url?: string | null
+          name: string
+          owner_id: string
+          phone?: string | null
+          pincode: string
+          rating?: number | null
+          services?: string[] | null
+          state: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          logo_url?: string | null
+          name?: string
+          owner_id?: string
+          phone?: string | null
+          pincode?: string
+          rating?: number | null
+          services?: string[] | null
+          state?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "shop_owner" | "customer"
+      order_status:
+        | "pending"
+        | "confirmed"
+        | "designing"
+        | "printing"
+        | "quality_check"
+        | "shipped"
+        | "delivered"
+        | "cancelled"
+      payment_status: "pending" | "paid" | "failed" | "refunded"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +466,19 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "shop_owner", "customer"],
+      order_status: [
+        "pending",
+        "confirmed",
+        "designing",
+        "printing",
+        "quality_check",
+        "shipped",
+        "delivered",
+        "cancelled",
+      ],
+      payment_status: ["pending", "paid", "failed", "refunded"],
+    },
   },
 } as const

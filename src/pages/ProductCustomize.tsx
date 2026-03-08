@@ -9,6 +9,9 @@ import {
   Crop, FileImage, IndianRupee, ChevronRight, Info,
   CheckCircle2, ArrowLeft, Clock
 } from "lucide-react";
+import ProductPreview3D from "@/components/ProductPreview3D";
+import AIDesignGenerator from "@/components/AIDesignGenerator";
+import QuotationGenerator from "@/components/QuotationGenerator";
 import { getSubcategoryById, getAllSubcategories } from "@/data/printingProducts";
 import type { PrintSize, PaperType, FinishType } from "@/data/printingProducts";
 

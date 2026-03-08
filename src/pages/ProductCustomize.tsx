@@ -488,6 +488,20 @@ const ProductCustomize = () => {
                     🖨️ {product.printingMethods[0]?.label}
                   </p>
                 </div>
+
+                {/* Quotation */}
+                <div className="mt-4">
+                  <QuotationGenerator
+                    items={[{
+                      name: product.name,
+                      specifications: `${selectedSize.label} • ${selectedPaper.label} • ${selectedFinish.label} • ${printSides}-sided`,
+                      quantity,
+                      unitPrice: parseFloat(price.perUnit),
+                      total: parseInt(price.total),
+                    }]}
+                    deliveryCharge={quantity > 500 ? 0 : 99}
+                  />
+                </div>
               </div>
             </div>
           </div>

@@ -7,6 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useShopData } from "@/hooks/useShopData";
+import { NotificationBell } from "@/components/NotificationBell";
 import { ShopOverview } from "@/components/shop/ShopOverview";
 import { ShopOrders } from "@/components/shop/ShopOrders";
 import { ShopAnalytics } from "@/components/shop/ShopAnalytics";

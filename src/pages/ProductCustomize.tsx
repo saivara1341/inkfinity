@@ -45,6 +45,7 @@ const ProductCustomize = () => {
   const [quantity, setQuantity] = useState(product?.minQty || 100);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [aiDesignUrl, setAiDesignUrl] = useState<string | null>(null);
   const [validation, setValidation] = useState<FileValidation | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [printSides, setPrintSides] = useState<"single" | "double">("single");

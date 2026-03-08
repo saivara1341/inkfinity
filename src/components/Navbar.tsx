@@ -2,9 +2,12 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Printer, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
@@ -24,8 +27,15 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" asChild><Link to="/login">Log in</Link></Button>
-          <Button variant="coral" asChild><Link to="/signup">Get Started</Link></Button>
+          {user && <NotificationBell />}
+          {user ? (
+            <Button variant="coral" asChild><Link to="/dashboard">Dashboard</Link></Button>
+          ) : (
+            <>
+              <Button variant="ghost" asChild><Link to="/login">Log in</Link></Button>
+              <Button variant="coral" asChild><Link to="/signup">Get Started</Link></Button>
+            </>
+          )}
         </div>
 
         <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>

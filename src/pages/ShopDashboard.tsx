@@ -7,6 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useShopData } from "@/hooks/useShopData";
+import { NotificationBell } from "@/components/NotificationBell";
 import { ShopOverview } from "@/components/shop/ShopOverview";
 import { ShopOrders } from "@/components/shop/ShopOrders";
 import { ShopAnalytics } from "@/components/shop/ShopAnalytics";
@@ -95,6 +96,7 @@ const ShopDashboard = () => {
         <header className="h-16 border-b border-border flex items-center justify-between px-6">
           <h1 className="font-display text-xl font-bold text-foreground capitalize">{activeTab}</h1>
           <div className="flex items-center gap-3">
+            <NotificationBell />
             <div className="w-9 h-9 rounded-full bg-accent/20 flex items-center justify-center">
               <span className="text-sm font-bold text-accent">
                 {shop?.name?.charAt(0)?.toUpperCase() || "S"}

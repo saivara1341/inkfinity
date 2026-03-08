@@ -48,6 +48,14 @@ const ProductCustomize = () => {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Generate quantity options based on tiers
+  const quantityOptions = useMemo(() => {
+    if (!product) return [100];
+    const options = new Set<number>();
+    product.quantityTiers.forEach(t => { options.add(t.min); if (t.max < 10000) options.add(t.max); });
+    return Array.from(options).sort((a, b) => a - b).slice(0, 6);
+  }, [product]);
+
   if (!product) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">

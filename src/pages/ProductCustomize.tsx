@@ -386,15 +386,29 @@ const ProductCustomize = () => {
                 
                 <input ref={fileInputRef} type="file" accept=".png,.jpg,.jpeg,.pdf" onChange={handleFileUpload} className="hidden" />
                 
-                {/* Design generation teaser */}
-                <div className="mt-4 p-3 bg-accent/5 rounded-lg border border-accent/20">
-                  <p className="text-sm text-foreground font-medium">🎨 Don't have a design?</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    AI-powered design generation coming soon! We'll create multiple design options based on your requirements.
-                  </p>
+                {/* AI Design Generator */}
+                <div className="mt-4">
+                  <AIDesignGenerator
+                    productType={product.categoryName}
+                    onDesignSelected={(url) => {
+                      setAiDesignUrl(url);
+                      setPreviewUrl(url);
+                    }}
+                  />
                 </div>
               </div>
-            </div>
+
+              {/* 3D Preview */}
+              <div className="bg-card rounded-xl border border-border p-5 shadow-card">
+                <h3 className="font-display font-semibold text-foreground mb-4">360° Product Preview</h3>
+                <ProductPreview3D
+                  productType={product.categoryId.includes("banner") || product.categoryId.includes("flex") ? "banner" : "card"}
+                  width={selectedSize.widthMM}
+                  height={selectedSize.heightMM}
+                  imageUrl={previewUrl || aiDesignUrl}
+                  label={product.name}
+                />
+              </div>
 
             {/* Right - Summary */}
             <div className="lg:col-span-1">

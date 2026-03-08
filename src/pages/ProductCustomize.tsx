@@ -1,73 +1,16 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { 
   Upload, X, Check, AlertTriangle, ZoomIn, RotateCcw, 
   Crop, FileImage, IndianRupee, ChevronRight, Info,
-  CheckCircle2
+  CheckCircle2, ArrowLeft, Clock
 } from "lucide-react";
-
-const productData: Record<string, {
-  name: string;
-  sizes: { id: string; label: string; dimensions: string; basePrice: number }[];
-  papers: { id: string; label: string; priceMultiplier: number }[];
-  finishes: { id: string; label: string; priceAdd: number }[];
-  quantityTiers: { min: number; max: number; pricePerUnit: number }[];
-}> = {
-  "visiting-cards": {
-    name: "Visiting Cards",
-    sizes: [
-      { id: "standard", label: "Standard", dimensions: "3.5 × 2 inch", basePrice: 1.5 },
-      { id: "square", label: "Square", dimensions: "2.5 × 2.5 inch", basePrice: 1.8 },
-      { id: "mini", label: "Mini", dimensions: "3 × 1.5 inch", basePrice: 1.2 },
-    ],
-    papers: [
-      { id: "art-300", label: "300gsm Art Card", priceMultiplier: 1 },
-      { id: "art-350", label: "350gsm Matte", priceMultiplier: 1.2 },
-      { id: "textured", label: "400gsm Textured", priceMultiplier: 1.8 },
-      { id: "metallic", label: "Metallic Gold/Silver", priceMultiplier: 2.5 },
-    ],
-    finishes: [
-      { id: "none", label: "No Finish", priceAdd: 0 },
-      { id: "glossy", label: "Glossy Lamination", priceAdd: 0.3 },
-      { id: "matte", label: "Matte Lamination", priceAdd: 0.4 },
-      { id: "spot-uv", label: "Spot UV", priceAdd: 0.8 },
-    ],
-    quantityTiers: [
-      { min: 100, max: 249, pricePerUnit: 1.5 },
-      { min: 250, max: 499, pricePerUnit: 1.3 },
-      { min: 500, max: 999, pricePerUnit: 1.1 },
-      { min: 1000, max: 9999, pricePerUnit: 0.9 },
-    ],
-  },
-  "flyers": {
-    name: "Flyers",
-    sizes: [
-      { id: "a5", label: "A5", dimensions: "148 × 210 mm", basePrice: 3 },
-      { id: "a4", label: "A4", dimensions: "210 × 297 mm", basePrice: 5 },
-      { id: "a6", label: "A6", dimensions: "105 × 148 mm", basePrice: 2 },
-    ],
-    papers: [
-      { id: "gloss-130", label: "130gsm Gloss", priceMultiplier: 1 },
-      { id: "matte-170", label: "170gsm Matte", priceMultiplier: 1.3 },
-      { id: "art-200", label: "200gsm Art Paper", priceMultiplier: 1.6 },
-    ],
-    finishes: [
-      { id: "none", label: "No Finish", priceAdd: 0 },
-      { id: "glossy", label: "Glossy Lamination", priceAdd: 1 },
-      { id: "matte", label: "Matte Lamination", priceAdd: 1.2 },
-    ],
-    quantityTiers: [
-      { min: 50, max: 99, pricePerUnit: 3 },
-      { min: 100, max: 249, pricePerUnit: 2.5 },
-      { min: 250, max: 499, pricePerUnit: 2 },
-      { min: 500, max: 9999, pricePerUnit: 1.5 },
-    ],
-  },
-};
+import { getSubcategoryById, getAllSubcategories } from "@/data/printingProducts";
+import type { PrintSize, PaperType, FinishType } from "@/data/printingProducts";
 
 interface FileValidation {
   isValid: boolean;
@@ -80,102 +23,92 @@ interface FileValidation {
 
 const ProductCustomize = () => {
   const { category } = useParams();
-  const product = productData[category || "visiting-cards"] || productData["visiting-cards"];
+  const navigate = useNavigate();
   
-  const [selectedSize, setSelectedSize] = useState(product.sizes[0]);
-  const [selectedPaper, setSelectedPaper] = useState(product.papers[0]);
-  const [selectedFinish, setSelectedFinish] = useState(product.finishes[0]);
-  const [quantity, setQuantity] = useState(100);
+  // Find product from comprehensive data
+  const product = useMemo(() => {
+    if (!category) return null;
+    // Try to find as subcategory ID first
+    const sub = getSubcategoryById(category);
+    if (sub) return sub;
+    // Fallback: try matching by category name (legacy routes)
+    const allSubs = getAllSubcategories();
+    return allSubs.find(s => s.categoryId === category) || allSubs[0];
+  }, [category]);
+
+  const [selectedSize, setSelectedSize] = useState<PrintSize>(product?.sizes[0] || {} as PrintSize);
+  const [selectedPaper, setSelectedPaper] = useState<PaperType>(product?.papers[0] || {} as PaperType);
+  const [selectedFinish, setSelectedFinish] = useState<FinishType>(product?.finishes[0] || {} as FinishType);
+  const [quantity, setQuantity] = useState(product?.minQty || 100);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [validation, setValidation] = useState<FileValidation | null>(null);
   const [isValidating, setIsValidating] = useState(false);
+  const [printSides, setPrintSides] = useState<"single" | "double">("single");
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const validateFile = useCallback(async (file: File): Promise<FileValidation> => {
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground text-lg mb-4">Product not found</p>
+          <Button variant="coral" asChild><Link to="/catalog">Browse Catalog</Link></Button>
+        </div>
+      </div>
+    );
+  }
+
+  const validateFile = async (file: File): Promise<FileValidation> => {
     return new Promise((resolve) => {
       const errors: string[] = [];
       const warnings: string[] = [];
       
-      // Check format
       const validFormats = ["image/png", "image/jpeg", "image/jpg", "application/pdf"];
       const format = file.type;
       if (!validFormats.includes(format)) {
         errors.push(`Invalid format: ${format}. Use PNG, JPG, or PDF.`);
       }
 
-      // Check file size (max 25MB)
       if (file.size > 25 * 1024 * 1024) {
         errors.push("File too large. Maximum size is 25MB.");
       }
 
-      // For images, check dimensions and estimate DPI
       if (format.startsWith("image/")) {
         const img = new Image();
         img.onload = () => {
           const width = img.width;
           const height = img.height;
-          
-          // Estimate DPI based on standard print size (3.5 x 2 inch for visiting cards)
-          const expectedWidthInches = 3.5;
+          const expectedWidthInches = selectedSize.widthMM / 25.4;
           const estimatedDpi = Math.round(width / expectedWidthInches);
           
           if (estimatedDpi < 300) {
-            warnings.push(`Low resolution (~${estimatedDpi} DPI). 300 DPI recommended for best print quality.`);
+            warnings.push(`Low resolution (~${estimatedDpi} DPI). 300 DPI recommended for print.`);
           }
           
-          // Check aspect ratio
-          const actualRatio = width / height;
-          const expectedRatio = 3.5 / 2; // Standard visiting card
-          if (Math.abs(actualRatio - expectedRatio) > 0.1) {
-            warnings.push("Aspect ratio differs from selected size. Image may be cropped.");
-          }
-          
-          // Bleed margin check (simplified)
-          if (width < 1050 || height < 600) {
+          if (width < 600 || height < 400) {
             warnings.push("Image resolution is low. Consider adding 3mm bleed margin.");
           }
 
-          resolve({
-            isValid: errors.length === 0,
-            dpi: estimatedDpi,
-            dimensions: { width, height },
-            format: format.split("/")[1].toUpperCase(),
-            errors,
-            warnings,
-          });
+          resolve({ isValid: errors.length === 0, dpi: estimatedDpi, dimensions: { width, height }, format: format.split("/")[1].toUpperCase(), errors, warnings });
         };
         img.src = URL.createObjectURL(file);
       } else {
-        // PDF - basic validation
-        resolve({
-          isValid: errors.length === 0,
-          dpi: 300, // Assume PDF is print-ready
-          dimensions: { width: 0, height: 0 },
-          format: "PDF",
-          errors,
-          warnings: ["PDF detected. Ensure it has 3mm bleed margins and 300 DPI resolution."],
-        });
+        resolve({ isValid: errors.length === 0, dpi: 300, dimensions: { width: 0, height: 0 }, format: "PDF", errors, warnings: ["PDF detected. Ensure 3mm bleed margins and 300 DPI."] });
       }
     });
-  }, []);
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
     setIsValidating(true);
     setUploadedFile(file);
-    
-    // Create preview
     if (file.type.startsWith("image/")) {
       setPreviewUrl(URL.createObjectURL(file));
     } else {
       setPreviewUrl(null);
     }
-    
-    // Validate
     const result = await validateFile(file);
     setValidation(result);
     setIsValidating(false);
@@ -185,27 +118,29 @@ const ProductCustomize = () => {
     setUploadedFile(null);
     setPreviewUrl(null);
     setValidation(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // Calculate price
+  // Price calculation
   const calculatePrice = () => {
     const tier = product.quantityTiers.find(t => quantity >= t.min && quantity <= t.max) || product.quantityTiers[0];
     const basePrice = tier.pricePerUnit;
     const paperPrice = basePrice * selectedPaper.priceMultiplier;
     const finishPrice = paperPrice + selectedFinish.priceAdd;
-    const totalPrice = finishPrice * quantity;
-    return {
-      perUnit: finishPrice.toFixed(2),
-      total: totalPrice.toFixed(0),
-    };
+    const sidesMultiplier = printSides === "double" ? 1.4 : 1;
+    const unitPrice = finishPrice * sidesMultiplier;
+    const totalPrice = unitPrice * quantity;
+    return { perUnit: unitPrice.toFixed(2), total: totalPrice.toFixed(0) };
   };
 
   const price = calculatePrice();
 
-  const quantityOptions = [100, 250, 500, 1000, 2000, 5000];
+  // Generate quantity options based on tiers
+  const quantityOptions = useMemo(() => {
+    const options = new Set<number>();
+    product.quantityTiers.forEach(t => { options.add(t.min); if (t.max < 10000) options.add(t.max); });
+    return Array.from(options).sort((a, b) => a - b).slice(0, 6);
+  }, [product]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -216,6 +151,8 @@ const ProductCustomize = () => {
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
             <Link to="/catalog" className="hover:text-foreground">Catalog</Link>
             <ChevronRight className="w-4 h-4" />
+            <Link to={`/catalog/${product.categoryId}`} className="hover:text-foreground">{product.categoryName}</Link>
+            <ChevronRight className="w-4 h-4" />
             <span className="text-foreground">{product.name}</span>
           </div>
 
@@ -223,14 +160,26 @@ const ProductCustomize = () => {
             {/* Left - Options */}
             <div className="lg:col-span-2 space-y-6">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                <h1 className="font-display text-3xl font-bold text-foreground mb-2">{product.name}</h1>
-                <p className="text-muted-foreground">Customize your order and upload your design</p>
+                <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-2">
+                  <ArrowLeft className="w-4 h-4" /> Back
+                </button>
+                <h1 className="font-display text-3xl font-bold text-foreground mb-1">{product.name}</h1>
+                <p className="text-muted-foreground">{product.description}</p>
+                <div className="flex items-center gap-3 mt-2">
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Clock className="w-3 h-3" /> {product.turnaroundDays} business days
+                  </span>
+                  <span className="text-xs text-muted-foreground">•</span>
+                  <span className="text-xs text-muted-foreground">
+                    {product.printingMethods.map(m => m.label).join(", ")}
+                  </span>
+                </div>
               </motion.div>
 
               {/* Size Selection */}
               <div className="bg-card rounded-xl border border-border p-5 shadow-card">
                 <h3 className="font-display font-semibold text-foreground mb-4">1. Select Size</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                   {product.sizes.map((size) => (
                     <button
                       key={size.id}
@@ -241,8 +190,11 @@ const ProductCustomize = () => {
                           : "border-border hover:border-accent/50"
                       }`}
                     >
-                      <p className="font-semibold text-foreground">{size.label}</p>
-                      <p className="text-sm text-muted-foreground">{size.dimensions}</p>
+                      <p className="font-semibold text-foreground text-sm">{size.label}</p>
+                      <p className="text-xs text-muted-foreground">{size.dimensions}</p>
+                      {size.widthInch !== "Custom" && (
+                        <p className="text-xs text-accent mt-1">{size.widthInch} × {size.heightInch} inch</p>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -250,22 +202,25 @@ const ProductCustomize = () => {
 
               {/* Paper Selection */}
               <div className="bg-card rounded-xl border border-border p-5 shadow-card">
-                <h3 className="font-display font-semibold text-foreground mb-4">2. Select Paper Type</h3>
+                <h3 className="font-display font-semibold text-foreground mb-4">2. Select Paper / Material</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {product.papers.map((paper) => (
                     <button
                       key={paper.id}
                       onClick={() => setSelectedPaper(paper)}
-                      className={`p-4 rounded-lg border-2 transition-all text-left flex justify-between items-center ${
+                      className={`p-4 rounded-lg border-2 transition-all text-left ${
                         selectedPaper.id === paper.id
                           ? "border-accent bg-accent/5"
                           : "border-border hover:border-accent/50"
                       }`}
                     >
-                      <span className="font-medium text-foreground">{paper.label}</span>
-                      {paper.priceMultiplier > 1 && (
-                        <span className="text-xs text-accent">+{((paper.priceMultiplier - 1) * 100).toFixed(0)}%</span>
-                      )}
+                      <div className="flex justify-between items-start">
+                        <span className="font-medium text-foreground text-sm">{paper.label}</span>
+                        {paper.priceMultiplier > 1 && (
+                          <span className="text-xs text-accent">+{((paper.priceMultiplier - 1) * 100).toFixed(0)}%</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">{paper.description}</p>
                     </button>
                   ))}
                 </div>
@@ -274,12 +229,12 @@ const ProductCustomize = () => {
               {/* Finish Selection */}
               <div className="bg-card rounded-xl border border-border p-5 shadow-card">
                 <h3 className="font-display font-semibold text-foreground mb-4">3. Select Finish</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {product.finishes.map((finish) => (
                     <button
                       key={finish.id}
                       onClick={() => setSelectedFinish(finish)}
-                      className={`p-3 rounded-lg border-2 transition-all text-center ${
+                      className={`p-3 rounded-lg border-2 transition-all text-left ${
                         selectedFinish.id === finish.id
                           ? "border-accent bg-accent/5"
                           : "border-border hover:border-accent/50"
@@ -287,8 +242,30 @@ const ProductCustomize = () => {
                     >
                       <span className="text-sm font-medium text-foreground">{finish.label}</span>
                       {finish.priceAdd > 0 && (
-                        <p className="text-xs text-accent mt-1">+₹{finish.priceAdd}/pc</p>
+                        <p className="text-xs text-accent mt-0.5">+₹{finish.priceAdd}/pc</p>
                       )}
+                      <p className="text-xs text-muted-foreground mt-0.5">{finish.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Print Sides */}
+              <div className="bg-card rounded-xl border border-border p-5 shadow-card">
+                <h3 className="font-display font-semibold text-foreground mb-4">4. Print Sides</h3>
+                <div className="flex gap-3">
+                  {(["single", "double"] as const).map((side) => (
+                    <button
+                      key={side}
+                      onClick={() => setPrintSides(side)}
+                      className={`flex-1 p-4 rounded-lg border-2 transition-all text-center ${
+                        printSides === side
+                          ? "border-accent bg-accent/5"
+                          : "border-border hover:border-accent/50"
+                      }`}
+                    >
+                      <p className="font-semibold text-foreground capitalize">{side}-Sided</p>
+                      {side === "double" && <p className="text-xs text-accent mt-1">+40%</p>}
                     </button>
                   ))}
                 </div>
@@ -296,7 +273,7 @@ const ProductCustomize = () => {
 
               {/* Quantity Selection */}
               <div className="bg-card rounded-xl border border-border p-5 shadow-card">
-                <h3 className="font-display font-semibold text-foreground mb-4">4. Select Quantity</h3>
+                <h3 className="font-display font-semibold text-foreground mb-4">5. Select Quantity</h3>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {quantityOptions.map((qty) => (
                     <button
@@ -308,7 +285,7 @@ const ProductCustomize = () => {
                           : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                       }`}
                     >
-                      {qty}
+                      {qty.toLocaleString()}
                     </button>
                   ))}
                 </div>
@@ -319,7 +296,7 @@ const ProductCustomize = () => {
                     min={product.quantityTiers[0].min}
                     value={quantity}
                     onChange={(e) => setQuantity(Math.max(product.quantityTiers[0].min, parseInt(e.target.value) || 0))}
-                    className="w-24 px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="w-28 px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                   <span className="text-sm text-muted-foreground">Min: {product.quantityTiers[0].min}</span>
                 </div>
@@ -327,7 +304,7 @@ const ProductCustomize = () => {
 
               {/* File Upload */}
               <div className="bg-card rounded-xl border border-border p-5 shadow-card">
-                <h3 className="font-display font-semibold text-foreground mb-4">5. Upload Your Design</h3>
+                <h3 className="font-display font-semibold text-foreground mb-4">6. Upload Your Design</h3>
                 
                 {!uploadedFile ? (
                   <div
@@ -337,11 +314,12 @@ const ProductCustomize = () => {
                     <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
                     <p className="font-medium text-foreground mb-1">Click to upload or drag and drop</p>
                     <p className="text-sm text-muted-foreground">PNG, JPG, or PDF (max 25MB)</p>
-                    <p className="text-xs text-muted-foreground mt-2">Recommended: 300 DPI with 3mm bleed margin</p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Recommended: 300 DPI • {selectedSize.dimensions} with 3mm bleed
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {/* Preview */}
                     <div className="flex gap-4">
                       {previewUrl && (
                         <div className="w-40 h-24 rounded-lg overflow-hidden bg-secondary flex items-center justify-center">
@@ -371,54 +349,42 @@ const ProductCustomize = () => {
                                 {validation.dimensions.width} × {validation.dimensions.height} px (~{validation.dpi} DPI)
                               </p>
                             )}
-                            
                             {validation.errors.map((err, i) => (
                               <div key={i} className="flex items-start gap-2 text-destructive text-sm">
-                                <X className="w-4 h-4 shrink-0 mt-0.5" />
-                                <span>{err}</span>
+                                <X className="w-4 h-4 shrink-0 mt-0.5" /><span>{err}</span>
                               </div>
                             ))}
-                            
                             {validation.warnings.map((warn, i) => (
                               <div key={i} className="flex items-start gap-2 text-warning text-sm">
-                                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-                                <span>{warn}</span>
+                                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" /><span>{warn}</span>
                               </div>
                             ))}
-                            
                             {validation.isValid && validation.warnings.length === 0 && (
                               <div className="flex items-center gap-2 text-success text-sm">
-                                <CheckCircle2 className="w-4 h-4" />
-                                <span>File validated successfully!</span>
+                                <CheckCircle2 className="w-4 h-4" /><span>File validated successfully!</span>
                               </div>
                             )}
                           </div>
                         )}
                       </div>
                     </div>
-                    
-                    {/* Quick Actions */}
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="gap-1">
-                        <ZoomIn className="w-4 h-4" /> Preview
-                      </Button>
-                      <Button variant="outline" size="sm" className="gap-1">
-                        <Crop className="w-4 h-4" /> Auto Crop
-                      </Button>
-                      <Button variant="outline" size="sm" className="gap-1" onClick={removeFile}>
-                        <RotateCcw className="w-4 h-4" /> Replace
-                      </Button>
+                      <Button variant="outline" size="sm" className="gap-1"><ZoomIn className="w-4 h-4" /> Preview</Button>
+                      <Button variant="outline" size="sm" className="gap-1"><Crop className="w-4 h-4" /> Auto Crop</Button>
+                      <Button variant="outline" size="sm" className="gap-1" onClick={removeFile}><RotateCcw className="w-4 h-4" /> Replace</Button>
                     </div>
                   </div>
                 )}
                 
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".png,.jpg,.jpeg,.pdf"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
+                <input ref={fileInputRef} type="file" accept=".png,.jpg,.jpeg,.pdf" onChange={handleFileUpload} className="hidden" />
+                
+                {/* Design generation teaser */}
+                <div className="mt-4 p-3 bg-accent/5 rounded-lg border border-accent/20">
+                  <p className="text-sm text-foreground font-medium">🎨 Don't have a design?</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    AI-powered design generation coming soon! We'll create multiple design options based on your requirements.
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -430,7 +396,7 @@ const ProductCustomize = () => {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Product</span>
-                    <span className="text-foreground font-medium">{product.name}</span>
+                    <span className="text-foreground font-medium text-right max-w-[160px]">{product.name}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Size</span>
@@ -438,15 +404,19 @@ const ProductCustomize = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Paper</span>
-                    <span className="text-foreground">{selectedPaper.label}</span>
+                    <span className="text-foreground text-right max-w-[160px]">{selectedPaper.label}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Finish</span>
                     <span className="text-foreground">{selectedFinish.label}</span>
                   </div>
                   <div className="flex justify-between">
+                    <span className="text-muted-foreground">Print</span>
+                    <span className="text-foreground capitalize">{printSides}-sided</span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-muted-foreground">Quantity</span>
-                    <span className="text-foreground">{quantity} pcs</span>
+                    <span className="text-foreground">{quantity.toLocaleString()} {product.unit.replace("per ", "")}</span>
                   </div>
                   
                   <div className="border-t border-border my-3" />
@@ -460,7 +430,7 @@ const ProductCustomize = () => {
                     <span className="text-muted-foreground">Total</span>
                     <div className="text-right">
                       <span className="text-2xl font-display font-bold text-foreground flex items-center gap-1">
-                        <IndianRupee className="w-5 h-5" />{price.total}
+                        <IndianRupee className="w-5 h-5" />{parseInt(price.total).toLocaleString()}
                       </span>
                       <span className="text-xs text-muted-foreground">Incl. GST</span>
                     </div>
@@ -472,7 +442,7 @@ const ProductCustomize = () => {
                     variant="coral" 
                     size="lg" 
                     className="w-full gap-2"
-                    disabled={!uploadedFile || (validation && !validation.isValid)}
+                    disabled={!uploadedFile || (validation != null && !validation.isValid)}
                     asChild
                   >
                     <Link to="/checkout">
@@ -489,7 +459,10 @@ const ProductCustomize = () => {
                 
                 <div className="mt-6 p-3 bg-secondary/50 rounded-lg">
                   <p className="text-xs text-muted-foreground">
-                    🚚 Estimated delivery: <strong className="text-foreground">3-5 business days</strong>
+                    🚚 Estimated delivery: <strong className="text-foreground">{product.turnaroundDays} business days</strong>
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    🖨️ {product.printingMethods[0]?.label}
                   </p>
                 </div>
               </div>

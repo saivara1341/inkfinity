@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Printer, Mail, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { getRoleBasedPath } from "@/hooks/useRoleRedirect";
 
 const Login = () => {

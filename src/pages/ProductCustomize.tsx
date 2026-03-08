@@ -143,12 +143,8 @@ const ProductCustomize = () => {
 
   const price = calculatePrice();
 
-  // Generate quantity options based on tiers
-  const quantityOptions = useMemo(() => {
-    const options = new Set<number>();
-    product.quantityTiers.forEach(t => { options.add(t.min); if (t.max < 10000) options.add(t.max); });
-    return Array.from(options).sort((a, b) => a - b).slice(0, 6);
-  }, [product]);
+
+
 
   return (
     <div className="min-h-screen bg-background">

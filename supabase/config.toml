@@ -2,3 +2,6 @@ project_id = "aezutqtipuhvcmnlzxxn"
 
 [functions.generate-design]
 verify_jwt = false
+
+[functions.whatsapp-webhook]
+verify_jwt = false

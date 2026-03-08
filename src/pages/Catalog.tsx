@@ -107,7 +107,7 @@ const Catalog = () => {
                   transition={{ delay: i * 0.03 }}
                 >
                   <Link
-                    to={`/catalog/${product.category}`}
+                    to={`/customize/${product.category}`}
                     className="block bg-card rounded-xl border border-border p-5 shadow-card hover:shadow-elevated hover:border-accent/30 transition-all group"
                   >
                     <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center mb-3 group-hover:bg-accent/20 transition-colors">

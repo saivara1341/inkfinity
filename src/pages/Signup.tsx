@@ -39,15 +39,37 @@ const Signup = () => {
       return;
     }
 
-    // If shop owner, create shop entry after signup
-    if (userType === "shop" && formData.shopName) {
-      // Shop will be created after email verification via profile trigger
-      toast({ title: "Account created!", description: "Check your email to verify, then set up your shop." });
-    } else {
-      toast({ title: "Account created!", description: "Check your email to verify your account." });
+    // If shop owner, assign role and create shop
+    if (userType === "shop") {
+      const { data: { user: newUser } } = await supabase.auth.getUser();
+      if (newUser) {
+        // Update role to shop_owner
+        await supabase.from("user_roles").update({ role: "shop_owner" as any }).eq("user_id", newUser.id);
+        
+        // Create shop entry
+        if (formData.shopName) {
+          await supabase.from("shops").insert({
+            owner_id: newUser.id,
+            name: formData.shopName,
+            city: formData.city || "Unknown",
+            state: formData.state || "Unknown",
+            pincode: formData.pincode || "000000",
+            address: formData.shopAddress || null,
+          });
+        }
+        toast({ title: "Shop account created!", description: "Welcome to PrintFlow!" });
+        setLoading(false);
+        navigate("/shop");
+        return;
+      }
     }
+
+    toast({ title: "Account created!", description: "Welcome to PrintFlow!" });
     setLoading(false);
-    navigate("/login");
+    // Get role-based redirect
+    const { data: { user: newUser } } = await supabase.auth.getUser();
+    const path = newUser ? await getRoleBasedPath(newUser.id) : "/dashboard";
+    navigate(path);
   };
 
   const indianCities = [

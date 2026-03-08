@@ -23,12 +23,15 @@ const Login = () => {
     }
     setLoading(true);
     const { error } = await signIn(email, password);
-    setLoading(false);
     if (error) {
+      setLoading(false);
       toast({ title: "Login failed", description: error.message, variant: "destructive" });
     } else {
+      const { data: { user } } = await supabase.auth.getUser();
+      const path = user ? await getRoleBasedPath(user.id) : "/dashboard";
+      setLoading(false);
       toast({ title: "Welcome back!" });
-      navigate("/dashboard");
+      navigate(path);
     }
   };
 

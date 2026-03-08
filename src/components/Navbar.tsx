@@ -27,8 +27,15 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" asChild><Link to="/login">Log in</Link></Button>
-          <Button variant="coral" asChild><Link to="/signup">Get Started</Link></Button>
+          {user && <NotificationBell />}
+          {user ? (
+            <Button variant="coral" asChild><Link to="/dashboard">Dashboard</Link></Button>
+          ) : (
+            <>
+              <Button variant="ghost" asChild><Link to="/login">Log in</Link></Button>
+              <Button variant="coral" asChild><Link to="/signup">Get Started</Link></Button>
+            </>
+          )}
         </div>
 
         <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>

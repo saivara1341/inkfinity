@@ -45,9 +45,9 @@ const Navbar = () => {
 
       {mobileOpen && (
         <div className="md:hidden bg-background border-b border-border px-4 py-4 space-y-3">
+          <Link to="/store" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>Store</Link>
           <Link to="/catalog" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>Products</Link>
-          <Link to="/how-it-works" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>How it Works</Link>
-          <Link to="/for-shops" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>For Shops</Link>
+          <Link to="/store?view=shops" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>Find Shops</Link>
           <div className="flex gap-2 pt-2">
             <Button variant="ghost" size="sm" asChild><Link to="/login">Log in</Link></Button>
             <Button variant="coral" size="sm" asChild><Link to="/signup">Get Started</Link></Button>

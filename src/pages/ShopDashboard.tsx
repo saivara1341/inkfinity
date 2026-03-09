@@ -111,6 +111,7 @@ const ShopDashboard = () => {
           {activeTab === "overview" && (
             <ShopOverview orders={orders} onViewOrders={() => setActiveTab("orders")} />
           )}
+          {activeTab === "products" && <ShopProducts shop={shop} />}
           {activeTab === "orders" && (
             <ShopOrders orders={orders} onUpdateStatus={updateOrderStatus} />
           )}

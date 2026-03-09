@@ -30,6 +30,8 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/store" element={<Storefront />} />
+            <Route path="/cart" element={<CartPage />} />
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/catalog/:category" element={<Catalog />} />
             <Route path="/customize/:category" element={<ProductCustomize />} />

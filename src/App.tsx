@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,7 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Catalog from "./pages/Catalog";
-import ProductCustomize from "./pages/ProductCustomize";
+const ProductCustomize = lazy(() => import("./pages/ProductCustomize"));
 import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 import OrderTracking from "./pages/OrderTracking";
@@ -34,7 +35,7 @@ const App = () => (
             <Route path="/cart" element={<CartPage />} />
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/catalog/:category" element={<Catalog />} />
-            <Route path="/customize/:category" element={<ProductCustomize />} />
+            <Route path="/customize/:category" element={<Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}><ProductCustomize /></Suspense>} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/order-success" element={<OrderSuccess />} />
             <Route path="/track" element={<OrderTracking />} />

@@ -402,13 +402,15 @@ const ProductCustomize = () => {
               {/* 3D Preview */}
               <div className="bg-card rounded-xl border border-border p-5 shadow-card">
                 <h3 className="font-display font-semibold text-foreground mb-4">360° Product Preview</h3>
-                <ProductPreview3D
-                  productType={product.categoryId.includes("banner") || product.categoryId.includes("flex") ? "banner" : "card"}
-                  width={selectedSize.widthMM}
-                  height={selectedSize.heightMM}
-                  imageUrl={previewUrl || aiDesignUrl}
-                  label={product.name}
-                />
+                <Suspense fallback={<div className="w-full h-64 flex items-center justify-center text-muted-foreground">Loading 3D preview...</div>}>
+                  <ProductPreview3D
+                    productType={product.categoryId.includes("banner") || product.categoryId.includes("flex") ? "banner" : "card"}
+                    width={selectedSize.widthMM}
+                    height={selectedSize.heightMM}
+                    imageUrl={previewUrl || aiDesignUrl}
+                    label={product.name}
+                  />
+                </Suspense>
               </div>
             </div>
 

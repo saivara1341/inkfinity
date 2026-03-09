@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingCart, BarChart3, Settings,
-  ChevronDown, Printer, Bell, LogOut
+  ChevronDown, Printer, Bell, LogOut, Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,11 +12,13 @@ import { ShopOverview } from "@/components/shop/ShopOverview";
 import { ShopOrders } from "@/components/shop/ShopOrders";
 import { ShopAnalytics } from "@/components/shop/ShopAnalytics";
 import { ShopSettings } from "@/components/shop/ShopSettings";
+import { ShopProducts } from "@/components/shop/ShopProducts";
 
-type Tab = "overview" | "orders" | "analytics" | "settings";
+type Tab = "overview" | "orders" | "products" | "analytics" | "settings";
 
 const sidebarItems: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "products", label: "Products", icon: Package },
   { id: "orders", label: "Orders", icon: ShoppingCart },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
   { id: "settings", label: "Settings", icon: Settings },

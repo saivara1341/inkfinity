@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      cart_items: {
+        Row: {
+          created_at: string
+          design_file_url: string | null
+          id: string
+          product_id: string
+          quantity: number
+          shop_id: string
+          specifications: Json | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          design_file_url?: string | null
+          id?: string
+          product_id: string
+          quantity?: number
+          shop_id: string
+          specifications?: Json | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          design_file_url?: string | null
+          id?: string
+          product_id?: string
+          quantity?: number
+          shop_id?: string
+          specifications?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cart_items_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       design_generations: {
         Row: {
           business_details: Json | null
@@ -171,6 +219,65 @@ export type Database = {
           },
         ]
       }
+      products: {
+        Row: {
+          base_price: number
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          images: string[] | null
+          is_active: boolean | null
+          max_quantity: number | null
+          min_quantity: number
+          name: string
+          shop_id: string
+          specifications: Json | null
+          turnaround_days: number | null
+          updated_at: string
+        }
+        Insert: {
+          base_price?: number
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          is_active?: boolean | null
+          max_quantity?: number | null
+          min_quantity?: number
+          name: string
+          shop_id: string
+          specifications?: Json | null
+          turnaround_days?: number | null
+          updated_at?: string
+        }
+        Update: {
+          base_price?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          is_active?: boolean | null
+          max_quantity?: number | null
+          min_quantity?: number
+          name?: string
+          shop_id?: string
+          specifications?: Json | null
+          turnaround_days?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           address: string | null
@@ -271,6 +378,61 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "quotations_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          customer_id: string
+          id: string
+          order_id: string | null
+          product_id: string | null
+          rating: number
+          shop_id: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          order_id?: string | null
+          product_id?: string | null
+          rating: number
+          shop_id?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          order_id?: string | null
+          product_id?: string | null
+          rating?: number
+          shop_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_shop_id_fkey"
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "shops"

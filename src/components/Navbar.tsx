@@ -20,9 +20,9 @@ const Navbar = () => {
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
+          <Link to="/store" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Store</Link>
           <Link to="/catalog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Products</Link>
-          <Link to="/how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">How it Works</Link>
-          <Link to="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
+          <Link to="/store?view=shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Find Shops</Link>
           <Link to="/for-shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">For Shops</Link>
         </div>
 
@@ -45,9 +45,9 @@ const Navbar = () => {
 
       {mobileOpen && (
         <div className="md:hidden bg-background border-b border-border px-4 py-4 space-y-3">
+          <Link to="/store" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>Store</Link>
           <Link to="/catalog" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>Products</Link>
-          <Link to="/how-it-works" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>How it Works</Link>
-          <Link to="/for-shops" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>For Shops</Link>
+          <Link to="/store?view=shops" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>Find Shops</Link>
           <div className="flex gap-2 pt-2">
             <Button variant="ghost" size="sm" asChild><Link to="/login">Log in</Link></Button>
             <Button variant="coral" size="sm" asChild><Link to="/signup">Get Started</Link></Button>

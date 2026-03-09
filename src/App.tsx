@@ -15,6 +15,8 @@ import ShopDashboard from "./pages/ShopDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import Storefront from "./pages/Storefront";
+import CartPage from "./pages/Cart";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

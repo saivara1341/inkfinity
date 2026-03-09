@@ -9,7 +9,8 @@ import {
   Crop, FileImage, IndianRupee, ChevronRight, Info,
   CheckCircle2, ArrowLeft, Clock
 } from "lucide-react";
-import ProductPreview3D from "@/components/ProductPreview3D";
+import { lazy, Suspense } from "react";
+const ProductPreview3D = lazy(() => import("@/components/ProductPreview3D"));
 import AIDesignGenerator from "@/components/AIDesignGenerator";
 import QuotationGenerator from "@/components/QuotationGenerator";
 import { getSubcategoryById, getAllSubcategories } from "@/data/printingProducts";

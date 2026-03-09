@@ -20,9 +20,9 @@ const Navbar = () => {
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
+          <Link to="/store" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Store</Link>
           <Link to="/catalog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Products</Link>
-          <Link to="/how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">How it Works</Link>
-          <Link to="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
+          <Link to="/store?view=shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Find Shops</Link>
           <Link to="/for-shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">For Shops</Link>
         </div>
 

@@ -18,6 +18,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Storefront from "./pages/Storefront";
 import CartPage from "./pages/Cart";
+import ForShops from "./pages/ForShops";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/store" element={<Storefront />} />
             <Route path="/cart" element={<CartPage />} />
+            <Route path="/for-shops" element={<ForShops />} />
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/catalog/:category" element={<Catalog />} />
             <Route path="/customize/:category" element={<Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}><ProductCustomize /></Suspense>} />

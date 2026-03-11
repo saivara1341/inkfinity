@@ -36,12 +36,13 @@ const ProtectedRoute = ({ children, requiredRole }: Props) => {
         .limit(1)
         .maybeSingle();
 
-      if (data?.role === requiredRole || data?.role === "admin") {
+      const userRole = data?.role as string | undefined;
+      if (userRole === requiredRole || userRole === "admin") {
         setAuthorized(true);
       } else {
         // Redirect to appropriate dashboard
-        if (data?.role === "shop_owner") navigate("/shop", { replace: true });
-        else if (data?.role === "admin") navigate("/admin", { replace: true });
+        if (userRole === "shop_owner") navigate("/shop", { replace: true });
+        else if (userRole === "admin") navigate("/admin", { replace: true });
         else navigate("/dashboard", { replace: true });
       }
       setChecking(false);

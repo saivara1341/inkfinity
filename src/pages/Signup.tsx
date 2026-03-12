@@ -39,23 +39,19 @@ const Signup = () => {
       return;
     }
 
-    // If shop owner, assign role and create shop
-    if (userType === "shop") {
+    // If shop owner, create shop via secure RPC
+    if (userType === "shop" && formData.shopName) {
       const { data: { user: newUser } } = await supabase.auth.getUser();
       if (newUser) {
-        // Update role to shop_owner
-        await supabase.from("user_roles").update({ role: "shop_owner" as any }).eq("user_id", newUser.id);
-        
-        // Create shop entry
-        if (formData.shopName) {
-          await supabase.from("shops").insert({
-            owner_id: newUser.id,
-            name: formData.shopName,
-            city: formData.city || "Unknown",
-            state: formData.state || "Unknown",
-            pincode: formData.pincode || "000000",
-            address: formData.shopAddress || null,
-          });
+        const { error: shopError } = await supabase.rpc("register_shop", {
+          _name: formData.shopName,
+          _city: formData.city || "Unknown",
+          _state: formData.state || "Unknown",
+          _pincode: formData.pincode || "000000",
+          _address: formData.shopAddress || null,
+        });
+        if (shopError) {
+          console.error("Shop creation error:", shopError.message);
         }
         toast({ title: "Shop account created!", description: "Welcome to PrintFlow!" });
         setLoading(false);

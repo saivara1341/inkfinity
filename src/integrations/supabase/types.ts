@@ -563,6 +563,20 @@ export type Database = {
         }
         Returns: boolean
       }
+      register_shop: {
+        Args: {
+          _address?: string
+          _city?: string
+          _description?: string
+          _email?: string
+          _name: string
+          _phone?: string
+          _pincode?: string
+          _services?: string[]
+          _state?: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "shop_owner" | "customer"

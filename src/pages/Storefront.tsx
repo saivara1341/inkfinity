@@ -66,10 +66,15 @@ const Storefront = () => {
     setLoading(true);
 
     // Fetch products with shop info
+    const shopFilter = searchParams.get("shop");
     let productQuery = supabase
       .from("products")
       .select("*, shop:shops(id, name, city, rating, is_verified)")
       .eq("is_active", true);
+
+    if (shopFilter) {
+      productQuery = productQuery.eq("shop_id", shopFilter);
+    }
 
     if (selectedCategory !== "All") {
       productQuery = productQuery.eq("category", selectedCategory);

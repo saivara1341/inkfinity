@@ -197,9 +197,12 @@ const Signup = () => {
             Continue with Google
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground mt-8">
+          <p className="text-center text-sm text-muted-foreground mt-6">
             Already have an account?{" "}
             <Link to="/login" className="text-accent font-medium hover:underline">Log in</Link>
+          </p>
+          <p className="text-center text-sm text-muted-foreground mt-2">
+            <Link to="/forgot-password" className="text-accent font-medium hover:underline">Forgot password?</Link>
           </p>
         </motion.div>
       </div>

@@ -69,51 +69,23 @@ const RegisterShop = () => {
 
     setLoading(true);
 
-    // Check if user already has a shop
-    const { data: existingShop } = await supabase
-      .from("shops")
-      .select("id")
-      .eq("owner_id", user.id)
-      .maybeSingle();
-
-    if (existingShop) {
-      toast.error("You already have a registered shop");
-      navigate("/shop");
-      setLoading(false);
-      return;
-    }
-
-    // Create shop
-    const { error: shopError } = await supabase.from("shops").insert({
-      owner_id: user.id,
-      name: form.name,
-      description: form.description || null,
-      phone: form.phone,
-      email: form.email,
-      address: form.address,
-      city: form.city,
-      state: form.state,
-      pincode: form.pincode,
-      services: form.services,
+    const { error } = await supabase.rpc("register_shop", {
+      _name: form.name,
+      _description: form.description || null,
+      _phone: form.phone,
+      _email: form.email,
+      _address: form.address,
+      _city: form.city,
+      _state: form.state,
+      _pincode: form.pincode,
+      _services: form.services,
     });
 
-    if (shopError) {
-      toast.error("Failed to register shop: " + shopError.message);
+    if (error) {
+      toast.error(error.message.includes("already has") ? "You already have a registered shop" : "Failed to register shop: " + error.message);
+      if (error.message.includes("already has")) navigate("/shop");
       setLoading(false);
       return;
-    }
-
-    // Update user role to shop_owner via RPC or direct update
-    // The handle_new_user trigger sets role to 'customer' by default
-    // We need admin to approve, or use a function
-    const { error: roleError } = await supabase
-      .from("user_roles")
-      .update({ role: "shop_owner" as any })
-      .eq("user_id", user.id);
-
-    if (roleError) {
-      // Role update may fail due to RLS - shop is still created
-      console.log("Role update pending admin approval");
     }
 
     setLoading(false);

@@ -83,6 +83,8 @@ export const ShopProducts = ({ shop }: Props) => {
       max_quantity: product.max_quantity?.toString() || "",
       turnaround_days: product.turnaround_days,
       is_active: product.is_active,
+      imageFile: null,
+      imagePreview: product.images?.[0] || "",
     });
     setShowForm(true);
   };

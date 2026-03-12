@@ -1,13 +1,38 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Printer, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Printer, Menu, X, ShoppingCart } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "@/components/NotificationBell";
+import { supabase } from "@/integrations/supabase/client";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useAuth();
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) { setRole(null); return; }
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => setRole(data?.role as string ?? "customer"));
+  }, [user]);
+
+  const getDashboardPath = () => {
+    if (role === "admin") return "/admin";
+    if (role === "shop_owner") return "/shop";
+    return "/dashboard";
+  };
+
+  const getDashboardLabel = () => {
+    if (role === "admin") return "Admin";
+    if (role === "shop_owner") return "My Shop";
+    return "Dashboard";
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
@@ -23,13 +48,20 @@ const Navbar = () => {
           <Link to="/store" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Store</Link>
           <Link to="/catalog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Products</Link>
           <Link to="/store?view=shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Find Shops</Link>
-          <Link to="/for-shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">For Shops</Link>
+          {(!user || role === "customer") && (
+            <Link to="/for-shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">For Shops</Link>
+          )}
         </div>
 
         <div className="hidden md:flex items-center gap-3">
+          {user && (
+            <Link to="/cart" className="relative p-2 text-muted-foreground hover:text-foreground transition-colors">
+              <ShoppingCart className="w-5 h-5" />
+            </Link>
+          )}
           {user && <NotificationBell />}
           {user ? (
-            <Button variant="coral" asChild><Link to="/dashboard">Dashboard</Link></Button>
+            <Button variant="coral" asChild><Link to={getDashboardPath()}>{getDashboardLabel()}</Link></Button>
           ) : (
             <>
               <Button variant="ghost" asChild><Link to="/login">Log in</Link></Button>
@@ -48,10 +80,18 @@ const Navbar = () => {
           <Link to="/store" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>Store</Link>
           <Link to="/catalog" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>Products</Link>
           <Link to="/store?view=shops" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>Find Shops</Link>
-          <div className="flex gap-2 pt-2">
-            <Button variant="ghost" size="sm" asChild><Link to="/login">Log in</Link></Button>
-            <Button variant="coral" size="sm" asChild><Link to="/signup">Get Started</Link></Button>
-          </div>
+          {user ? (
+            <div className="flex gap-2 pt-2">
+              <Button variant="coral" size="sm" asChild>
+                <Link to={getDashboardPath()} onClick={() => setMobileOpen(false)}>{getDashboardLabel()}</Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="flex gap-2 pt-2">
+              <Button variant="ghost" size="sm" asChild><Link to="/login">Log in</Link></Button>
+              <Button variant="coral" size="sm" asChild><Link to="/signup">Get Started</Link></Button>
+            </div>
+          )}
         </div>
       )}
     </nav>

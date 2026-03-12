@@ -1,0 +1,18 @@
+{
+  "name": "PrintFlow — India's Smartest Printing Platform",
+  "short_name": "PrintFlow",
+  "description": "Upload your design and get professional prints from local shops",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f4ef",
+  "theme_color": "#e8613a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["business", "productivity", "shopping"]
+}

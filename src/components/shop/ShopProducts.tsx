@@ -43,6 +43,8 @@ const emptyForm = {
   max_quantity: "",
   turnaround_days: 3,
   is_active: true,
+  imageFile: null as File | null,
+  imagePreview: "",
 };
 
 export const ShopProducts = ({ shop }: Props) => {
@@ -81,6 +83,8 @@ export const ShopProducts = ({ shop }: Props) => {
       max_quantity: product.max_quantity?.toString() || "",
       turnaround_days: product.turnaround_days,
       is_active: product.is_active,
+      imageFile: null,
+      imagePreview: product.images?.[0] || "",
     });
     setShowForm(true);
   };
@@ -114,6 +118,24 @@ export const ShopProducts = ({ shop }: Props) => {
       return;
     }
     setSaving(true);
+
+    let images: string[] = [];
+    
+    // Upload image if selected
+    if (form.imageFile) {
+      const ext = form.imageFile.name.split(".").pop();
+      const filePath = `${shop.id}/${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("product-images")
+        .upload(filePath, form.imageFile);
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(filePath);
+        images = [urlData.publicUrl];
+      }
+    } else if (form.imagePreview) {
+      images = [form.imagePreview];
+    }
+
     const payload = {
       shop_id: shop.id,
       name: form.name,
@@ -124,6 +146,7 @@ export const ShopProducts = ({ shop }: Props) => {
       max_quantity: form.max_quantity ? parseInt(form.max_quantity) : null,
       turnaround_days: form.turnaround_days,
       is_active: form.is_active,
+      images,
     };
 
     if (editingId) {
@@ -248,6 +271,33 @@ export const ShopProducts = ({ shop }: Props) => {
                   placeholder="No limit"
                   className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm text-muted-foreground mb-1 block">Product Image</label>
+              <div className="flex items-center gap-4">
+                {(form.imagePreview || form.imageFile) && (
+                  <div className="w-20 h-20 rounded-lg overflow-hidden bg-secondary">
+                    <img
+                      src={form.imageFile ? URL.createObjectURL(form.imageFile) : form.imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <label className="flex items-center gap-2 px-4 py-2 rounded-lg border border-input bg-background text-sm text-muted-foreground cursor-pointer hover:border-accent/50 transition-colors">
+                  <ImagePlus className="w-4 h-4" />
+                  {form.imageFile ? "Change Image" : "Upload Image"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) setForm({ ...form, imageFile: file, imagePreview: "" });
+                    }}
+                  />
+                </label>
               </div>
             </div>
             <div>

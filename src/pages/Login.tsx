@@ -98,7 +98,10 @@ const Login = () => {
             Google
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground mt-8">
+          <p className="text-center text-sm text-muted-foreground mt-6">
+            <Link to="/forgot-password" className="text-accent font-medium hover:underline">Forgot password?</Link>
+          </p>
+          <p className="text-center text-sm text-muted-foreground mt-2">
             Don't have an account?{" "}
             <Link to="/signup" className="text-accent font-medium hover:underline">Sign up free</Link>
           </p>

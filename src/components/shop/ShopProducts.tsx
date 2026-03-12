@@ -274,6 +274,33 @@ export const ShopProducts = ({ shop }: Props) => {
               </div>
             </div>
             <div>
+              <label className="text-sm text-muted-foreground mb-1 block">Product Image</label>
+              <div className="flex items-center gap-4">
+                {(form.imagePreview || form.imageFile) && (
+                  <div className="w-20 h-20 rounded-lg overflow-hidden bg-secondary">
+                    <img
+                      src={form.imageFile ? URL.createObjectURL(form.imageFile) : form.imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <label className="flex items-center gap-2 px-4 py-2 rounded-lg border border-input bg-background text-sm text-muted-foreground cursor-pointer hover:border-accent/50 transition-colors">
+                  <ImagePlus className="w-4 h-4" />
+                  {form.imageFile ? "Change Image" : "Upload Image"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) setForm({ ...form, imageFile: file, imagePreview: "" });
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+            <div>
               <label className="text-sm text-muted-foreground mb-1 block">Description</label>
               <textarea
                 value={form.description}

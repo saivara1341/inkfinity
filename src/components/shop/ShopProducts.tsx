@@ -118,6 +118,24 @@ export const ShopProducts = ({ shop }: Props) => {
       return;
     }
     setSaving(true);
+
+    let images: string[] = [];
+    
+    // Upload image if selected
+    if (form.imageFile) {
+      const ext = form.imageFile.name.split(".").pop();
+      const filePath = `${shop.id}/${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("product-images")
+        .upload(filePath, form.imageFile);
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(filePath);
+        images = [urlData.publicUrl];
+      }
+    } else if (form.imagePreview) {
+      images = [form.imagePreview];
+    }
+
     const payload = {
       shop_id: shop.id,
       name: form.name,
@@ -128,6 +146,7 @@ export const ShopProducts = ({ shop }: Props) => {
       max_quantity: form.max_quantity ? parseInt(form.max_quantity) : null,
       turnaround_days: form.turnaround_days,
       is_active: form.is_active,
+      images,
     };
 
     if (editingId) {

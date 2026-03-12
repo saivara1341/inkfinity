@@ -43,6 +43,8 @@ const emptyForm = {
   max_quantity: "",
   turnaround_days: 3,
   is_active: true,
+  imageFile: null as File | null,
+  imagePreview: "",
 };
 
 export const ShopProducts = ({ shop }: Props) => {

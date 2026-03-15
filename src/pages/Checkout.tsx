@@ -95,7 +95,7 @@ const Checkout = () => {
         grand_total: itemGrand,
         delivery_address: fullAddress,
         specifications: item.specifications || {},
-        design_file_url: item.design_file_url || null,
+        design_file_url: item.design_file_url || designFromCustomize || null,
         estimated_delivery: estimatedDelivery,
       });
     });

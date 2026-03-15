@@ -111,6 +111,8 @@ const Checkout = () => {
 
     // Clear cart after successful order
     await clearCart();
+    sessionStorage.removeItem("design_file_url");
+    sessionStorage.removeItem("customize_product");
 
     setPlacing(false);
     toast.success("Order placed successfully! 🎉");

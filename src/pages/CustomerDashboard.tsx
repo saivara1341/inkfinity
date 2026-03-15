@@ -289,7 +289,7 @@ const ProfileView = ({ user, onSignOut }: { user: any; onSignOut: () => void }) 
     });
 
     // Load addresses
-    supabase.from("user_addresses").select("*").eq("user_id", user.id).order("created_at").then(({ data }) => {
+    (supabase.from("user_addresses" as any).select("*").eq("user_id", user.id).order("created_at") as any).then(({ data }: any) => {
       setAddresses((data as Address[]) || []);
     });
   }, [user.id]);

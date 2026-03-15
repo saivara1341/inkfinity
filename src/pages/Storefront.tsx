@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Search, Filter, Star, Clock, IndianRupee, ShoppingCart, MapPin, Store, ChevronRight, SlidersHorizontal, X
+  Search, Star, Clock, ShoppingCart, MapPin, Store, ChevronRight, SlidersHorizontal, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,15 +58,24 @@ const Storefront = () => {
   const [sortBy, setSortBy] = useState<"price_low" | "price_high" | "rating" | "newest">("newest");
   const [showFilters, setShowFilters] = useState(false);
 
+  const shopFilter = searchParams.get("shop");
+
+  // Re-fetch when view/category/sort/shop filter changes
   useEffect(() => {
     fetchData();
-  }, [selectedCategory, sortBy]);
+  }, [selectedCategory, sortBy, shopFilter]);
+
+  // Sync view from URL
+  useEffect(() => {
+    const urlView = searchParams.get("view");
+    if (urlView === "shops") setView("shops");
+    else if (urlView === "products") setView("products");
+  }, [searchParams]);
 
   const fetchData = async () => {
     setLoading(true);
 
     // Fetch products with shop info
-    const shopFilter = searchParams.get("shop");
     let productQuery = supabase
       .from("products")
       .select("*, shop:shops(id, name, city, rating, is_verified)")
@@ -95,7 +104,6 @@ const Storefront = () => {
       .order("rating", { ascending: false });
 
     if (shopData) {
-      // Count products per shop
       const { data: productCounts } = await supabase
         .from("products")
         .select("shop_id")
@@ -140,11 +148,35 @@ const Storefront = () => {
     else toast.success(`${product.name} added to cart!`);
   };
 
+  // Get the shop name if filtering by shop
+  const activeShop = shopFilter ? shops.find((s) => s.id === shopFilter) : null;
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="pt-20 pb-16">
         <div className="container mx-auto px-4">
+          {/* Shop banner if filtering */}
+          {activeShop && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-6 bg-card rounded-xl border border-border p-5 shadow-card flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center">
+                  <Store className="w-7 h-7 text-accent" />
+                </div>
+                <div>
+                  <h2 className="font-display text-xl font-bold text-foreground">{activeShop.name}</h2>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <MapPin className="w-3.5 h-3.5" /> {activeShop.city}
+                    {activeShop.is_verified && <span className="text-xs px-1.5 py-0.5 rounded bg-success/20 text-success">✓ Verified</span>}
+                  </div>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => { searchParams.delete("shop"); setSearchParams(searchParams); }}>
+                <X className="w-3.5 h-3.5 mr-1" /> Clear Filter
+              </Button>
+            </motion.div>
+          )}
+
           {/* Search Bar */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
             <div className="relative max-w-2xl mx-auto mb-6">
@@ -206,7 +238,6 @@ const Storefront = () => {
             {/* Filters */}
             {showFilters && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="mb-6 space-y-4">
-                {/* Categories */}
                 <div className="flex flex-wrap gap-2">
                   {CATEGORIES.map((cat) => (
                     <button
@@ -222,7 +253,6 @@ const Storefront = () => {
                     </button>
                   ))}
                 </div>
-                {/* Sort */}
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Sort:</span>
                   {([

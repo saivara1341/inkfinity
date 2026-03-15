@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Eye, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { statusColors, statusLabels } from "./ShopOverview";
@@ -63,6 +63,7 @@ export const ShopOrders = ({ orders, onUpdateStatus }: Props) => {
                 <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Product</th>
                 <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Qty</th>
                 <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Total</th>
+                <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Design</th>
                 <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Status</th>
                 <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Date</th>
                 <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Update</th>
@@ -75,6 +76,20 @@ export const ShopOrders = ({ orders, onUpdateStatus }: Props) => {
                   <td className="px-5 py-3 text-sm text-muted-foreground">{order.product_name}</td>
                   <td className="px-5 py-3 text-sm text-foreground">{order.quantity}</td>
                   <td className="px-5 py-3 text-sm font-semibold text-foreground">₹{Number(order.grand_total).toLocaleString("en-IN")}</td>
+                  <td className="px-5 py-3">
+                    {order.design_file_url ? (
+                      <a
+                        href={order.design_file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded bg-accent/10 text-accent text-xs font-medium hover:bg-accent/20 transition-colors"
+                      >
+                        <Download className="w-3 h-3" /> Download
+                      </a>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">No file</span>
+                    )}
+                  </td>
                   <td className="px-5 py-3">
                     <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[order.status] || ""}`}>
                       {statusLabels[order.status] || order.status}

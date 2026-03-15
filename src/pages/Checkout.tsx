@@ -58,6 +58,7 @@ const Checkout = () => {
   const fullAddress = `${addressForm.address}, ${addressForm.city} - ${addressForm.pincode}`;
 
   const handlePlaceOrder = async () => {
+    const designFromCustomize = sessionStorage.getItem("design_file_url");
     if (items.length === 0) {
       toast.error("Your cart is empty");
       return;
@@ -94,7 +95,7 @@ const Checkout = () => {
         grand_total: itemGrand,
         delivery_address: fullAddress,
         specifications: item.specifications || {},
-        design_file_url: item.design_file_url || null,
+        design_file_url: item.design_file_url || designFromCustomize || null,
         estimated_delivery: estimatedDelivery,
       });
     });
@@ -110,6 +111,8 @@ const Checkout = () => {
 
     // Clear cart after successful order
     await clearCart();
+    sessionStorage.removeItem("design_file_url");
+    sessionStorage.removeItem("customize_product");
 
     setPlacing(false);
     toast.success("Order placed successfully! 🎉");

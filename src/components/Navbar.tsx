@@ -1,15 +1,19 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Printer, Menu, X, ShoppingCart } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Printer, Menu, X, ShoppingCart, User, LogOut, MapPin, Settings } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "@/components/NotificationBell";
 import { supabase } from "@/integrations/supabase/client";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user } = useAuth();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const { user, signOut } = useAuth();
   const [role, setRole] = useState<string | null>(null);
+  const [profile, setProfile] = useState<{ full_name: string | null; avatar_url: string | null }>({ full_name: null, avatar_url: null });
+  const navigate = useNavigate();
+  const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!user) { setRole(null); return; }
@@ -20,7 +24,27 @@ const Navbar = () => {
       .limit(1)
       .maybeSingle()
       .then(({ data }) => setRole(data?.role as string ?? "customer"));
+
+    supabase
+      .from("profiles")
+      .select("full_name, avatar_url")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setProfile({ full_name: data.full_name, avatar_url: data.avatar_url });
+      });
   }, [user]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const getDashboardPath = () => {
     if (role === "admin") return "/admin";
@@ -33,6 +57,15 @@ const Navbar = () => {
     if (role === "shop_owner") return "My Shop";
     return "Dashboard";
   };
+
+  const handleLogout = async () => {
+    await signOut();
+    setProfileOpen(false);
+    navigate("/login");
+  };
+
+  const displayName = profile.full_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "U";
+  const avatarInitial = displayName.charAt(0).toUpperCase();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
@@ -47,7 +80,9 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-8">
           <Link to="/store" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Store</Link>
           <Link to="/catalog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Products</Link>
-          <Link to="/store?view=shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Find Shops</Link>
+          <Link to="/store?view=shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+            <MapPin className="w-3.5 h-3.5" /> Find Shops Near You
+          </Link>
           {(!user || role === "customer") && (
             <Link to="/for-shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">For Shops</Link>
           )}
@@ -61,7 +96,53 @@ const Navbar = () => {
           )}
           {user && <NotificationBell />}
           {user ? (
-            <Button variant="coral" asChild><Link to={getDashboardPath()}>{getDashboardLabel()}</Link></Button>
+            <div className="relative" ref={profileRef}>
+              <button
+                onClick={() => setProfileOpen(!profileOpen)}
+                className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-secondary transition-colors"
+              >
+                {profile.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
+                    <span className="text-sm font-bold text-accent">{avatarInitial}</span>
+                  </div>
+                )}
+                <span className="text-sm font-medium text-foreground max-w-[100px] truncate">{displayName}</span>
+              </button>
+
+              {profileOpen && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-card rounded-xl border border-border shadow-elevated py-2 z-50">
+                  <div className="px-4 py-2 border-b border-border">
+                    <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                  </div>
+                  <Link
+                    to={getDashboardPath()}
+                    onClick={() => setProfileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
+                  >
+                    <Settings className="w-4 h-4 text-muted-foreground" />
+                    {getDashboardLabel()}
+                  </Link>
+                  <Link
+                    to="/dashboard?tab=profile"
+                    onClick={() => setProfileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
+                  >
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    My Profile
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-secondary transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Log Out
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <Button variant="ghost" asChild><Link to="/login">Log in</Link></Button>
@@ -79,12 +160,16 @@ const Navbar = () => {
         <div className="md:hidden bg-background border-b border-border px-4 py-4 space-y-3">
           <Link to="/store" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>Store</Link>
           <Link to="/catalog" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>Products</Link>
-          <Link to="/store?view=shops" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>Find Shops</Link>
+          <Link to="/store?view=shops" className="flex items-center gap-1 text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
+            <MapPin className="w-3.5 h-3.5" /> Find Shops Near You
+          </Link>
           {user ? (
-            <div className="flex gap-2 pt-2">
-              <Button variant="coral" size="sm" asChild>
-                <Link to={getDashboardPath()} onClick={() => setMobileOpen(false)}>{getDashboardLabel()}</Link>
-              </Button>
+            <div className="space-y-2 pt-2 border-t border-border">
+              <Link to={getDashboardPath()} className="block text-sm font-medium text-foreground" onClick={() => setMobileOpen(false)}>{getDashboardLabel()}</Link>
+              <Link to="/dashboard?tab=profile" className="block text-sm font-medium text-foreground" onClick={() => setMobileOpen(false)}>My Profile</Link>
+              <button onClick={() => { handleLogout(); setMobileOpen(false); }} className="text-sm font-medium text-destructive flex items-center gap-2">
+                <LogOut className="w-4 h-4" /> Log Out
+              </button>
             </div>
           ) : (
             <div className="flex gap-2 pt-2">

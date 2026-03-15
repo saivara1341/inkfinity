@@ -15,6 +15,9 @@ import AIDesignGenerator from "@/components/AIDesignGenerator";
 import QuotationGenerator from "@/components/QuotationGenerator";
 import { getSubcategoryById, getAllSubcategories } from "@/data/printingProducts";
 import type { PrintSize, PaperType, FinishType } from "@/data/printingProducts";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface FileValidation {
   isValid: boolean;
@@ -28,6 +31,8 @@ interface FileValidation {
 const ProductCustomize = () => {
   const { category } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [uploading, setUploading] = useState(false);
   
   // Find product from comprehensive data
   const product = useMemo(() => {
@@ -468,12 +473,39 @@ const ProductCustomize = () => {
                     variant="coral" 
                     size="lg" 
                     className="w-full gap-2"
-                    disabled={!uploadedFile || (validation != null && !validation.isValid)}
-                    asChild
+                    disabled={!uploadedFile || (validation != null && !validation.isValid) || uploading}
+                    onClick={async () => {
+                      if (!user) { toast.error("Please log in first"); navigate("/login"); return; }
+                      if (!uploadedFile) return;
+                      setUploading(true);
+                      try {
+                        const ext = uploadedFile.name.split(".").pop();
+                        const path = `${user.id}/${Date.now()}.${ext}`;
+                        const { error: uploadError } = await supabase.storage.from("designs").upload(path, uploadedFile);
+                        if (uploadError) throw uploadError;
+                        const { data: urlData } = supabase.storage.from("designs").getPublicUrl(path);
+                        // Store in sessionStorage for checkout to pick up
+                        sessionStorage.setItem("design_file_url", urlData.publicUrl);
+                        sessionStorage.setItem("customize_product", JSON.stringify({
+                          name: product.name,
+                          category: product.categoryId,
+                          size: selectedSize.label,
+                          paper: selectedPaper.label,
+                          finish: selectedFinish.label,
+                          sides: printSides,
+                          quantity,
+                          unitPrice: price.perUnit,
+                          total: price.total,
+                        }));
+                        navigate("/checkout");
+                      } catch (err: any) {
+                        toast.error("Failed to upload design: " + err.message);
+                      } finally {
+                        setUploading(false);
+                      }
+                    }}
                   >
-                    <Link to="/checkout">
-                      Proceed to Checkout <ChevronRight className="w-4 h-4" />
-                    </Link>
+                    {uploading ? "Uploading..." : "Proceed to Checkout"} <ChevronRight className="w-4 h-4" />
                   </Button>
                   
                   {!uploadedFile && (

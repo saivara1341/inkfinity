@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ShoppingCart, User, MapPin, Clock,
-  CheckCircle2, Package, ChevronRight, LogOut, Printer, Truck, AlertCircle
+  CheckCircle2, Package, ChevronRight, LogOut, Printer, Truck, AlertCircle,
+  Camera, Plus, Trash2, Save
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -41,7 +42,9 @@ const stepIcons: Record<string, typeof Package> = {
 };
 
 const CustomerDashboard = () => {
-  const [activeTab, setActiveTab] = useState<Tab>("orders");
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") as Tab | null;
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab && ["orders", "tracking", "profile"].includes(initialTab) ? initialTab : "orders");
   const { user, signOut } = useAuth();
   const { orders, loading } = useCustomerOrders();
   const navigate = useNavigate();
@@ -251,33 +254,135 @@ const TrackingView = ({ orders }: { orders: Order[] }) => {
   );
 };
 
+interface Address {
+  id: string;
+  label: string;
+  address: string;
+  city: string | null;
+  state: string | null;
+  pincode: string | null;
+  is_default: boolean;
+}
+
 const ProfileView = ({ user, onSignOut }: { user: any; onSignOut: () => void }) => {
   const [form, setForm] = useState({
-    full_name: user.user_metadata?.full_name || "",
-    phone: user.user_metadata?.phone || "",
+    full_name: "",
+    phone: "",
   });
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [addresses, setAddresses] = useState<Address[]>([]);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [newAddress, setNewAddress] = useState({ label: "Home", address: "", city: "", state: "", pincode: "" });
+  const [showAddAddress, setShowAddAddress] = useState(false);
+
+  useEffect(() => {
+    // Load profile
+    supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle().then(({ data }) => {
+      if (data) {
+        setForm({ full_name: data.full_name || "", phone: data.phone || "" });
+        setAvatarUrl(data.avatar_url);
+      } else {
+        setForm({ full_name: user.user_metadata?.full_name || "", phone: user.user_metadata?.phone || "" });
+      }
+    });
+
+    // Load addresses
+    (supabase.from("user_addresses" as any).select("*").eq("user_id", user.id).order("created_at") as any).then(({ data }: any) => {
+      setAddresses((data as Address[]) || []);
+    });
+  }, [user.id]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
+
+    setUploadingAvatar(true);
+    const ext = file.name.split(".").pop();
+    const path = `${user.id}/avatar.${ext}`;
+    
+    const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+    if (uploadError) { toast.error("Upload failed"); setUploadingAvatar(false); return; }
+
+    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+    const url = urlData.publicUrl + `?t=${Date.now()}`;
+
+    await supabase.from("profiles").update({ avatar_url: url }).eq("user_id", user.id);
+    setAvatarUrl(url);
+    setUploadingAvatar(false);
+    toast.success("Avatar updated!");
+  };
 
   const handleSave = async () => {
     setSaving(true);
-    const { error } = await supabase.auth.updateUser({ data: form });
+    const { error } = await supabase.from("profiles").update({
+      full_name: form.full_name,
+      phone: form.phone,
+    }).eq("user_id", user.id);
+    
+    // Also update auth metadata
+    await supabase.auth.updateUser({ data: { full_name: form.full_name, phone: form.phone } });
+    
     setSaving(false);
     if (error) toast.error("Failed to update profile");
     else toast.success("Profile updated!");
   };
 
+  const handleAddAddress = async () => {
+    if (!newAddress.address.trim()) { toast.error("Address is required"); return; }
+    const { data, error } = await (supabase.from("user_addresses" as any).insert({
+      user_id: user.id,
+      label: newAddress.label,
+      address: newAddress.address,
+      city: newAddress.city || null,
+      state: newAddress.state || null,
+      pincode: newAddress.pincode || null,
+      is_default: addresses.length === 0,
+    } as any).select().single() as any);
+
+    if (error) { toast.error("Failed to add address"); return; }
+    setAddresses((prev) => [...prev, data as unknown as Address]);
+    setNewAddress({ label: "Home", address: "", city: "", state: "", pincode: "" });
+    setShowAddAddress(false);
+    toast.success("Address added!");
+  };
+
+  const handleDeleteAddress = async (id: string) => {
+    await (supabase.from("user_addresses" as any).delete().eq("id", id) as any);
+    setAddresses((prev) => prev.filter((a) => a.id !== id));
+    toast.success("Address removed");
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl space-y-6">
+      {/* Avatar & Basic Info */}
       <div className="bg-card rounded-xl border border-border p-6 shadow-card space-y-4">
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center">
-            <span className="text-2xl font-display font-bold text-accent">
-              {(form.full_name || user.email || "U").charAt(0).toUpperCase()}
-            </span>
+          <div className="relative group">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Avatar" className="w-20 h-20 rounded-full object-cover border-2 border-border" />
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-accent/20 flex items-center justify-center border-2 border-border">
+                <span className="text-2xl font-display font-bold text-accent">
+                  {(form.full_name || user.email || "U").charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingAvatar}
+              className="absolute inset-0 rounded-full bg-foreground/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <Camera className="w-5 h-5 text-background" />
+            </button>
+            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
           </div>
           <div>
             <h3 className="font-display text-lg font-bold text-foreground">{form.full_name || "User"}</h3>
             <p className="text-sm text-muted-foreground">{user.email}</p>
+            {uploadingAvatar && <p className="text-xs text-accent animate-pulse">Uploading...</p>}
           </div>
         </div>
 
@@ -296,23 +401,124 @@ const ProfileView = ({ user, onSignOut }: { user: any; onSignOut: () => void }) 
             <input type="text" value={user.email} disabled className="w-full px-3 py-2 rounded-lg border border-input bg-secondary text-muted-foreground text-sm" />
           </div>
           <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Phone</label>
+            <label className="text-sm text-muted-foreground mb-1 block">Mobile Number</label>
             <input
-              type="text"
+              type="tel"
               value={form.phone}
               onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+              placeholder="+91 98765 43210"
               className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
         </div>
-        <div className="flex gap-3">
-          <Button variant="coral" onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : "Save Profile"}
-          </Button>
-          <Button variant="outline" className="gap-2" onClick={onSignOut}>
-            <LogOut className="w-4 h-4" /> Log Out
+        <Button variant="coral" onClick={handleSave} disabled={saving} className="gap-2">
+          <Save className="w-4 h-4" />
+          {saving ? "Saving..." : "Save Profile"}
+        </Button>
+      </div>
+
+      {/* Addresses */}
+      <div className="bg-card rounded-xl border border-border p-6 shadow-card space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-display font-semibold text-foreground flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-accent" /> Saved Addresses
+          </h3>
+          <Button variant="outline" size="sm" onClick={() => setShowAddAddress(!showAddAddress)} className="gap-1">
+            <Plus className="w-3.5 h-3.5" /> Add
           </Button>
         </div>
+
+        {showAddAddress && (
+          <div className="bg-secondary/50 rounded-lg p-4 space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Label</label>
+                <select
+                  value={newAddress.label}
+                  onChange={(e) => setNewAddress((p) => ({ ...p, label: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm"
+                >
+                  <option>Home</option>
+                  <option>Office</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Pincode</label>
+                <input
+                  type="text"
+                  value={newAddress.pincode}
+                  onChange={(e) => setNewAddress((p) => ({ ...p, pincode: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Full Address</label>
+              <textarea
+                value={newAddress.address}
+                onChange={(e) => setNewAddress((p) => ({ ...p, address: e.target.value }))}
+                rows={2}
+                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm resize-none"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">City</label>
+                <input
+                  type="text"
+                  value={newAddress.city}
+                  onChange={(e) => setNewAddress((p) => ({ ...p, city: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">State</label>
+                <input
+                  type="text"
+                  value={newAddress.state}
+                  onChange={(e) => setNewAddress((p) => ({ ...p, state: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="coral" size="sm" onClick={handleAddAddress}>Save Address</Button>
+              <Button variant="ghost" size="sm" onClick={() => setShowAddAddress(false)}>Cancel</Button>
+            </div>
+          </div>
+        )}
+
+        {addresses.length === 0 && !showAddAddress ? (
+          <p className="text-sm text-muted-foreground text-center py-4">No saved addresses yet.</p>
+        ) : (
+          <div className="space-y-3">
+            {addresses.map((addr) => (
+              <div key={addr.id} className="flex items-start justify-between gap-3 p-3 rounded-lg bg-secondary/30">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium px-2 py-0.5 rounded bg-accent/10 text-accent">{addr.label}</span>
+                    {addr.is_default && <span className="text-xs text-muted-foreground">Default</span>}
+                  </div>
+                  <p className="text-sm text-foreground mt-1">{addr.address}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {[addr.city, addr.state, addr.pincode].filter(Boolean).join(", ")}
+                  </p>
+                </div>
+                <button onClick={() => handleDeleteAddress(addr.id)} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Logout */}
+      <div className="flex justify-end">
+        <Button variant="outline" className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/5" onClick={onSignOut}>
+          <LogOut className="w-4 h-4" /> Log Out
+        </Button>
       </div>
     </motion.div>
   );

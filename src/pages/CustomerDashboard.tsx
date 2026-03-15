@@ -350,7 +350,7 @@ const ProfileView = ({ user, onSignOut }: { user: any; onSignOut: () => void }) 
   };
 
   const handleDeleteAddress = async (id: string) => {
-    await supabase.from("user_addresses").delete().eq("id", id);
+    await (supabase.from("user_addresses" as any).delete().eq("id", id) as any);
     setAddresses((prev) => prev.filter((a) => a.id !== id));
     toast.success("Address removed");
   };

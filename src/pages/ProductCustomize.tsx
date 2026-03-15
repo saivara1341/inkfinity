@@ -15,6 +15,9 @@ import AIDesignGenerator from "@/components/AIDesignGenerator";
 import QuotationGenerator from "@/components/QuotationGenerator";
 import { getSubcategoryById, getAllSubcategories } from "@/data/printingProducts";
 import type { PrintSize, PaperType, FinishType } from "@/data/printingProducts";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface FileValidation {
   isValid: boolean;

@@ -31,6 +31,8 @@ interface FileValidation {
 const ProductCustomize = () => {
   const { category } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [uploading, setUploading] = useState(false);
   
   // Find product from comprehensive data
   const product = useMemo(() => {

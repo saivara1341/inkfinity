@@ -332,7 +332,7 @@ const ProfileView = ({ user, onSignOut }: { user: any; onSignOut: () => void }) 
 
   const handleAddAddress = async () => {
     if (!newAddress.address.trim()) { toast.error("Address is required"); return; }
-    const { data, error } = await supabase.from("user_addresses").insert({
+    const { data, error } = await (supabase.from("user_addresses" as any).insert({
       user_id: user.id,
       label: newAddress.label,
       address: newAddress.address,
@@ -340,10 +340,10 @@ const ProfileView = ({ user, onSignOut }: { user: any; onSignOut: () => void }) 
       state: newAddress.state || null,
       pincode: newAddress.pincode || null,
       is_default: addresses.length === 0,
-    }).select().single();
+    } as any).select().single() as any);
 
     if (error) { toast.error("Failed to add address"); return; }
-    setAddresses((prev) => [...prev, data as Address]);
+    setAddresses((prev) => [...prev, data as unknown as Address]);
     setNewAddress({ label: "Home", address: "", city: "", state: "", pincode: "" });
     setShowAddAddress(false);
     toast.success("Address added!");

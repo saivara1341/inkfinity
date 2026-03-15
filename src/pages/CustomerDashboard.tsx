@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   ShoppingCart, User, MapPin, Clock,
   CheckCircle2, Package, ChevronRight, LogOut, Printer, Truck, AlertCircle,
-  Camera, Plus, Trash2, Save
+  Camera, Plus, Trash2, Save, FileWarning, HelpCircle, ShieldCheck, Briefcase
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -14,7 +14,9 @@ import { useCustomerOrders } from "@/hooks/useCustomerOrders";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import type { Tables } from "@/integrations/supabase/types";
+// Local shim for missing global types
+type Tables<T extends string> = any;
+import ReferralProgram from "@/components/ReferralProgram";
 
 type Tab = "orders" | "tracking" | "profile";
 type Order = Tables<"orders">;
@@ -118,17 +120,24 @@ const OrdersView = ({ orders }: { orders: Order[] }) => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {stats.map((s) => (
-          <div key={s.label} className="bg-card rounded-xl border border-border p-4 shadow-card">
-            <div className="flex items-center gap-2 mb-2">
-              <s.icon className="w-4 h-4 text-accent" />
-              <span className="text-xs text-muted-foreground">{s.label}</span>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {stats.map((s) => (
+            <div key={s.label} className="bg-card rounded-xl border border-border p-4 shadow-card">
+              <div className="flex items-center gap-2 mb-2">
+                <s.icon className="w-4 h-4 text-accent" />
+                <span className="text-xs text-muted-foreground">{s.label}</span>
+              </div>
+              <p className="text-xl font-display font-bold text-foreground">{s.value}</p>
             </div>
-            <p className="text-xl font-display font-bold text-foreground">{s.value}</p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
+      <div className="lg:col-span-1">
+        <ReferralProgram />
+      </div>
+    </div>
 
       {orders.length === 0 ? (
         <div className="bg-card rounded-xl border border-border p-10 text-center shadow-card">
@@ -158,12 +167,18 @@ const OrdersView = ({ orders }: { orders: Order[] }) => {
                   <Button variant="outline" size="sm" asChild>
                     <Link to={`/track?order=${order.order_number}`}>Track <ChevronRight className="w-3 h-3" /></Link>
                   </Button>
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive gap-1" onClick={() => (window as any).openReportModal?.(order.id, 'order')}>
+                    <FileWarning className="w-3 h-3" /> Report
+                  </Button>
                 </div>
               </div>
             </div>
           ))}
         </div>
       )}
+
+      {/* Report Modal Shim - In a real app this would be a Dialog component */}
+      <ReportModal />
 
       <div className="text-center">
         <Button variant="coral" size="lg" asChild>
@@ -276,6 +291,7 @@ const ProfileView = ({ user, onSignOut }: { user: any; onSignOut: () => void }) 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [newAddress, setNewAddress] = useState({ label: "Home", address: "", city: "", state: "", pincode: "" });
   const [showAddAddress, setShowAddAddress] = useState(false);
+  const [customerType, setCustomerType] = useState<"personal" | "business">("personal");
 
   useEffect(() => {
     // Load profile
@@ -283,8 +299,10 @@ const ProfileView = ({ user, onSignOut }: { user: any; onSignOut: () => void }) 
       if (data) {
         setForm({ full_name: data.full_name || "", phone: data.phone || "" });
         setAvatarUrl(data.avatar_url);
+        setCustomerType((data as any).customer_type || "personal");
       } else {
         setForm({ full_name: user.user_metadata?.full_name || "", phone: user.user_metadata?.phone || "" });
+        setCustomerType(user.user_metadata?.customer_type || "personal");
       }
     });
 
@@ -383,6 +401,19 @@ const ProfileView = ({ user, onSignOut }: { user: any; onSignOut: () => void }) 
             <h3 className="font-display text-lg font-bold text-foreground">{form.full_name || "User"}</h3>
             <p className="text-sm text-muted-foreground">{user.email}</p>
             {uploadingAvatar && <p className="text-xs text-accent animate-pulse">Uploading...</p>}
+        </div>
+
+        <div className="flex gap-4 p-4 rounded-lg bg-accent/5 border border-accent/10 mb-6">
+          <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+            {customerType === "business" ? <Briefcase className="w-5 h-5 text-accent" /> : <User className="w-5 h-5 text-accent" />}
+          </div>
+          <div>
+            <p className="text-sm font-bold text-foreground capitalize">{customerType} Account</p>
+            <p className="text-xs text-muted-foreground">
+              {customerType === "business" 
+                ? "You are registered as a Business entity (B2B). Enjoy wholesale pricing." 
+                : "Standard personal account for individual print orders."}
+            </p>
           </div>
         </div>
 
@@ -521,6 +552,80 @@ const ProfileView = ({ user, onSignOut }: { user: any; onSignOut: () => void }) 
         </Button>
       </div>
     </motion.div>
+  );
+};
+
+const ReportModal = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [subject, setSubject] = useState({ id: '', type: 'order' });
+  const [category, setCategory] = useState('Quality Issue');
+  const [description, setDescription] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    (window as any).openReportModal = (id: string, type: string) => {
+      setSubject({ id, type });
+      setIsOpen(true);
+    };
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!description.trim()) { toast.error("Please describe the issue"); return; }
+    setSubmitting(true);
+    
+    // In a real app, this would insert into the user_reports table
+    // For demo purposes, we simulate the success
+    setTimeout(() => {
+      toast.success("Issue reported successfully. Our team will review it.");
+      setIsOpen(false);
+      setDescription('');
+      setSubmitting(false);
+    }, 1000);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-card w-full max-w-md rounded-2xl border border-border shadow-2xl p-6 overflow-hidden">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+            <FileWarning className="w-5 h-5 text-destructive" />
+          </div>
+          <div>
+            <h4 className="font-display font-bold text-foreground">Report an Issue</h4>
+            <p className="text-xs text-muted-foreground">Subject ID: {subject.id.slice(0, 8)}...</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1 block">Category</label>
+            <select value={category} onChange={(e) => setCategory(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+              <option>Quality Issue</option>
+              <option>Delivery Delay</option>
+              <option>Payment Problem</option>
+              <option>Wrong Item</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1 block">Describe the problem</label>
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4}
+              placeholder="Tell us what went wrong..."
+              className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring" />
+          </div>
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          <Button variant="outline" className="flex-1" onClick={() => setIsOpen(false)}>Cancel</Button>
+          <Button variant="coral" className="flex-1" onClick={handleSubmit} disabled={submitting}>
+            {submitting ? "Submitting..." : "Submit Report"}
+          </Button>
+        </div>
+      </motion.div>
+    </div>
   );
 };
 

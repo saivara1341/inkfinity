@@ -20,6 +20,7 @@ const Signup = () => {
   const [formData, setFormData] = useState({
     name: "", phone: "", email: "", password: "",
     shopName: "", shopAddress: "", city: "", state: "", pincode: "", gstNumber: "",
+    customerType: "personal" as "personal" | "business",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -32,7 +33,10 @@ const Signup = () => {
       return;
     }
     setLoading(true);
-    const { error } = await signUp(formData.email, formData.password, { full_name: formData.name });
+    const { error } = await signUp(formData.email, formData.password, { 
+      full_name: formData.name,
+      customer_type: formData.customerType 
+    });
     if (error) {
       toast({ title: "Signup failed", description: error.message, variant: "destructive" });
       setLoading(false);
@@ -137,8 +141,38 @@ const Signup = () => {
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Password</label>
                 <input type="password" name="password" placeholder="Min. 8 characters" value={formData.password} onChange={handleChange}
-                  className="w-full px-4 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-              </div>
+                   className="w-full px-4 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+               </div>
+               {userType === "customer" && (
+                 <div>
+                   <label className="text-sm font-medium text-foreground mb-1.5 block">Account Type</label>
+                   <div className="grid grid-cols-2 gap-3 pb-2">
+                     <button
+                       type="button"
+                       onClick={() => setFormData({ ...formData, customerType: "personal" })}
+                       className={`px-3 py-2 rounded-lg border text-sm transition-all ${
+                         formData.customerType === "personal" ? "border-accent bg-accent/5 text-accent" : "border-border text-muted-foreground hover:border-accent/50"
+                       }`}
+                     >
+                       Personal (Direct)
+                     </button>
+                     <button
+                       type="button"
+                       onClick={() => setFormData({ ...formData, customerType: "business" })}
+                       className={`px-3 py-2 rounded-lg border text-sm transition-all ${
+                         formData.customerType === "business" ? "border-accent bg-accent/5 text-accent" : "border-border text-muted-foreground hover:border-accent/50"
+                       }`}
+                     >
+                       Business (B2B)
+                     </button>
+                   </div>
+                   <p className="text-[11px] text-muted-foreground italic">
+                     {formData.customerType === "business" 
+                       ? "Business accounts get specialized pricing and tax invoices." 
+                       : "Personal accounts for individual printing needs."}
+                   </p>
+                 </div>
+               )}
               {userType === "customer" ? (
                 <Button variant="coral" size="lg" className="w-full gap-2" onClick={handleSignup} disabled={loading}>
                   {loading ? "Creating..." : "Create Account"} <ArrowRight className="w-4 h-4" />

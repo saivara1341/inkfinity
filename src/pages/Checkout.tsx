@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import {
   MapPin, Truck, Store, CreditCard, IndianRupee,
   ChevronRight, Check, Edit2, Plus, Bike, Package,
-  Smartphone, Building2, Star, Zap, ThumbsUp, Crown
+  Smartphone, Building2, Star, Zap, ThumbsUp, Crown, AlertTriangle,
+  Info
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/hooks/useCart";
@@ -35,9 +36,46 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("upi");
   const [shippingMethod, setShippingMethod] = useState<"home_delivery" | "shop_pickup">("home_delivery");
   const [orderProcessing, setOrderProcessing] = useState(false);
+  const [shops, setShops] = useState<any[]>([]);
+  const [loadingShops, setLoadingShops] = useState(true);
+  const [waivedQA, setWaivedQA] = useState(false);
+  const [qaWarnings, setQaWarnings] = useState<string[]>([]);
 
   useEffect(() => {
     if (!user) navigate("/login");
+    
+    // Fetch real shops
+    const fetchShops = async () => {
+      setLoadingShops(true);
+      const { data } = await supabase
+        .from("shops")
+        .select("*")
+        .eq("is_active", true);
+      
+      if (data) {
+        // Mock distance and badges for live shops
+        const enriched = data.map(s => ({
+          ...s,
+          distance: (Math.random() * 5 + 0.5).toFixed(1) + " km",
+          priceMultiplier: 1.0,
+          badges: s.rating >= 4.5 ? ["Highly Rated", "Premium"] : ["Verified"],
+          icon: Zap,
+          preferred: s.rating >= 4.7
+        }));
+        setShops(enriched);
+      }
+      setLoadingShops(false);
+    };
+
+    const saved = sessionStorage.getItem("customize_product");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.qaWarnings) setQaWarnings(parsed.qaWarnings);
+      } catch (e) {}
+    }
+
+    fetchShops();
   }, [user]);
 
   if (!user) return null;
@@ -64,9 +102,27 @@ const Checkout = () => {
     { id: "shop-1", name: "Quick Print Hub", rating: 4.8, distance: "1.2 km", price: 0.95, badges: ["Fastest", "Highly Rated"], icon: Zap, preferred: true },
     { id: "shop-2", name: "Inkfinity Pro Shop", rating: 4.6, distance: "2.5 km", price: 0.85, badges: ["Best Value"], icon: IndianRupee, preferred: true },
     { id: "shop-3", name: "Elite Printing Solutions", rating: 4.9, distance: "3.8 km", price: 1.1, badges: ["Premium Quality"], icon: ThumbsUp, preferred: false },
+    { id: "shop-4", name: "Metro Prints", rating: 4.2, distance: "0.5 km", price: 1.0, badges: ["Local Choice"], icon: Zap, preferred: false },
   ];
 
-  const [selectedShopId, setSelectedShopId] = useState("shop-1");
+  const [selectedShopId, setSelectedShopId] = useState(() => {
+    const saved = sessionStorage.getItem("customize_product");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.shopId) return parsed.shopId;
+      } catch (e) {}
+    }
+    return "";
+  });
+
+  // Default to first preferred shop if none selected
+  useEffect(() => {
+    if (!selectedShopId && shops.length > 0) {
+      const preferred = shops.find(s => s.preferred) || shops[0];
+      setSelectedShopId(preferred.id);
+    }
+  }, [shops, selectedShopId]);
 
   const fullAddress = `${addressForm.address}, ${addressForm.city} - ${addressForm.pincode}`;
 
@@ -97,7 +153,7 @@ const Checkout = () => {
       return supabase.from("orders").insert({
         order_number: itemOrderNumber,
         customer_id: user.id,
-        shop_id: item.shop_id,
+        shop_id: item.shop_id || selectedShopId,
         product_name: product?.name || "Product",
         product_category: product?.category || "Other",
         quantity: item.quantity,
@@ -313,65 +369,71 @@ const Checkout = () => {
                         <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
                           <Store className="w-5 h-5 text-accent" /> Smart Shop Selection
                         </h2>
-                        <span className="text-xs bg-accent/10 text-accent px-2 py-1 rounded-full font-medium">AI Matched</span>
+                        <span className="text-xs bg-accent/10 text-accent px-2 py-1 rounded-full font-medium">Live Marketplace</span>
                       </div>
                     <div className="space-y-3">
-                        {availableShops
-                          .sort((a, b) => Number(b.preferred) - Number(a.preferred))
-                          .map((shop) => (
-                          <button
-                            key={shop.id}
-                            onClick={() => setSelectedShopId(shop.id)}
-                            className={`w-full p-4 rounded-xl border-2 text-left transition-all relative overflow-hidden ${
-                              selectedShopId === shop.id ? "border-accent bg-accent/5 ring-1 ring-accent/20" : "border-border hover:border-accent/40"
-                            } ${shop.preferred ? "bg-gradient-to-r from-accent/5 to-transparent" : ""}`}
-                          >
-                            {shop.preferred && (
-                              <div className="absolute top-0 right-0">
-                                <div className="bg-accent text-accent-foreground text-[8px] font-bold uppercase tracking-wider px-6 py-1 rotate-45 translate-x-3 -translate-y-1 shadow-sm">
-                                  Preferred
-                                </div>
-                              </div>
-                            )}
-                            <div className="flex items-start justify-between">
-                              <div className="flex gap-4">
-                                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                                  selectedShopId === shop.id ? "bg-accent/20" : "bg-secondary"
-                                }`}>
-                                  <shop.icon className={`w-6 h-6 ${selectedShopId === shop.id ? "text-accent" : "text-muted-foreground"}`} />
-                                </div>
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <p className="font-semibold text-foreground flex items-center gap-1.5">
-                                      {shop.name}
-                                      {shop.preferred && <Crown className="w-3 h-3 text-accent fill-accent" />}
-                                    </p>
-                                    <span className="flex items-center gap-0.5 text-xs text-yellow-500 font-bold bg-yellow-500/10 px-1.5 py-0.5 rounded">
-                                      <Star className="w-3 h-3 fill-current" /> {shop.rating}
-                                    </span>
+                        {loadingShops ? (
+                          <div className="p-10 text-center animate-pulse text-muted-foreground">Searching closest print labs...</div>
+                        ) : shops.length === 0 ? (
+                          <div className="p-10 text-center text-muted-foreground">No shops available in your area.</div>
+                        ) : (
+                          shops
+                            .sort((a, b) => Number(b.preferred) - Number(a.preferred))
+                            .map((shop) => (
+                            <button
+                              key={shop.id}
+                              onClick={() => setSelectedShopId(shop.id)}
+                              className={`w-full p-4 rounded-xl border-2 text-left transition-all relative overflow-hidden ${
+                                selectedShopId === shop.id ? "border-accent bg-accent/5 ring-1 ring-accent/20" : "border-border hover:border-accent/40"
+                              } ${shop.preferred ? "bg-gradient-to-r from-accent/5 to-transparent" : ""}`}
+                            >
+                              {shop.preferred && (
+                                <div className="absolute top-0 right-0">
+                                  <div className="bg-accent text-accent-foreground text-[8px] font-bold uppercase tracking-wider px-6 py-1 rotate-45 translate-x-3 -translate-y-1 shadow-sm">
+                                    Preferred
                                   </div>
-                                  <p className="text-xs text-muted-foreground mt-1">{shop.distance} away • Standard pricing ×{shop.price}</p>
-                                  <div className="flex gap-1.5 mt-2">
-                                    {shop.badges.map(badge => (
-                                      <span key={badge} className={`text-[10px] px-2 py-0.5 rounded-full border ${
-                                        badge === "Fastest" ? "bg-blue-500/10 text-blue-500 border-blue-500/20" :
-                                        badge === "Best Value" ? "bg-green-500/10 text-green-500 border-green-500/20" :
-                                        "bg-purple-500/10 text-purple-500 border-purple-500/20"
-                                      }`}>
-                                        {badge}
+                                </div>
+                              )}
+                              <div className="flex items-start justify-between">
+                                <div className="flex gap-4">
+                                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                                    selectedShopId === shop.id ? "bg-accent/20" : "bg-secondary"
+                                  }`}>
+                                    <shop.icon className={`w-6 h-6 ${selectedShopId === shop.id ? "text-accent" : "text-muted-foreground"}`} />
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <p className="font-semibold text-foreground flex items-center gap-1.5">
+                                        {shop.name}
+                                        {shop.preferred && <Crown className="w-3 h-3 text-accent fill-accent" />}
+                                      </p>
+                                      <span className="flex items-center gap-0.5 text-xs text-yellow-500 font-bold bg-yellow-500/10 px-1.5 py-0.5 rounded">
+                                        <Star className="w-3 h-3 fill-current" /> {shop.rating}
                                       </span>
-                                    ))}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-1">{shop.distance} away • {shop.address}, {shop.city}</p>
+                                    <div className="flex gap-1.5 mt-2">
+                                      {shop.badges.map(badge => (
+                                        <span key={badge} className={`text-[10px] px-2 py-0.5 rounded-full border ${
+                                          badge === "Fastest" || badge === "Highly Rated" ? "bg-blue-500/10 text-blue-500 border-blue-500/20" :
+                                          badge === "Best Value" ? "bg-green-500/10 text-green-500 border-green-500/20" :
+                                          "bg-purple-500/10 text-purple-500 border-purple-500/20"
+                                        }`}>
+                                          {badge}
+                                        </span>
+                                      ))}
+                                    </div>
                                   </div>
                                 </div>
+                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                                  selectedShopId === shop.id ? "border-accent bg-accent text-accent-foreground" : "border-muted"
+                                }`}>
+                                  {selectedShopId === shop.id && <Check className="w-3.5 h-3.5" />}
+                                </div>
                               </div>
-                              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-                                selectedShopId === shop.id ? "border-accent bg-accent text-accent-foreground" : "border-muted"
-                              }`}>
-                                {selectedShopId === shop.id && <Check className="w-3.5 h-3.5" />}
-                              </div>
-                            </div>
-                          </button>
-                        ))}
+                            </button>
+                          ))
+                        )}
                       </div>
                     </div>
 
@@ -466,9 +528,36 @@ const Checkout = () => {
                       </div>
                     )}
 
+                    {qaWarnings.length > 0 && (
+                      <div className="p-4 bg-amber-50 rounded-lg border border-amber-200 mb-6">
+                        <div className="flex items-start gap-3">
+                          <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-bold text-amber-800">Design Quality Warning</p>
+                            <p className="text-xs text-amber-700 mt-1">Our AI detected potential issues with your design (low DPI or color mismatch). This may affect print quality.</p>
+                            <label className="flex items-center gap-2 mt-3 cursor-pointer">
+                              <input 
+                                type="checkbox" 
+                                checked={waivedQA} 
+                                onChange={(e) => setWaivedQA(e.target.checked)}
+                                className="w-4 h-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500" 
+                              />
+                              <span className="text-[10px] font-medium text-amber-800">I acknowledge the quality warnings and want to proceed anyway.</span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex gap-3">
                       <Button variant="outline" size="lg" onClick={() => setStep("delivery")}>Back</Button>
-                      <Button variant="coral" size="lg" className="flex-1 gap-2" onClick={handlePlaceOrder} disabled={placing}>
+                      <Button 
+                        variant="coral" 
+                        size="lg" 
+                        className="flex-1 gap-2" 
+                        onClick={handlePlaceOrder} 
+                        disabled={placing || (qaWarnings.length > 0 && !waivedQA)}
+                      >
                         {placing ? "Placing Order..." : `Pay ₹${grandTotal.toLocaleString("en-IN")}`} <ChevronRight className="w-4 h-4" />
                       </Button>
                     </div>

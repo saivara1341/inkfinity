@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { TrendingUp, IndianRupee, ShoppingCart, Users, Repeat } from "lucide-react";
+import { TrendingUp, IndianRupee, ShoppingCart, Users, CheckCircle2, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 import { subDays, format, startOfDay, isAfter } from "date-fns";
 
@@ -15,7 +15,22 @@ export const ShopAnalytics = ({ orders }: Props) => {
   const sevenDaysAgo = subDays(now, 7);
 
   const monthOrders = orders.filter((o) => isAfter(new Date(o.created_at), thirtyDaysAgo));
+  const prevMonthOrders = orders.filter((o) => {
+    const d = new Date(o.created_at);
+    return d <= thirtyDaysAgo && d >= subDays(thirtyDaysAgo, 30);
+  });
+
   const monthRevenue = monthOrders.reduce((sum, o) => sum + Number(o.grand_total), 0);
+  const prevMonthRevenue = prevMonthOrders.reduce((sum, o) => sum + Number(o.grand_total), 0);
+  
+  const revenueGrowth = prevMonthRevenue > 0 
+    ? ((monthRevenue - prevMonthRevenue) / prevMonthRevenue) * 100 
+    : 100;
+
+  const fulfillmentRate = monthOrders.length > 0 
+    ? (monthOrders.filter(o => o.status === 'delivered').length / monthOrders.length) * 100 
+    : 0;
+
   const avgOrderValue = monthOrders.length > 0 ? monthRevenue / monthOrders.length : 0;
   const uniqueCustomers = new Set(monthOrders.map((o) => o.customer_id).filter(Boolean)).size;
 
@@ -52,8 +67,19 @@ export const ShopAnalytics = ({ orders }: Props) => {
     }));
 
   const stats = [
-    { label: "Monthly Orders", value: monthOrders.length.toString(), icon: ShoppingCart },
-    { label: "Monthly Revenue", value: `₹${monthRevenue.toLocaleString("en-IN")}`, icon: IndianRupee },
+    { 
+      label: "Monthly Revenue", 
+      value: `₹${monthRevenue.toLocaleString("en-IN")}`, 
+      icon: IndianRupee,
+      trend: revenueGrowth.toFixed(1) + "%",
+      trendUp: revenueGrowth >= 0
+    },
+    { 
+      label: "Fulfillment Rate", 
+      value: fulfillmentRate.toFixed(1) + "%", 
+      icon: CheckCircle2,
+      subtitle: `${monthOrders.filter(o => o.status === 'delivered').length} delivered`
+    },
     { label: "Avg Order Value", value: `₹${Math.round(avgOrderValue).toLocaleString("en-IN")}`, icon: TrendingUp },
     { label: "Unique Customers", value: uniqueCustomers.toString(), icon: Users },
   ];
@@ -62,12 +88,21 @@ export const ShopAnalytics = ({ orders }: Props) => {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="bg-card rounded-xl border border-border p-5 shadow-card">
+          <div key={stat.label} className="bg-card rounded-xl border border-border p-5 shadow-card hover:border-accent/30 transition-colors">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-muted-foreground">{stat.label}</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</p>
               <stat.icon className="w-4 h-4 text-accent" />
             </div>
-            <p className="text-2xl font-display font-bold text-foreground">{stat.value}</p>
+            <div className="flex items-end gap-2">
+              <p className="text-2xl font-display font-bold text-foreground">{stat.value}</p>
+              {stat.trend && (
+                <span className={`text-xs font-bold flex items-center mb-1 ${stat.trendUp ? 'text-success' : 'text-destructive'}`}>
+                  {stat.trendUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                  {stat.trend}
+                </span>
+              )}
+            </div>
+            {stat.subtitle && <p className="text-[10px] text-muted-foreground mt-1">{stat.subtitle}</p>}
           </div>
         ))}
       </div>

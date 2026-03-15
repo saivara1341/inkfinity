@@ -1,7 +1,8 @@
 import { Suspense, useRef, useMemo, useLayoutEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, RoundedBox, Text, Environment, useTexture } from "@react-three/drei";
+import { OrbitControls, RoundedBox, Text, Environment, useTexture, AdaptiveDpr, AdaptiveEvents } from "@react-three/drei";
 import * as THREE from "three";
+import { memo } from "react";
 
 interface ProductPreview3DProps {
   productType: "card" | "banner" | "sticker" | "brochure" | "idcard" | "poster" | "pamphlet" | "weddingcard";
@@ -12,10 +13,8 @@ interface ProductPreview3DProps {
   finishId?: string;
 }
 
-const TextureFace = ({ 
+const TextureFace = memo(({ 
   url, 
-  width, 
-  height, 
   roughness, 
   metalness 
 }: { 
@@ -29,7 +28,7 @@ const TextureFace = ({
   
   useLayoutEffect(() => {
     if (texture) {
-      texture.anisotropy = 16;
+      texture.anisotropy = 4; // Reduced from 16 for better perf on low-end
       texture.needsUpdate = true;
     }
   }, [texture]);
@@ -42,7 +41,9 @@ const TextureFace = ({
       transparent 
     />
   );
-};
+});
+
+TextureFace.displayName = "TextureFace";
 
 const CardMesh = ({ 
   width, 
@@ -96,7 +97,7 @@ const CardMesh = ({
   return (
     <group ref={meshRef}>
       {/* Card body */}
-      <RoundedBox args={[scaleW, scaleH, thickness]} radius={0.03} smoothness={4}>
+      <RoundedBox args={[scaleW, scaleH, thickness]} radius={0.03} smoothness={2}>
         <meshStandardMaterial 
           {...materialProps}
           color={materialProps.color || "#ffffff"}
@@ -297,10 +298,17 @@ const BrochureMesh = ({ width, height, imageUrl }: { width: number; height: numb
 const ProductPreview3D = ({ productType, width, height, imageUrl, label, finishId }: ProductPreview3DProps) => {
   return (
     <div className="w-full h-64 md:h-80 rounded-xl overflow-hidden bg-gradient-to-b from-secondary/50 to-background border border-border">
-      <Canvas camera={{ position: [0, 0, 6], fov: 45 }} shadows>
+      <Canvas 
+        camera={{ position: [0, 0, 6], fov: 45 }} 
+        shadows 
+        dpr={[1, 2]} // Performance optimization: limit resolution to 2x max
+        gl={{ antialias: true, stencil: false, powerPreference: "high-performance" }}
+      >
         <Suspense fallback={null}>
+          <AdaptiveDpr pixelated />
+          <AdaptiveEvents />
           <ambientLight intensity={0.7} />
-          <directionalLight position={[5, 10, 5]} intensity={1.2} castShadow />
+          <directionalLight position={[5, 10, 5]} intensity={1.2} />
           <pointLight position={[-3, 2, 4]} intensity={0.5} color="#ff6b4a" />
           
           {productType === "banner" ? (

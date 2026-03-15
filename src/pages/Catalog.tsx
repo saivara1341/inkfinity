@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { 
   Search, ContactRound, FileText, GalleryVerticalEnd, RectangleHorizontal, 
   Sticker, IdCard, Paintbrush, BookOpen, Smartphone, Heart, Mail, Package, 
-  Award, Shirt, BookText, Star, ChevronRight, IndianRupee, Clock, Filter
+  Award, Shirt, BookText, Star, ChevronRight, IndianRupee, Clock, Filter, MapPin, Zap, ThumbsUp
 } from "lucide-react";
 import { type LucideIcon } from "lucide-react";
 import { productCategories, getAllSubcategories, type ProductCategory } from "@/data/printingProducts";
+import { useShopSelection, type ShopProvider } from "@/hooks/useShopSelection";
 
 const iconMap: Record<string, LucideIcon> = {
   ContactRound, FileText, GalleryVerticalEnd, RectangleHorizontal,
@@ -23,6 +24,9 @@ const Catalog = () => {
   const [activeCategory, setActiveCategory] = useState(category || "all");
   const [search, setSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<"products" | "shops">("products");
+
+  const { shops, loading: shopsLoading } = useShopSelection(activeCategory);
 
   const allProducts = getAllSubcategories();
 
@@ -116,14 +120,31 @@ const Catalog = () => {
                 if (!cat) return null;
                 const Icon = iconMap[cat.icon] || Paintbrush;
                 return (
-                  <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                      <Icon className="w-7 h-7 text-accent" />
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                        <Icon className="w-7 h-7 text-accent" />
+                      </div>
+                      <div>
+                        <h2 className="font-display text-2xl font-bold text-foreground">{cat.name}</h2>
+                        <p className="text-muted-foreground mt-1">{cat.description}</p>
+                        <p className="text-sm text-accent mt-2 font-medium">{filtered.length} products available</p>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="font-display text-2xl font-bold text-foreground">{cat.name}</h2>
-                      <p className="text-muted-foreground mt-1">{cat.description}</p>
-                      <p className="text-sm text-accent mt-2 font-medium">{filtered.length} products available</p>
+                    
+                    <div className="flex bg-secondary/50 p-1 rounded-lg self-start md:self-center">
+                      <button 
+                        onClick={() => setViewMode("products")}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${viewMode === "products" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                      >
+                        Products
+                      </button>
+                      <button 
+                        onClick={() => setViewMode("shops")}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${viewMode === "shops" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                      >
+                        Shop Owners
+                      </button>
                     </div>
                   </div>
                 );
@@ -137,71 +158,146 @@ const Catalog = () => {
             {search && ` for "${search}"`}
           </p>
 
-          {/* Product Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            <AnimatePresence mode="popLayout">
-              {filtered.map((product, i) => {
-                const Icon = iconMap[productCategories.find(c => c.id === product.categoryId)?.icon || ""] || Paintbrush;
-                return (
-                  <motion.div
-                    key={product.id}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ delay: i * 0.02 }}
-                    layout
-                  >
-                    <Link
-                      to={`/customize/${product.id}`}
-                      className="block bg-card rounded-xl border border-border p-5 shadow-card hover:shadow-elevated hover:border-accent/30 transition-all group h-full"
+          {/* Main Grid: Products or Shops */}
+          {viewMode === "products" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              <AnimatePresence mode="popLayout">
+                {filtered.map((product, i) => {
+                  const Icon = iconMap[productCategories.find(c => c.id === product.categoryId)?.icon || ""] || Paintbrush;
+                  return (
+                    <motion.div
+                      key={product.id}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ delay: i * 0.02 }}
+                      layout
                     >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
-                          <Icon className="w-6 h-6 text-accent" />
+                      <Link
+                        to={`/customize/${product.id}`}
+                        className="block bg-card rounded-xl border border-border p-5 shadow-card hover:shadow-elevated hover:border-accent/30 transition-all group h-full"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+                            <Icon className="w-6 h-6 text-accent" />
+                          </div>
+                          {product.popular && (
+                            <span className="flex items-center gap-1 text-xs font-medium bg-warning/10 text-warning px-2 py-0.5 rounded-full">
+                              <Star className="w-3 h-3" /> Popular
+                            </span>
+                          )}
                         </div>
-                        {product.popular && (
-                          <span className="flex items-center gap-1 text-xs font-medium bg-warning/10 text-warning px-2 py-0.5 rounded-full">
-                            <Star className="w-3 h-3" /> Popular
-                          </span>
+
+                        <p className="text-xs text-accent font-medium mb-1">{product.categoryName}</p>
+                        <h3 className="font-display font-semibold text-foreground mb-1 group-hover:text-accent transition-colors">
+                          {product.name}
+                        </h3>
+                        <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{product.description}</p>
+
+                        <div className="flex items-baseline gap-1 mb-3">
+                          <span className="text-lg font-bold text-foreground">{product.startingPrice}</span>
+                          {product.unit && <span className="text-xs text-muted-foreground">{product.unit}</span>}
+                        </div>
+
+                        <div className="space-y-1.5 text-xs text-muted-foreground mb-4">
+                          <div className="flex items-center gap-1">
+                            <span className="font-medium text-foreground/70">Sizes:</span> 
+                            {product.sizes.length} options
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="font-medium text-foreground/70">Papers:</span> 
+                            {product.papers.length} types
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="w-3 h-3" /> 
+                            {product.turnaroundDays} business days
+                          </div>
+                          <div>Min qty: {product.minQty}</div>
+                        </div>
+
+                        <Button variant="coral" size="sm" className="w-full gap-1">
+                          Customize & Order <ChevronRight className="w-3 h-3" />
+                        </Button>
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              <AnimatePresence mode="popLayout">
+                {shops.map((shop, i) => {
+                  const ShopIcon = shop.icon === "zap" ? Zap : shop.icon === "rupee" ? IndianRupee : ThumbsUp;
+                  return (
+                    <motion.div
+                      key={shop.id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: i * 0.05 }}
+                    >
+                      <Link
+                        to={`/customize/${activeCategory}?shopId=${shop.id}`}
+                        className="block bg-card rounded-xl border border-border p-6 shadow-card hover:shadow-elevated hover:border-accent/30 transition-all group relative overflow-hidden"
+                      >
+                        {shop.badges.includes("Highly Rated") && (
+                          <div className="absolute top-0 right-0">
+                            <div className="bg-accent text-accent-foreground text-[8px] font-bold uppercase tracking-wider px-6 py-1 rotate-45 translate-x-3 -translate-y-1 shadow-sm">
+                              Highly Rated
+                            </div>
+                          </div>
                         )}
-                      </div>
-
-                      <p className="text-xs text-accent font-medium mb-1">{product.categoryName}</p>
-                      <h3 className="font-display font-semibold text-foreground mb-1 group-hover:text-accent transition-colors">
-                        {product.name}
-                      </h3>
-                      <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{product.description}</p>
-
-                      <div className="flex items-baseline gap-1 mb-3">
-                        <span className="text-lg font-bold text-foreground">{product.startingPrice}</span>
-                        {product.unit && <span className="text-xs text-muted-foreground">{product.unit}</span>}
-                      </div>
-
-                      <div className="space-y-1.5 text-xs text-muted-foreground mb-4">
-                        <div className="flex items-center gap-1">
-                          <span className="font-medium text-foreground/70">Sizes:</span> 
-                          {product.sizes.length} options
+                        <div className="flex items-start gap-4 mb-4">
+                          <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent/20 transition-colors">
+                            <ShopIcon className="w-7 h-7 text-accent" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-display font-bold text-foreground group-hover:text-accent transition-colors">{shop.name}</h3>
+                              <span className="flex items-center gap-0.5 text-xs text-yellow-500 font-bold bg-yellow-500/10 px-1.5 py-0.5 rounded">
+                                <Star className="w-3 h-3 fill-current" /> {shop.rating}
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                              <MapPin className="w-3 h-3" /> {shop.distance} from you
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <span className="font-medium text-foreground/70">Papers:</span> 
-                          {product.papers.length} types
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Clock className="w-3 h-3" /> 
-                          {product.turnaroundDays} business days
-                        </div>
-                        <div>Min qty: {product.minQty}</div>
-                      </div>
 
-                      <Button variant="coral" size="sm" className="w-full gap-1">
-                        Customize & Order <ChevronRight className="w-3 h-3" />
-                      </Button>
-                    </Link>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          </div>
+                        <div className="flex items-center justify-between py-3 border-y border-border mb-4">
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Starting From</p>
+                            <p className="text-xl font-display font-bold text-foreground flex items-center gap-0.5">
+                              <IndianRupee className="w-4 h-4" />{shop.baseCost}
+                              <span className="text-[10px] text-muted-foreground font-normal ml-1">/ unit</span>
+                            </p>
+                          </div>
+                          <div className="text-right">
+                             <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Fastest Delivery</p>
+                             <p className="text-sm font-medium text-foreground flex items-center gap-1.5 justify-end">
+                               <Clock className="w-3.5 h-3.5 text-accent" /> 2 Days
+                             </p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-1.5 mb-5">
+                          {shop.badges.map(badge => (
+                            <span key={badge} className="text-[10px] px-2 py-0.5 rounded-full border border-border bg-secondary/50 text-muted-foreground font-medium">
+                              {badge}
+                            </span>
+                          ))}
+                        </div>
+
+                        <Button variant="coral" size="sm" className="w-full gap-1">
+                          Select Shop <ChevronRight className="w-3 h-3" />
+                        </Button>
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+          )}
 
           {filtered.length === 0 && (
             <div className="text-center py-20">

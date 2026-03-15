@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Pencil, Trash2, Package, IndianRupee, Clock, ToggleLeft, ToggleRight, X, ImagePlus } from "lucide-react";
+import { Plus, Pencil, Trash2, Package, IndianRupee, Clock, ToggleLeft, ToggleRight, X, ImagePlus, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +45,7 @@ const emptyForm = {
   is_active: true,
   imageFile: null as File | null,
   imagePreview: "",
+  price_tiers: [{ min: 1, price_per_unit: 0 }] as { min: number; price_per_unit: number }[],
 };
 
 export const ShopProducts = ({ shop }: Props) => {
@@ -85,6 +86,7 @@ export const ShopProducts = ({ shop }: Props) => {
       is_active: product.is_active,
       imageFile: null,
       imagePreview: product.images?.[0] || "",
+      price_tiers: (product.specifications as any)?.price_tiers || [{ min: 1, price_per_unit: product.base_price }],
     });
     setShowForm(true);
   };
@@ -147,6 +149,10 @@ export const ShopProducts = ({ shop }: Props) => {
       turnaround_days: form.turnaround_days,
       is_active: form.is_active,
       images,
+      specifications: {
+        ...((editingId ? products.find(p => p.id === editingId)?.specifications : {}) as any),
+        price_tiers: form.price_tiers
+      }
     };
 
     if (editingId) {
@@ -300,6 +306,72 @@ export const ShopProducts = ({ shop }: Props) => {
                 </label>
               </div>
             </div>
+            <div className="bg-secondary/20 rounded-xl p-4 border border-dashed border-border">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <IndianRupee className="w-4 h-4" /> Bulk Pricing Tiers
+                </h4>
+                <Button size="sm" variant="ghost" onClick={() => setForm({
+                  ...form,
+                  price_tiers: [...form.price_tiers, { min: form.price_tiers[form.price_tiers.length-1].min * 10, price_per_unit: form.price_tiers[form.price_tiers.length-1].price_per_unit * 0.9 }]
+                })}>
+                  + Add Tier
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {form.price_tiers.map((tier, i) => (
+                  <div key={i} className="flex gap-3 items-center">
+                    <div className="flex-1">
+                      <label className="text-[10px] text-muted-foreground uppercase">Min Qty</label>
+                      <input
+                        type="number"
+                        value={tier.min}
+                        onChange={(e) => {
+                          const newTiers = [...form.price_tiers];
+                          newTiers[i].min = parseInt(e.target.value) || 0;
+                          setForm({ ...form, price_tiers: newTiers });
+                        }}
+                        className="w-full bg-background border border-input rounded p-1 text-xs"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-[10px] text-muted-foreground uppercase">Price / Unit</label>
+                      <input
+                        type="number"
+                        value={tier.price_per_unit}
+                        onChange={(e) => {
+                          const newTiers = [...form.price_tiers];
+                          newTiers[i].price_per_unit = parseFloat(e.target.value) || 0;
+                          setForm({ ...form, price_tiers: newTiers });
+                        }}
+                        className="w-full bg-background border border-input rounded p-1 text-xs"
+                      />
+                    </div>
+                    {i > 0 && (
+                      <button onClick={() => {
+                        const newTiers = form.price_tiers.filter((_, idx) => idx !== i);
+                        setForm({ ...form, price_tiers: newTiers });
+                      }} className="mt-4 text-destructive hover:scale-110 transition-transform">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              
+              {/* Profitability Advisor */}
+              <div className="mt-4 p-2 bg-accent/5 rounded border border-accent/10">
+                <p className="text-[10px] font-bold text-accent uppercase flex items-center gap-1">
+                  <TrendingUp className="w-3 h-3" /> Expert Profitability Advisor
+                </p>
+                <p className="text-[10px] text-muted-foreground leading-tight mt-1">
+                  {form.price_tiers.length > 1 ? (
+                    `You're offering a ${Math.round((1 - form.price_tiers[form.price_tiers.length-1].price_per_unit / form.price_tiers[0].price_per_unit) * 100)}% volume discount. High-volume orders increase retention but require tighter margin control.`
+                  ) : "Pro Tip: Adding bulk tiers (e.g., 500+, 1000+) typically increases Average Order Value by 18%."}
+                </p>
+              </div>
+            </div>
+
             <div>
               <label className="text-sm text-muted-foreground mb-1 block">Description</label>
               <textarea

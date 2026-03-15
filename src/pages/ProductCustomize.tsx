@@ -1,13 +1,13 @@
 import { useState, useRef, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { 
   Upload, X, Check, AlertTriangle, ZoomIn, RotateCcw, 
   Crop, FileImage, IndianRupee, ChevronRight, Info,
-  CheckCircle2, ArrowLeft, Clock, Share2, TrendingDown
+  CheckCircle2, ArrowLeft, Clock, Share2, TrendingDown, Sparkles, TrendingUp
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import { lazy, Suspense } from "react";
 const ProductPreview3D = lazy(() => import("@/components/ProductPreview3D"));
 import AIDesignGenerator from "@/components/AIDesignGenerator";
 import QuotationGenerator from "@/components/QuotationGenerator";
+import { useDesignQA } from "@/hooks/useDesignQA";
 import { getSubcategoryById, getAllSubcategories } from "@/data/printingProducts";
 import type { PrintSize, PaperType, FinishType } from "@/data/printingProducts";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,7 +34,11 @@ interface FileValidation {
 const ProductCustomize = () => {
   const { category } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+  
+  const queryParams = new URLSearchParams(location.search);
+  const shopId = queryParams.get("shopId");
   const [uploading, setUploading] = useState(false);
   
   // Find product from comprehensive data
@@ -57,6 +62,7 @@ const ProductCustomize = () => {
   const [validation, setValidation] = useState<FileValidation | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [printSides, setPrintSides] = useState<"single" | "double">("single");
+  const { analyzeDesign, qaResult, isAnalyzing, resetQA } = useDesignQA();
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -151,6 +157,8 @@ const ProductCustomize = () => {
     setUploadedFile(file);
     if (file.type.startsWith("image/")) {
       setPreviewUrl(URL.createObjectURL(file));
+      // AI QA Analysis
+      await analyzeDesign(file);
     } else {
       setPreviewUrl(null);
     }
@@ -163,6 +171,7 @@ const ProductCustomize = () => {
     setUploadedFile(null);
     setPreviewUrl(null);
     setValidation(null);
+    resetQA();
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -420,26 +429,30 @@ const ProductCustomize = () => {
                           </button>
                         </div>
                         
-                        {validation && (
-                          <div className="mt-3 space-y-2">
-                            {validation.dimensions.width > 0 && (
+                        {(validation || qaResult || isAnalyzing) && (
+                          <div className="mt-3 space-y-3 p-3 bg-secondary/20 rounded-lg border border-border">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                                <Sparkles className="w-3 h-3 text-accent" /> AI Design Quality Audit
+                              </h4>
+                              {isAnalyzing && <span className="text-[10px] text-accent animate-pulse">Analyzing Pixels...</span>}
+                            </div>
+                            
+                            {validation?.dimensions?.width > 0 && (
                               <p className="text-sm text-muted-foreground">
                                 {validation.dimensions.width} × {validation.dimensions.height} px (~{validation.dpi} DPI)
                               </p>
                             )}
-                            {validation.errors.map((err, i) => (
-                              <div key={i} className="flex items-start gap-2 text-destructive text-sm">
-                                <X className="w-4 h-4 shrink-0 mt-0.5" /><span>{err}</span>
-                              </div>
-                            ))}
-                            {validation.warnings.map((warn, i) => (
-                              <div key={i} className="flex items-start gap-2 text-warning text-sm">
+                            
+                            {qaResult?.warnings.map((warn, i) => (
+                              <div key={`qa-${i}`} className="flex items-start gap-2 text-warning text-sm">
                                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" /><span>{warn}</span>
                               </div>
                             ))}
-                            {validation.isValid && validation.warnings.length === 0 && (
+
+                            {!isAnalyzing && validation?.isValid && qaResult?.warnings.length === 0 && (
                               <div className="flex items-center gap-2 text-success text-sm">
-                                <CheckCircle2 className="w-4 h-4" /><span>File validated successfully!</span>
+                                <CheckCircle2 className="w-4 h-4" /><span>Design is professionally print-ready!</span>
                               </div>
                             )}
                           </div>
@@ -536,7 +549,7 @@ const ProductCustomize = () => {
                     <span className="text-foreground">₹{price.perUnit}</span>
                   </div>
                   
-                  <div className="flex justify-between items-baseline">
+                  <div className="flex justify-between items-baseline mb-4">
                     <span className="text-muted-foreground">Total</span>
                     <div className="text-right">
                       <span className="text-2xl font-display font-bold text-foreground flex items-center gap-1">
@@ -545,6 +558,20 @@ const ProductCustomize = () => {
                       <span className="text-xs text-muted-foreground">Incl. GST</span>
                     </div>
                   </div>
+
+                  {quantity < 1000 && (
+                    <motion.div 
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="bg-accent/5 border border-accent/20 rounded-lg p-3 flex items-center gap-3 mt-4"
+                    >
+                      <TrendingUp className="w-5 h-5 text-accent" />
+                      <div className="text-xs">
+                        <p className="font-bold text-accent uppercase tracking-wider">Bulk Advantage</p>
+                        <p className="text-muted-foreground">Order 1,000+ units to save up to 15%</p>
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
 
                 <div className="mt-6 space-y-3">
@@ -575,6 +602,8 @@ const ProductCustomize = () => {
                           quantity,
                           unitPrice: price.perUnit,
                           total: price.total,
+                          shopId: shopId || null,
+                          qaWarnings: qaResult?.warnings || [],
                         }));
                         navigate("/checkout");
                       } catch (err: any) {

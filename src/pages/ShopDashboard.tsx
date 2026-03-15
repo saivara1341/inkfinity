@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingCart, BarChart3, Settings,
-  ChevronDown, Printer, Bell, LogOut, Package, Sparkles, Megaphone
+  ChevronDown, Printer, Bell, LogOut, Package, Sparkles, Megaphone, FileWarning
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useShopData } from "@/hooks/useShopData";
@@ -16,7 +17,7 @@ import { ShopProducts } from "@/components/shop/ShopProducts";
 import ShopAIHub from "@/components/shop/ShopAIHub";
 import ShopMarketing from "@/components/shop/ShopMarketing";
 
-type Tab = "overview" | "orders" | "products" | "analytics" | "ai-hub" | "marketing" | "settings";
+type Tab = "overview" | "orders" | "products" | "analytics" | "ai-hub" | "marketing" | "settings" | "support";
 
 const sidebarItems: { id: Tab; label: string; icon: any }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
@@ -25,6 +26,7 @@ const sidebarItems: { id: Tab; label: string; icon: any }[] = [
   { id: "ai-hub", label: "AI Design Hub", icon: Sparkles },
   { id: "marketing", label: "Marketing", icon: Megaphone },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
+  { id: "support", label: "Support & Reports", icon: FileWarning },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
@@ -124,6 +126,18 @@ const ShopDashboard = () => {
           {activeTab === "analytics" && <ShopAnalytics orders={orders} />}
           {activeTab === "settings" && (
             <ShopSettings shop={shop} onSave={updateShopProfile} />
+          )}
+          {activeTab === "support" && (
+            <div className="bg-card rounded-xl border border-border p-8 text-center space-y-4 shadow-card">
+              <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto">
+                <FileWarning className="w-8 h-8 text-accent" />
+              </div>
+              <h2 className="text-xl font-display font-bold text-foreground">Merchant Support Command</h2>
+              <p className="text-muted-foreground max-w-sm mx-auto">Report technical issues, payment delays, or platform suggestions directly to the admin team.</p>
+              <Button variant="coral" onClick={() => toast.info("Report modal coming soon! For now, use the order report buttons.")}>
+                Report an Issue
+              </Button>
+            </div>
           )}
         </div>
       </main>

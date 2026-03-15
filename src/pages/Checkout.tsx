@@ -58,6 +58,7 @@ const Checkout = () => {
   const fullAddress = `${addressForm.address}, ${addressForm.city} - ${addressForm.pincode}`;
 
   const handlePlaceOrder = async () => {
+    const designFromCustomize = sessionStorage.getItem("design_file_url");
     if (items.length === 0) {
       toast.error("Your cart is empty");
       return;

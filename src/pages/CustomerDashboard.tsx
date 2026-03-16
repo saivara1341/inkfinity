@@ -11,15 +11,16 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCustomerOrders } from "@/hooks/useCustomerOrders";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
-// Local shim for missing global types
-type Tables<T extends string> = any;
+import type { Database } from "@/integrations/supabase/types";
 import ReferralProgram from "@/components/ReferralProgram";
 
 type Tab = "orders" | "tracking" | "profile";
-type Order = Tables<"orders">;
+type Order = Database["public"]["Tables"]["orders"]["Row"];
+type Address = Database["public"]["Tables"]["user_addresses"]["Row"];
 
 const statusLabels: Record<string, string> = {
   pending: "Pending", confirmed: "Confirmed", designing: "Designing",
@@ -269,108 +270,123 @@ const TrackingView = ({ orders }: { orders: Order[] }) => {
   );
 };
 
-interface Address {
-  id: string;
-  label: string;
-  address: string;
-  city: string | null;
-  state: string | null;
-  pincode: string | null;
-  is_default: boolean;
-}
+
 
 const ProfileView = ({ user, onSignOut }: { user: any; onSignOut: () => void }) => {
-  const [form, setForm] = useState({
-    full_name: "",
-    phone: "",
-  });
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [addresses, setAddresses] = useState<Address[]>([]);
-  const [saving, setSaving] = useState(false);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [newAddress, setNewAddress] = useState({ label: "Home", address: "", city: "", state: "", pincode: "" });
+  const queryClient = useQueryClient();
+  const [form, setForm] = useState({ full_name: "", phone: "" });
   const [showAddAddress, setShowAddAddress] = useState(false);
-  const [customerType, setCustomerType] = useState<"personal" | "business">("personal");
+  const [newAddress, setNewAddress] = useState({ label: "Home", address: "", city: "", state: "", pincode: "" });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const { data: addresses = [] } = useQuery({
+    queryKey: ["user-addresses", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("user_addresses").select("*").eq("user_id", user.id).order("created_at");
+      if (error) throw error;
+      return (data as Address[]) || [];
+    },
+    enabled: !!user,
+  });
 
   useEffect(() => {
-    // Load profile
-    supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle().then(({ data }) => {
-      if (data) {
-        setForm({ full_name: data.full_name || "", phone: data.phone || "" });
-        setAvatarUrl(data.avatar_url);
-        setCustomerType((data as any).customer_type || "personal");
-      } else {
-        setForm({ full_name: user.user_metadata?.full_name || "", phone: user.user_metadata?.phone || "" });
-        setCustomerType(user.user_metadata?.customer_type || "personal");
-      }
-    });
+    if (profile) {
+      setForm({
+        full_name: profile.full_name || user.user_metadata?.full_name || "",
+        phone: profile.phone || user.user_metadata?.phone || "",
+      });
+    }
+  }, [profile, user]);
 
-    // Load addresses
-    (supabase.from("user_addresses" as any).select("*").eq("user_id", user.id).order("created_at") as any).then(({ data }: any) => {
-      setAddresses((data as Address[]) || []);
-    });
-  }, [user.id]);
+  const updateProfileMutation = useMutation({
+    mutationFn: async (updates: any) => {
+      const { error } = await supabase.from("profiles").update(updates).eq("user_id", user.id);
+      if (error) throw error;
+      await supabase.auth.updateUser({ data: updates });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
+      toast.success("Profile updated!");
+    },
+    onError: (err: any) => toast.error("Failed to update profile: " + err.message),
+  });
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const addAddressMutation = useMutation({
+    mutationFn: async (addr: any) => {
+      const { error } = await supabase.from("user_addresses").insert({
+        user_id: user.id,
+        ...addr,
+        is_default: addresses.length === 0,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-addresses", user.id] });
+      setShowAddAddress(false);
+      setNewAddress({ label: "Home", address: "", city: "", state: "", pincode: "" });
+      toast.success("Address added!");
+    },
+    onError: (err: any) => toast.error("Failed to add address: " + err.message),
+  });
+
+  const deleteAddressMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("user_addresses").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-addresses", user.id] });
+      toast.success("Address removed");
+    },
+    onError: (err: any) => toast.error("Failed to remove address: " + err.message),
+  });
+
+  const uploadAvatarMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const ext = file.name.split(".").pop();
+      const path = `${user.id}/avatar.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+      const url = urlData.publicUrl + `?t=${Date.now()}`;
+      const { error: profileError } = await supabase.from("profiles").update({ avatar_url: url }).eq("user_id", user.id);
+      if (profileError) throw profileError;
+      return url;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
+      toast.success("Avatar updated!");
+    },
+    onError: (err: any) => toast.error("Upload failed: " + err.message),
+  });
+
+  const avatarUrl = profile?.avatar_url;
+  const customerType = (profile as any)?.customer_type || user.user_metadata?.customer_type || "personal";
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
-
-    setUploadingAvatar(true);
-    const ext = file.name.split(".").pop();
-    const path = `${user.id}/avatar.${ext}`;
-    
-    const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
-    if (uploadError) { toast.error("Upload failed"); setUploadingAvatar(false); return; }
-
-    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
-    const url = urlData.publicUrl + `?t=${Date.now()}`;
-
-    await supabase.from("profiles").update({ avatar_url: url }).eq("user_id", user.id);
-    setAvatarUrl(url);
-    setUploadingAvatar(false);
-    toast.success("Avatar updated!");
+    uploadAvatarMutation.mutate(file);
   };
 
-  const handleSave = async () => {
-    setSaving(true);
-    const { error } = await supabase.from("profiles").update({
-      full_name: form.full_name,
-      phone: form.phone,
-    }).eq("user_id", user.id);
-    
-    // Also update auth metadata
-    await supabase.auth.updateUser({ data: { full_name: form.full_name, phone: form.phone } });
-    
-    setSaving(false);
-    if (error) toast.error("Failed to update profile");
-    else toast.success("Profile updated!");
+  const handleSave = () => {
+    updateProfileMutation.mutate(form);
   };
 
-  const handleAddAddress = async () => {
+  const handleAddAddress = () => {
     if (!newAddress.address.trim()) { toast.error("Address is required"); return; }
-    const { data, error } = await (supabase.from("user_addresses" as any).insert({
-      user_id: user.id,
-      label: newAddress.label,
-      address: newAddress.address,
-      city: newAddress.city || null,
-      state: newAddress.state || null,
-      pincode: newAddress.pincode || null,
-      is_default: addresses.length === 0,
-    } as any).select().single() as any);
-
-    if (error) { toast.error("Failed to add address"); return; }
-    setAddresses((prev) => [...prev, data as unknown as Address]);
-    setNewAddress({ label: "Home", address: "", city: "", state: "", pincode: "" });
-    setShowAddAddress(false);
-    toast.success("Address added!");
-  };
-
-  const handleDeleteAddress = async (id: string) => {
-    await (supabase.from("user_addresses" as any).delete().eq("id", id) as any);
-    setAddresses((prev) => prev.filter((a) => a.id !== id));
-    toast.success("Address removed");
+    addAddressMutation.mutate(newAddress);
   };
 
   return (
@@ -390,7 +406,7 @@ const ProfileView = ({ user, onSignOut }: { user: any; onSignOut: () => void }) 
             )}
             <button
               onClick={() => fileInputRef.current?.click()}
-              disabled={uploadingAvatar}
+              disabled={uploadAvatarMutation.isPending}
               className="absolute inset-0 rounded-full bg-foreground/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <Camera className="w-5 h-5 text-background" />
@@ -400,7 +416,8 @@ const ProfileView = ({ user, onSignOut }: { user: any; onSignOut: () => void }) 
           <div>
             <h3 className="font-display text-lg font-bold text-foreground">{form.full_name || "User"}</h3>
             <p className="text-sm text-muted-foreground">{user.email}</p>
-            {uploadingAvatar && <p className="text-xs text-accent animate-pulse">Uploading...</p>}
+            {uploadAvatarMutation.isPending && <p className="text-xs text-accent animate-pulse">Uploading...</p>}
+          </div>
         </div>
 
         <div className="flex gap-4 p-4 rounded-lg bg-accent/5 border border-accent/10 mb-6">
@@ -442,9 +459,9 @@ const ProfileView = ({ user, onSignOut }: { user: any; onSignOut: () => void }) 
             />
           </div>
         </div>
-        <Button variant="coral" onClick={handleSave} disabled={saving} className="gap-2">
+        <Button variant="coral" onClick={handleSave} disabled={updateProfileMutation.isPending} className="gap-2">
           <Save className="w-4 h-4" />
-          {saving ? "Saving..." : "Save Profile"}
+          {updateProfileMutation.isPending ? "Saving..." : "Save Profile"}
         </Button>
       </div>
 
@@ -536,7 +553,7 @@ const ProfileView = ({ user, onSignOut }: { user: any; onSignOut: () => void }) 
                     {[addr.city, addr.state, addr.pincode].filter(Boolean).join(", ")}
                   </p>
                 </div>
-                <button onClick={() => handleDeleteAddress(addr.id)} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors">
+                <button onClick={() => deleteAddressMutation.mutate(addr.id)} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -556,6 +573,7 @@ const ProfileView = ({ user, onSignOut }: { user: any; onSignOut: () => void }) 
 };
 
 const ReportModal = () => {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [subject, setSubject] = useState({ id: '', type: 'order' });
   const [category, setCategory] = useState('Quality Issue');
@@ -571,16 +589,29 @@ const ReportModal = () => {
 
   const handleSubmit = async () => {
     if (!description.trim()) { toast.error("Please describe the issue"); return; }
+    if (!user) { toast.error("You must be logged in to report an issue"); return; }
     setSubmitting(true);
     
-    // In a real app, this would insert into the user_reports table
-    // For demo purposes, we simulate the success
-    setTimeout(() => {
+    try {
+      const { error } = await supabase.from("support_tickets" as any).insert({
+        user_id: user.id,
+        subject_id: subject.id,
+        subject_type: subject.type,
+        category,
+        description,
+      });
+
+      if (error) throw error;
+
       toast.success("Issue reported successfully. Our team will review it.");
       setIsOpen(false);
       setDescription('');
+    } catch (err: any) {
+      console.error("Error submitting report:", err);
+      toast.error(err.message || "Failed to submit report. Please try again.");
+    } finally {
       setSubmitting(false);
-    }, 1000);
+    }
   };
 
   if (!isOpen) return null;

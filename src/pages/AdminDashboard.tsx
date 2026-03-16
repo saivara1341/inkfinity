@@ -13,11 +13,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Database } from "@/integrations/supabase/types";
+
+type Shop = Database["public"]["Tables"]["shops"]["Row"];
+type Order = Database["public"]["Tables"]["orders"]["Row"];
+type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+type UserRole = Database["public"]["Tables"]["user_roles"]["Row"];
+
 type Tab = "overview" | "shops" | "users" | "orders" | "analytics" | "settings" | "reports";
-// Local shim for missing global types
-type Tables<T extends string> = any;
-type Shop = any;
-type Order = any;
 
 const sidebarItems: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
@@ -33,58 +37,97 @@ const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const [shops, setShops] = useState<Shop[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [profiles, setProfiles] = useState<any[]>([]);
-  const [roles, setRoles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  // Redirect if not logged in
   useEffect(() => {
-    if (!user) { navigate("/login"); return; }
-    checkAdminAccess();
-  }, [user]);
+    if (!user) navigate("/login");
+  }, [user, navigate]);
 
-  const checkAdminAccess = async () => {
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user?.id)
-      .single();
+  // Admin access check query
+  const { data: roleData, isLoading: roleLoading } = useQuery({
+    queryKey: ["user-role", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user?.id || "")
+        .single();
+      return data;
+    },
+    enabled: !!user,
+  });
 
-    if (roleData?.role !== "admin") {
+  // Redirect if not admin
+  useEffect(() => {
+    if (!roleLoading && roleData?.role !== "admin") {
       toast.error("Unauthorized: Admin Access Required");
       navigate("/dashboard");
-      return;
     }
-    fetchAllData();
-  };
+  }, [roleData, roleLoading, navigate]);
 
-  const fetchAllData = async () => {
-    setLoading(true);
-    const [shopsRes, ordersRes, profilesRes, rolesRes] = await Promise.all([
-      supabase.from("shops").select("*").order("created_at", { ascending: false }),
-      supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(500),
-      supabase.from("profiles").select("*").order("created_at", { ascending: false }),
-      supabase.from("user_roles").select("*"),
-    ]);
-    setShops(shopsRes.data || []);
-    setOrders(ordersRes.data || []);
-    setProfiles(profilesRes.data || []);
-    setRoles(rolesRes.data || []);
-    setLoading(false);
-  };
+  // Main data queries
+  const { data: shops = [], isLoading: shopsLoading } = useQuery({
+    queryKey: ["admin-shops"],
+    queryFn: async () => {
+      const { data } = await supabase.from("shops").select("*").order("created_at", { ascending: false });
+      return data || [];
+    },
+    enabled: roleData?.role === "admin",
+  });
 
-  const handleApproveShop = async (shopId: string) => {
-    const { error } = await supabase.from("shops").update({ is_verified: true }).eq("id", shopId);
-    if (error) toast.error("Failed to approve");
-    else { toast.success("Shop approved!"); fetchAllData(); }
-  };
+  const { data: orders = [], isLoading: ordersLoading } = useQuery({
+    queryKey: ["admin-orders"],
+    queryFn: async () => {
+      const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(500);
+      return data || [];
+    },
+    enabled: roleData?.role === "admin",
+  });
 
-  const handleSuspendShop = async (shopId: string, active: boolean) => {
-    const { error } = await supabase.from("shops").update({ is_active: active }).eq("id", shopId);
-    if (!error) { toast.success(active ? "Shop reactivated" : "Shop suspended"); fetchAllData(); }
-  };
+  const { data: profiles = [], isLoading: profilesLoading } = useQuery({
+    queryKey: ["admin-profiles"],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
+      return data || [];
+    },
+    enabled: roleData?.role === "admin",
+  });
+
+  const { data: roles = [], isLoading: rolesLoading } = useQuery({
+    queryKey: ["admin-roles"],
+    queryFn: async () => {
+      const { data } = await supabase.from("user_roles").select("*");
+      return data || [];
+    },
+    enabled: roleData?.role === "admin",
+  });
+
+  const approveShopMutation = useMutation({
+    mutationFn: async (shopId: string) => {
+      const { error } = await supabase.from("shops").update({ is_verified: true }).eq("id", shopId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Shop approved!");
+      queryClient.invalidateQueries({ queryKey: ["admin-shops"] });
+    },
+    onError: () => toast.error("Failed to approve"),
+  });
+
+  const suspendShopMutation = useMutation({
+    mutationFn: async ({ shopId, active }: { shopId: string; active: boolean }) => {
+      const { error } = await supabase.from("shops").update({ is_active: active }).eq("id", shopId);
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      toast.success(variables.active ? "Shop reactivated" : "Shop suspended");
+      queryClient.invalidateQueries({ queryKey: ["admin-shops"] });
+    },
+    onError: () => toast.error("Failed to update shop status"),
+  });
+
+  const loading = roleLoading || shopsLoading || ordersLoading || profilesLoading || rolesLoading;
 
   if (!user) return null;
 
@@ -144,7 +187,7 @@ const AdminDashboard = () => {
                       { label: "Total Shops", value: shops.length.toString(), icon: Store, sub: `${pendingShops.length} pending` },
                       { label: "Total Users", value: profiles.length.toString(), icon: Users, sub: `${roles.filter(r => r.role === "shop_owner").length} shop owners` },
                       { label: "Total Revenue", value: `₹${(totalRevenue / 100000).toFixed(1)}L`, icon: IndianRupee, sub: `${orders.length} orders` },
-                      { label: "Platform Fees", value: `₹${(platformFees / 100000).toFixed(1)}L`, icon: TrendingUp, sub: "10% commission" },
+                      { label: "Platform Fees", value: `₹${(platformFees / 100000).toFixed(1)}L`, icon: TrendingUp, sub: "Market-linked commission" },
                     ].map((stat) => (
                       <div key={stat.label} className="bg-card rounded-xl border border-border p-5 shadow-card">
                         <div className="flex items-center justify-between mb-3">
@@ -173,8 +216,8 @@ const AdminDashboard = () => {
                               <p className="text-xs text-muted-foreground">{shop.city}, {shop.state} • {format(new Date(shop.created_at), "MMM d, yyyy")}</p>
                             </div>
                             <div className="flex gap-2">
-                              <Button variant="coral" size="sm" onClick={() => handleApproveShop(shop.id)}>Approve</Button>
-                              <Button variant="outline" size="sm" onClick={() => handleSuspendShop(shop.id, false)}>Reject</Button>
+                              <Button variant="coral" size="sm" onClick={() => approveShopMutation.mutate(shop.id)} disabled={approveShopMutation.isPending}>Approve</Button>
+                              <Button variant="outline" size="sm" onClick={() => suspendShopMutation.mutate({ shopId: shop.id, active: false })} disabled={suspendShopMutation.isPending}>Reject</Button>
                             </div>
                           </div>
                         ))}
@@ -249,11 +292,11 @@ const AdminDashboard = () => {
                             <td className="px-5 py-3 text-sm text-muted-foreground">{format(new Date(shop.created_at), "MMM d, yyyy")}</td>
                             <td className="px-5 py-3">
                               <div className="flex gap-1">
-                                {!shop.is_verified && <Button variant="coral" size="sm" className="h-8 text-xs" onClick={() => handleApproveShop(shop.id)}>Approve</Button>}
+                                {!shop.is_verified && <Button variant="coral" size="sm" className="h-8 text-xs" onClick={() => approveShopMutation.mutate(shop.id)} disabled={approveShopMutation.isPending}>Approve</Button>}
                                 {shop.is_active ? (
-                                  <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => handleSuspendShop(shop.id, false)}>Suspend</Button>
+                                  <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => suspendShopMutation.mutate({ shopId: shop.id, active: false })} disabled={suspendShopMutation.isPending}>Suspend</Button>
                                 ) : (
-                                  <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => handleSuspendShop(shop.id, true)}>Reactivate</Button>
+                                  <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => suspendShopMutation.mutate({ shopId: shop.id, active: true })} disabled={suspendShopMutation.isPending}>Reactivate</Button>
                                 )}
                               </div>
                             </td>
@@ -278,8 +321,8 @@ const AdminDashboard = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {profiles.map(profile => {
-                          const role = roles.find((r: any) => r.user_id === profile.user_id);
+                        {profiles.map((profile: Profile) => {
+                          const role = roles.find((r: UserRole) => r.user_id === profile.user_id);
                           return (
                             <tr key={profile.id} className="border-b border-border last:border-0 hover:bg-secondary/30">
                               <td className="px-5 py-3 text-sm font-medium text-foreground">{profile.full_name || "—"}</td>

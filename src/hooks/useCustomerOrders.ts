@@ -1,44 +1,46 @@
-import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import type { Tables } from "@/integrations/supabase/types";
+import type { Database } from "@/integrations/supabase/types";
+import { useEffect } from "react";
 
-type Order = Tables<"orders">;
+type Order = Database["public"]["Tables"]["orders"]["Row"];
 
 export const useCustomerOrders = () => {
   const { user } = useAuth();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchOrders = async () => {
-      setLoading(true);
-      const { data } = await supabase
+  const { data: orders = [], isLoading: loading } = useQuery({
+    queryKey: ["customer-orders", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
         .from("orders")
         .select("*")
         .eq("customer_id", user.id)
         .order("created_at", { ascending: false });
-      setOrders(data || []);
-      setLoading(false);
-    };
+      
+      if (error) throw error;
+      return (data as Order[]) || [];
+    },
+    enabled: !!user,
+  });
 
-    fetchOrders();
+  useEffect(() => {
+    if (!user) return;
 
-    // Realtime subscription
     const channel = supabase
       .channel("customer-orders")
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "orders" },
-        (payload) => {
-          const updated = payload.new as Order;
-          if (updated.customer_id === user.id) {
-            setOrders((prev) =>
-              prev.map((o) => (o.id === updated.id ? updated : o))
-            );
-          }
+        { 
+          event: "UPDATE", 
+          schema: "public", 
+          table: "orders",
+          filter: `customer_id=eq.${user.id}`
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["customer-orders", user.id] });
         }
       )
       .subscribe();
@@ -46,7 +48,7 @@ export const useCustomerOrders = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, queryClient]);
 
   return { orders, loading };
 };

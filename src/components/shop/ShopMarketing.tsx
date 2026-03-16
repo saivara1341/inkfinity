@@ -32,7 +32,7 @@ const ShopMarketing = () => {
         "Standard search ranking",
         "Basic 3D previews",
         "Community support",
-        "15% platform commission"
+        "10% platform commission"
       ],
       current: true
     },
@@ -46,7 +46,7 @@ const ShopMarketing = () => {
         "Preferred Partner Badge",
         "AI Design Hub (45+ variations)",
         "Zero AI export fees for customers",
-        "10% platform commission"
+        "7% platform commission"
       ],
       recommended: true,
       icon: Crown,
@@ -62,7 +62,7 @@ const ShopMarketing = () => {
         "Featured on homepage",
         "Dedicated account manager",
         "Early access to new features",
-        "5% platform commission"
+        "4% platform commission"
       ],
       icon: Zap,
       color: "text-amber-500"

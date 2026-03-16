@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -12,12 +13,13 @@ import {
 import { type LucideIcon } from "lucide-react";
 import { productCategories, getAllSubcategories, type ProductCategory } from "@/data/printingProducts";
 import { useShopSelection, type ShopProvider } from "@/hooks/useShopSelection";
+import { useQuery } from "@tanstack/react-query";
 
 const iconMap: Record<string, LucideIcon> = {
   ContactRound, FileText, GalleryVerticalEnd, RectangleHorizontal,
   Sticker, IdCard, Paintbrush, BookOpen, Smartphone, Heart, Mail,
   Package, Award, Shirt, BookText,
-};
+}
 
 const Catalog = () => {
   const { category } = useParams();
@@ -28,7 +30,37 @@ const Catalog = () => {
 
   const { shops, loading: shopsLoading } = useShopSelection(activeCategory);
 
-  const allProducts = getAllSubcategories();
+  const { data: allProducts = [], isLoading: loadingProducts } = useQuery({
+    queryKey: ["catalog-products"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("is_active", true);
+      
+      if (error) throw error;
+      
+      const dbProducts = (data || []).map(p => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        categoryId: p.category_id || p.category,
+        categoryName: p.category,
+        startingPrice: "₹" + p.base_price,
+        unit: p.unit || "per unit",
+        sizes: (p.specifications as any)?.sizes || [],
+        papers: (p.specifications as any)?.papers || [],
+        turnaroundDays: p.turnaround_days,
+        minQty: p.min_quantity,
+        popular: p.popular
+      }));
+
+      const staticProducts = getAllSubcategories();
+      return [...dbProducts, ...staticProducts.filter(sp => !dbProducts.find(dp => dp.name === sp.name))];
+    }
+  });
+
+
 
   const filtered = allProducts.filter((p) => {
     const matchCat = activeCategory === "all" || p.categoryId === activeCategory;

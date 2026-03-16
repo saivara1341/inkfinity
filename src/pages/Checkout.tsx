@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -12,15 +12,20 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/hooks/useCart";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+
+type Address = Database["public"]["Tables"]["user_addresses"]["Row"];
+type Shop = Database["public"]["Tables"]["shops"]["Row"];
 
 const Checkout = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { items, totalAmount, clearCart, loading: cartLoading } = useCart(user?.id);
   const [step, setStep] = useState<"address" | "delivery" | "payment">("address");
-  const [placing, setPlacing] = useState(false);
 
   // Address form
   const [addressForm, setAddressForm] = useState({
@@ -35,38 +40,45 @@ const Checkout = () => {
   const [deliveryMethod, setDeliveryMethod] = useState("shop-pickup");
   const [paymentMethod, setPaymentMethod] = useState("upi");
   const [shippingMethod, setShippingMethod] = useState<"home_delivery" | "shop_pickup">("home_delivery");
-  const [orderProcessing, setOrderProcessing] = useState(false);
-  const [shops, setShops] = useState<any[]>([]);
-  const [loadingShops, setLoadingShops] = useState(true);
   const [waivedQA, setWaivedQA] = useState(false);
   const [qaWarnings, setQaWarnings] = useState<string[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const fullAddress = `${addressForm.address}, ${addressForm.city} - ${addressForm.pincode}`;
+
+  const { data: shops = [], isLoading: loadingShops } = useQuery({
+    queryKey: ["checkout-shops"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("shops")
+        .select("*")
+        .eq("is_active", true);
+      if (error) throw error;
+      return (data || []).map(s => ({
+        ...s,
+        icon: Store,
+        badges: (s.rating || 0) >= 4.5 ? ["Highly Rated"] : ["Verified"]
+      }));
+    }
+  });
+
+  const { data: savedAddresses = [], isLoading: loadingAddresses } = useQuery({
+    queryKey: ["user-addresses", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("user_addresses")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("is_default", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user,
+  });
 
   useEffect(() => {
     if (!user) navigate("/login");
     
-    // Fetch real shops
-    const fetchShops = async () => {
-      setLoadingShops(true);
-      const { data } = await supabase
-        .from("shops")
-        .select("*")
-        .eq("is_active", true);
-      
-      if (data) {
-        // Mock distance and badges for live shops
-        const enriched = data.map(s => ({
-          ...s,
-          distance: (Math.random() * 5 + 0.5).toFixed(1) + " km",
-          priceMultiplier: 1.0,
-          badges: s.rating >= 4.5 ? ["Highly Rated", "Premium"] : ["Verified"],
-          icon: Zap,
-          preferred: s.rating >= 4.7
-        }));
-        setShops(enriched);
-      }
-      setLoadingShops(false);
-    };
-
     const saved = sessionStorage.getItem("customize_product");
     if (saved) {
       try {
@@ -74,9 +86,24 @@ const Checkout = () => {
         if (parsed.qaWarnings) setQaWarnings(parsed.qaWarnings);
       } catch (e) {}
     }
+  }, [user, navigate]);
 
-    fetchShops();
-  }, [user]);
+  // Sync address form with default address
+  useEffect(() => {
+    if (savedAddresses.length > 0 && !selectedAddressId) {
+      const defaultAddr = savedAddresses[0];
+      setSelectedAddressId(defaultAddr.id);
+      setAddressForm({
+        name: user?.user_metadata?.full_name || "",
+        phone: user?.user_metadata?.phone || "",
+        address: defaultAddr.address,
+        city: defaultAddr.city || "",
+        pincode: defaultAddr.pincode || "",
+        businessName: user?.user_metadata?.business_name || "",
+        gstin: "",
+      });
+    }
+  }, [savedAddresses, user]);
 
   if (!user) return null;
 
@@ -97,15 +124,8 @@ const Checkout = () => {
   const gst = Math.round(totalAmount * 0.18);
   const grandTotal = totalAmount + deliveryPrice + gst;
 
-  // Mock shops data for "Smart Matching"
-  const availableShops = [
-    { id: "shop-1", name: "Quick Print Hub", rating: 4.8, distance: "1.2 km", price: 0.95, badges: ["Fastest", "Highly Rated"], icon: Zap, preferred: true },
-    { id: "shop-2", name: "Inkfinity Pro Shop", rating: 4.6, distance: "2.5 km", price: 0.85, badges: ["Best Value"], icon: IndianRupee, preferred: true },
-    { id: "shop-3", name: "Elite Printing Solutions", rating: 4.9, distance: "3.8 km", price: 1.1, badges: ["Premium Quality"], icon: ThumbsUp, preferred: false },
-    { id: "shop-4", name: "Metro Prints", rating: 4.2, distance: "0.5 km", price: 1.0, badges: ["Local Choice"], icon: Zap, preferred: false },
-  ];
 
-  const [selectedShopId, setSelectedShopId] = useState(() => {
+  const [selectedShopId, setSelectedShopId] = useState<string>(() => {
     const saved = sessionStorage.getItem("customize_product");
     if (saved) {
       try {
@@ -116,81 +136,76 @@ const Checkout = () => {
     return "";
   });
 
-  // Default to first preferred shop if none selected
+  // Default to first shop if none selected
   useEffect(() => {
     if (!selectedShopId && shops.length > 0) {
-      const preferred = shops.find(s => s.preferred) || shops[0];
-      setSelectedShopId(preferred.id);
+      setSelectedShopId(shops[0].id);
     }
   }, [shops, selectedShopId]);
 
-  const fullAddress = `${addressForm.address}, ${addressForm.city} - ${addressForm.pincode}`;
+  const placeOrderMutation = useMutation({
+    mutationFn: async () => {
+      const designFromCustomize = sessionStorage.getItem("design_file_url");
+      const orderNumber = "ORD-" + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100);
+      const estimatedDelivery = new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
-  const handlePlaceOrder = async () => {
-    const designFromCustomize = sessionStorage.getItem("design_file_url");
+      const orderPromises = items.map(async (item) => {
+        const product = (item as any).product;
+        const unitPrice = product?.base_price || 0;
+        const itemTotal = unitPrice * item.quantity;
+        const itemGst = Math.round(itemTotal * 0.18);
+        const itemDelivery = items.length === 1 ? deliveryPrice : Math.round(deliveryPrice / items.length);
+
+        const itemOrderNumber = items.length > 1
+          ? orderNumber + "-" + item.product_id.slice(0, 4).toUpperCase()
+          : orderNumber;
+
+        const { error } = await supabase.from("orders").insert({
+          order_number: itemOrderNumber,
+          customer_id: user.id,
+          shop_id: item.shop_id || selectedShopId,
+          product_name: product?.name || "Product",
+          product_category: product?.category || "Other",
+          quantity: item.quantity,
+          unit_price: (item.specifications as any)?.unitPrice || unitPrice,
+          total_price: (item.specifications as any)?.total || itemTotal,
+          gst_amount: itemGst,
+          delivery_charge: itemDelivery,
+          grand_total: ((item.specifications as any)?.total || itemTotal) + itemGst + itemDelivery,
+          delivery_address: fullAddress,
+          specifications: {
+            ...(item.specifications as object || {}),
+            shipping_method: shippingMethod,
+            business_name: addressForm.businessName,
+            gstin: addressForm.gstin
+          },
+          design_file_url: item.design_file_url || designFromCustomize || null,
+          estimated_delivery: estimatedDelivery,
+        });
+        if (error) throw error;
+      });
+
+      await Promise.all(orderPromises);
+      return orderNumber;
+    },
+    onSuccess: (orderNumber) => {
+      clearCart();
+      sessionStorage.removeItem("design_file_url");
+      sessionStorage.removeItem("customize_product");
+      toast.success("Order placed successfully! 🎉");
+      navigate(`/order-success?order=${orderNumber}`);
+    },
+    onError: (error: any) => {
+      toast.error("Failed to place order: " + error.message);
+    }
+  });
+
+  const handlePlaceOrder = () => {
     if (items.length === 0) {
       toast.error("Your cart is empty");
       return;
     }
-
-    setPlacing(true);
-    const orderNumber = "ORD-" + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100);
-    const estimatedDelivery = new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-
-    // Create one order per cart item (each may be from a different shop)
-    const orderPromises = items.map(async (item) => {
-      const product = (item as any).product;
-      const unitPrice = product?.base_price || 0;
-      const itemTotal = unitPrice * item.quantity;
-      const itemGst = Math.round(itemTotal * 0.18);
-      const itemDelivery = items.length === 1 ? deliveryPrice : Math.round(deliveryPrice / items.length);
-      const itemGrand = itemTotal + itemGst + itemDelivery;
-
-      const itemOrderNumber = items.length > 1
-        ? orderNumber + "-" + item.product_id.slice(0, 4).toUpperCase()
-        : orderNumber;
-
-      return supabase.from("orders").insert({
-        order_number: itemOrderNumber,
-        customer_id: user.id,
-        shop_id: item.shop_id || selectedShopId,
-        product_name: product?.name || "Product",
-        product_category: product?.category || "Other",
-        quantity: item.quantity,
-        unit_price: unitPrice,
-        total_price: itemTotal,
-        gst_amount: itemGst,
-        delivery_charge: itemDelivery,
-        grand_total: itemGrand,
-        delivery_address: fullAddress,
-        specifications: {
-          ...(item.specifications as object || {}),
-          shipping_method: shippingMethod,
-          business_name: addressForm.businessName,
-          gstin: addressForm.gstin
-        },
-        design_file_url: item.design_file_url || designFromCustomize || null,
-        estimated_delivery: estimatedDelivery,
-      });
-    });
-
-    const results = await Promise.all(orderPromises);
-    const errors = results.filter(r => r.error);
-
-    if (errors.length > 0) {
-      toast.error("Failed to place some orders: " + errors[0].error?.message);
-      setPlacing(false);
-      return;
-    }
-
-    // Clear cart after successful order
-    await clearCart();
-    sessionStorage.removeItem("design_file_url");
-    sessionStorage.removeItem("customize_product");
-
-    setPlacing(false);
-    toast.success("Order placed successfully! 🎉");
-    navigate(`/order-success?order=${orderNumber}`);
+    placeOrderMutation.mutate();
   };
 
   if (cartLoading) {
@@ -262,6 +277,56 @@ const Checkout = () => {
                       <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2 mb-6">
                         <MapPin className="w-5 h-5 text-accent" /> Delivery Address
                       </h2>
+
+                      {savedAddresses.length > 0 && (
+                        <div className="mb-6 space-y-3">
+                          <label className="text-sm font-medium text-foreground block">Saved Addresses</label>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {savedAddresses.map((addr) => (
+                              <button
+                                key={addr.id}
+                                onClick={() => {
+                                  setSelectedAddressId(addr.id);
+                                  setAddressForm({
+                                    ...addressForm,
+                                    address: addr.address,
+                                    city: addr.city || "",
+                                    pincode: addr.pincode || "",
+                                  });
+                                }}
+                                className={`p-3 rounded-lg border-2 text-left transition-all ${
+                                  selectedAddressId === addr.id ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"
+                                }`}
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-xs font-bold uppercase tracking-wider text-accent">{addr.label}</span>
+                                  {selectedAddressId === addr.id && <Check className="w-3.5 h-3.5 text-accent" />}
+                                </div>
+                                <p className="text-xs text-foreground line-clamp-2">{addr.address}</p>
+                                <p className="text-[10px] text-muted-foreground mt-1">{addr.city}, {addr.pincode}</p>
+                              </button>
+                            ))}
+                            <button
+                              onClick={() => {
+                                setSelectedAddressId(null);
+                                setAddressForm({
+                                  ...addressForm,
+                                  address: "",
+                                  city: "",
+                                  pincode: "",
+                                });
+                              }}
+                              className={`p-3 rounded-lg border-2 border-dashed flex items-center justify-center gap-2 text-muted-foreground hover:text-accent hover:border-accent transition-all ${
+                                selectedAddressId === null ? "border-accent bg-accent/5 text-accent" : ""
+                              }`}
+                            >
+                              <Plus className="w-4 h-4" />
+                              <span className="text-xs font-medium">New Address</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
@@ -362,85 +427,46 @@ const Checkout = () => {
                         </button>
                       </div>
                     </div>
-
-                    {/* Smart Shop Selection */}
-                    <div className="bg-card rounded-xl border border-border p-6 shadow-card">
-                      <div className="flex items-center justify-between mb-6">
-                        <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
-                          <Store className="w-5 h-5 text-accent" /> Smart Shop Selection
+                    {/* Selected Shop Confirmation */}
+                    {items.length > 0 && (
+                      <div className="bg-card rounded-xl border border-border p-6 shadow-card">
+                        <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2 mb-6">
+                          <Store className="w-5 h-5 text-accent" /> Fulfillment Partners
                         </h2>
-                        <span className="text-xs bg-accent/10 text-accent px-2 py-1 rounded-full font-medium">Live Marketplace</span>
-                      </div>
-                    <div className="space-y-3">
-                        {loadingShops ? (
-                          <div className="p-10 text-center animate-pulse text-muted-foreground">Searching closest print labs...</div>
-                        ) : shops.length === 0 ? (
-                          <div className="p-10 text-center text-muted-foreground">No shops available in your area.</div>
-                        ) : (
-                          shops
-                            .sort((a, b) => Number(b.preferred) - Number(a.preferred))
-                            .map((shop) => (
-                            <button
-                              key={shop.id}
-                              onClick={() => setSelectedShopId(shop.id)}
-                              className={`w-full p-4 rounded-xl border-2 text-left transition-all relative overflow-hidden ${
-                                selectedShopId === shop.id ? "border-accent bg-accent/5 ring-1 ring-accent/20" : "border-border hover:border-accent/40"
-                              } ${shop.preferred ? "bg-gradient-to-r from-accent/5 to-transparent" : ""}`}
-                            >
-                              {shop.preferred && (
-                                <div className="absolute top-0 right-0">
-                                  <div className="bg-accent text-accent-foreground text-[8px] font-bold uppercase tracking-wider px-6 py-1 rotate-45 translate-x-3 -translate-y-1 shadow-sm">
-                                    Preferred
-                                  </div>
-                                </div>
-                              )}
-                              <div className="flex items-start justify-between">
-                                <div className="flex gap-4">
-                                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                                    selectedShopId === shop.id ? "bg-accent/20" : "bg-secondary"
-                                  }`}>
-                                    <shop.icon className={`w-6 h-6 ${selectedShopId === shop.id ? "text-accent" : "text-muted-foreground"}`} />
+                        <div className="space-y-4">
+                          {items.map((item) => {
+                            const itemShop = shops.find(s => s.id === item.shop_id);
+                            return (
+                              <div key={item.id} className="flex items-center justify-between p-4 rounded-lg bg-secondary/20 border border-border">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded bg-accent/10 flex items-center justify-center">
+                                    <Store className="w-5 h-5 text-accent" />
                                   </div>
                                   <div>
-                                    <div className="flex items-center gap-2">
-                                      <p className="font-semibold text-foreground flex items-center gap-1.5">
-                                        {shop.name}
-                                        {shop.preferred && <Crown className="w-3 h-3 text-accent fill-accent" />}
-                                      </p>
-                                      <span className="flex items-center gap-0.5 text-xs text-yellow-500 font-bold bg-yellow-500/10 px-1.5 py-0.5 rounded">
-                                        <Star className="w-3 h-3 fill-current" /> {shop.rating}
-                                      </span>
-                                    </div>
-                                    <p className="text-xs text-muted-foreground mt-1">{shop.distance} away • {shop.address}, {shop.city}</p>
-                                    <div className="flex gap-1.5 mt-2">
-                                      {shop.badges.map(badge => (
-                                        <span key={badge} className={`text-[10px] px-2 py-0.5 rounded-full border ${
-                                          badge === "Fastest" || badge === "Highly Rated" ? "bg-blue-500/10 text-blue-500 border-blue-500/20" :
-                                          badge === "Best Value" ? "bg-green-500/10 text-green-500 border-green-500/20" :
-                                          "bg-purple-500/10 text-purple-500 border-purple-500/20"
-                                        }`}>
-                                          {badge}
-                                        </span>
-                                      ))}
-                                    </div>
+                                    <p className="text-sm font-bold text-foreground">{(item as any).product?.name}</p>
+                                    <p className="text-xs text-muted-foreground">Print Shop: <span className="text-foreground font-medium">{itemShop?.name || "Assigning..."}</span></p>
                                   </div>
                                 </div>
-                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-                                  selectedShopId === shop.id ? "border-accent bg-accent text-accent-foreground" : "border-muted"
-                                }`}>
-                                  {selectedShopId === shop.id && <Check className="w-3.5 h-3.5" />}
-                                </div>
+                                {itemShop?.is_verified && (
+                                  <Badge className="bg-blue-500/10 text-blue-500 border-none text-[10px]">Verified Platform Partner</Badge>
+                                )}
                               </div>
-                            </button>
-                          ))
-                        )}
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     <Button variant="coral" size="lg" className="w-full mt-2 gap-2 shadow-lg shadow-accent/20"
-                      onClick={() => setStep("delivery")}
+                      onClick={() => {
+                        if (!/^\d{6}$/.test(addressForm.pincode)) {
+                          toast.error("Please enter a valid 6-digit pincode");
+                          return;
+                        }
+                        setStep("delivery");
+                      }}
                       disabled={!addressForm.name || !addressForm.phone || !addressForm.address || !addressForm.city || !addressForm.pincode}>
-                      Confirm Details & Continue <ChevronRight className="w-4 h-4" />
+                      Confirm Details &amp; Continue <ChevronRight className="w-4 h-4" />
                     </Button>
                   </div>
                 </motion.div>

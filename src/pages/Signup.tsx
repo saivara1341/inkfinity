@@ -32,6 +32,10 @@ const Signup = () => {
       toast({ title: "Please fill all required fields", variant: "destructive" });
       return;
     }
+    if (formData.password.length < 8) {
+      toast({ title: "Password too short", description: "Password must be at least 8 characters.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
     const { error } = await signUp(formData.email, formData.password, { 
       full_name: formData.name,
@@ -249,7 +253,7 @@ const Signup = () => {
           <div className="space-y-4 text-left">
             {(userType === "customer"
               ? [["500+ Verified Shops", "Quality checked print partners"], ["UPI & Easy Payments", "Pay via GPay, PhonePe, Paytm"], ["Fast Delivery", "Rapido, Porter & local couriers"]]
-              : [["Get Online Orders", "Beyond walk-in & WhatsApp"], ["Automate Operations", "Order & file management"], ["Zero Setup Fees", "Pay only 10% on orders"]]
+              : [["Get Online Orders", "Beyond walk-in & WhatsApp"], ["Automate Operations", "Order & file management"], ["Zero Setup Fees", "Flexible commission (from 5%)"]]
             ).map(([title, desc]) => (
               <div key={title} className="flex items-start gap-3 bg-accent-foreground/10 rounded-lg p-4">
                 <Check className="w-5 h-5 text-accent-foreground shrink-0 mt-0.5" />

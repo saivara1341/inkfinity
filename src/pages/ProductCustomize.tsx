@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { 
   Upload, X, Check, AlertTriangle, ZoomIn, RotateCcw, 
   Crop, FileImage, IndianRupee, ChevronRight, Info,
-  CheckCircle2, ArrowLeft, Clock, Share2, TrendingDown, Sparkles, TrendingUp
+  CheckCircle2, ArrowLeft, Clock, Share2, TrendingDown, Sparkles, TrendingUp,
+  Store, Star
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ import { getSubcategoryById, getAllSubcategories } from "@/data/printingProducts
 import type { PrintSize, PaperType, FinishType } from "@/data/printingProducts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
 
 interface FileValidation {
@@ -41,16 +43,70 @@ const ProductCustomize = () => {
   const shopId = queryParams.get("shopId");
   const [uploading, setUploading] = useState(false);
   
-  // Find product from comprehensive data
+  const { analyzeDesign, qaResult, isAnalyzing, resetQA } = useDesignQA();
+  const { addToCart } = useCart(user?.id);
+  
+  const [dbProduct, setDbProduct] = useState<any>(null);
+  const [dbLoading, setDbLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDbProduct = async () => {
+      if (!category) return;
+      // Simple check if it's a UUID (approximation)
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(category);
+      if (!isUuid) {
+        setDbLoading(false);
+        return;
+      }
+
+      setDbLoading(true);
+      try {
+        const query = supabase.from("products").select("*");
+        
+        if (isUuid) {
+          query.eq("id", category);
+        } else {
+          query.eq("category", category);
+        }
+
+        const { data, error } = await query.maybeSingle();
+        
+        if (data) {
+          const mapped = {
+            id: data.id,
+            name: data.name,
+            description: data.description,
+            categoryId: data.category_id || data.category,
+            categoryName: data.category,
+            startingPrice: "₹" + data.base_price,
+            unit: data.unit || "per unit",
+            sizes: (data.specifications as any)?.sizes || [],
+            papers: (data.specifications as any)?.papers || [],
+            finishes: (data.specifications as any)?.finishes || [],
+            quantityTiers: (data.specifications as any)?.quantityTiers || [],
+            printingMethods: (data.specifications as any)?.printingMethods || [],
+            turnaroundDays: data.turnaround_days,
+            minQty: data.min_quantity,
+          };
+          setDbProduct(mapped);
+        }
+      } catch (err) {
+        console.error("Error fetching db product:", err);
+      } finally {
+        setDbLoading(false);
+      }
+    };
+    fetchDbProduct();
+  }, [category]);
+
   const product = useMemo(() => {
+    if (dbProduct) return dbProduct;
     if (!category) return null;
-    // Try to find as subcategory ID first
     const sub = getSubcategoryById(category);
     if (sub) return sub;
-    // Fallback: try matching by category name (legacy routes)
     const allSubs = getAllSubcategories();
     return allSubs.find(s => s.categoryId === category) || allSubs[0];
-  }, [category]);
+  }, [category, dbProduct]);
 
   const [selectedSize, setSelectedSize] = useState<PrintSize>(product?.sizes[0] || {} as PrintSize);
   const [selectedPaper, setSelectedPaper] = useState<PaperType>(product?.papers[0] || {} as PaperType);
@@ -62,7 +118,64 @@ const ProductCustomize = () => {
   const [validation, setValidation] = useState<FileValidation | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [printSides, setPrintSides] = useState<"single" | "double">("single");
-  const { analyzeDesign, qaResult, isAnalyzing, resetQA } = useDesignQA();
+  const [matchingShops, setMatchingShops] = useState<any[]>([]);
+  const [selectedShopId, setSelectedShopId] = useState<string>("");
+  const [loadingShops, setLoadingShops] = useState(false);
+
+  // Sync state with product when it changes (especially after DB fetch)
+  useEffect(() => {
+    if (product) {
+      if (!selectedSize.id) setSelectedSize(product.sizes[0] || {} as PrintSize);
+      if (!selectedPaper.id) setSelectedPaper(product.papers[0] || {} as PaperType);
+      if (!selectedFinish.id) setSelectedFinish(product.finishes[0] || {} as FinishType);
+      if (quantity < (product.minQty || 1)) setQuantity(product.minQty || 100);
+
+      // Reset shop selection when product changes
+      setSelectedShopId("");
+      
+      const fetchMatchingShops = async () => {
+        setLoadingShops(true);
+        try {
+          const catId = product.categoryId || product.id;
+          const { data, error } = await supabase
+            .from("shops")
+            .select("*")
+            .eq("is_active", true)
+            .contains("services", [catId]);
+          
+          if (data && data.length > 0) {
+            // If the category specific search yields nothing, try a broader category name search
+            let finalData = data;
+            if (data.length === 0) {
+              const { data: broadData } = await supabase
+                .from("shops")
+                .select("*")
+                .eq("is_active", true)
+                .contains("services", [product.categoryName.toLowerCase().replace(/\s+/g, '-')]);
+              if (broadData) finalData = broadData;
+            }
+
+            setMatchingShops(finalData);
+            // Default to lowest price multiplier
+            const sortedByPrice = [...finalData].sort((a, b) => (a.price_multiplier || 1) - (b.price_multiplier || 1));
+            setSelectedShopId(sortedByPrice[0].id);
+          } else {
+            // Fallback: fetch all active shops if no specific match
+            const { data: allShops } = await supabase.from("shops").select("*").eq("is_active", true);
+            if (allShops) {
+              setMatchingShops(allShops);
+              if (allShops.length > 0) setSelectedShopId(allShops[0].id);
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching matching shops:", err);
+        } finally {
+          setLoadingShops(false);
+        }
+      };
+      fetchMatchingShops();
+    }
+  }, [product]);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -191,13 +304,19 @@ const ProductCustomize = () => {
     const paperPrice = basePrice * selectedPaper.priceMultiplier;
     const finishPrice = paperPrice + selectedFinish.priceAdd;
     const sidesMultiplier = printSides === "double" ? 1.4 : 1;
-    const unitPrice = finishPrice * sidesMultiplier;
+    
+    // Apply Shop specific price multiplier
+    const selectedShop = matchingShops.find(s => s.id === selectedShopId);
+    const shopMultiplier = selectedShop?.price_multiplier || 1.0;
+    
+    const unitPrice = finishPrice * sidesMultiplier * shopMultiplier;
     const totalPrice = unitPrice * quantity;
     
     return { 
       perUnit: unitPrice.toFixed(2), 
       total: totalPrice.toFixed(0),
-      discount: (bulkDiscount * 100).toFixed(0)
+      discount: (bulkDiscount * 100).toFixed(0),
+      shopMultiplier
     };
   };
 
@@ -483,6 +602,74 @@ const ProductCustomize = () => {
                 </div>
               </div>
 
+              {/* Shop Selection */}
+              <div className="bg-card rounded-xl border border-border p-5 shadow-card">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-display font-semibold text-foreground flex items-center gap-2">
+                    <Store className="w-5 h-5 text-accent" /> 7. Select Print Shop
+                  </h3>
+                  <Badge variant="outline" className="text-accent border-accent/30 lowercase">
+                    Verified Partners
+                  </Badge>
+                </div>
+                
+                {loadingShops ? (
+                  <div className="p-8 text-center animate-pulse text-muted-foreground">Finding shops with your requirements...</div>
+                ) : matchingShops.length === 0 ? (
+                  <div className="p-8 text-center text-muted-foreground bg-secondary/20 rounded-lg">
+                    <AlertTriangle className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                    No shops currently match these requirements. Please try different specifications or contact support.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {matchingShops
+                      .sort((a, b) => (a.price_multiplier || 1) - (b.price_multiplier || 1))
+                      .map((shop, index) => (
+                      <button
+                        key={shop.id}
+                        onClick={() => setSelectedShopId(shop.id)}
+                        className={`w-full p-4 rounded-xl border-2 text-left transition-all relative overflow-hidden ${
+                          selectedShopId === shop.id ? "border-accent bg-accent/5 ring-1 ring-accent/20" : "border-border hover:border-accent/40"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex gap-4">
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                              selectedShopId === shop.id ? "bg-accent/20 text-accent" : "bg-secondary text-muted-foreground"
+                            }`}>
+                              <Store className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="font-semibold text-foreground">{shop.name}</p>
+                                {index === 0 && (
+                                  <span className="text-[10px] bg-success/10 text-success px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                                    Best Value
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {shop.city} • <Star className="w-3 h-3 inline fill-yellow-500 text-yellow-500 mb-0.5" /> {shop.rating || "New"}
+                              </p>
+                              <div className="flex gap-1.5 mt-2">
+                                {shop.is_verified && <Badge className="text-[9px] h-4 bg-blue-500/10 text-blue-500 border-none">Verified</Badge>}
+                                <Badge className="text-[9px] h-4 bg-accent/10 text-accent border-none">Quick Turnover</Badge>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-display font-bold text-foreground">
+                              ₹{(parseFloat(price.perUnit) * quantity).toLocaleString()}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Est. Total</p>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* 3D Preview */}
               <div className="bg-card rounded-xl border border-border p-5 shadow-card">
                 <h3 className="font-display font-semibold text-foreground mb-4">360° Product Preview</h3>
@@ -602,12 +789,28 @@ const ProductCustomize = () => {
                           quantity,
                           unitPrice: price.perUnit,
                           total: price.total,
-                          shopId: shopId || null,
+                          shopId: shopId || (dbProduct as any)?.shop_id || null,
                           qaWarnings: qaResult?.warnings || [],
                         }));
+
+                        // Add to cart in database
+                        const { error: cartError } = await addToCart(
+                          product.id,
+                          selectedShopId,
+                          quantity,
+                          {
+                            size: selectedSize.label,
+                            paper: selectedPaper.label,
+                            finish: selectedFinish.label,
+                            sides: printSides,
+                          }
+                        );
+
+                        if (cartError) throw cartError;
+
                         navigate("/checkout");
                       } catch (err: any) {
-                        toast.error("Failed to upload design: " + err.message);
+                        toast.error("Failed to add to cart: " + err.message);
                       } finally {
                         setUploading(false);
                       }

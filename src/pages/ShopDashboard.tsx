@@ -19,7 +19,7 @@ import ShopMarketing from "@/components/shop/ShopMarketing";
 
 type Tab = "overview" | "orders" | "products" | "analytics" | "ai-hub" | "marketing" | "settings" | "support";
 
-const sidebarItems: { id: Tab; label: string; icon: any }[] = [
+const sidebarItems: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "products", label: "Products", icon: Package },
   { id: "orders", label: "Orders", icon: ShoppingCart },
@@ -119,7 +119,10 @@ const ShopDashboard = () => {
           )}
           {activeTab === "products" && <ShopProducts shop={shop} />}
           {activeTab === "orders" && (
-            <ShopOrders orders={orders} onUpdateStatus={updateOrderStatus} />
+            <ShopOrders 
+              orders={orders} 
+              onUpdateStatus={updateOrderStatus} 
+            />
           )}
           {activeTab === "ai-hub" && <ShopAIHub />}
           {activeTab === "marketing" && <ShopMarketing />}

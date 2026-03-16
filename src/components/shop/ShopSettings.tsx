@@ -2,13 +2,13 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import type { Tables } from "@/integrations/supabase/types";
+import { Database } from "@/integrations/supabase/types";
 
-type Shop = Tables<"shops">;
+type Shop = Database["public"]["Tables"]["shops"]["Row"];
 
 interface Props {
   shop: Shop | null;
-  onSave: (updates: Partial<Shop>) => Promise<{ error: any }>;
+  onSave: (updates: Partial<Shop>) => Promise<any>;
 }
 
 export const ShopSettings = ({ shop, onSave }: Props) => {
@@ -26,12 +26,13 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
 
   const handleSave = async () => {
     setSaving(true);
-    const { error } = await onSave(form);
-    setSaving(false);
-    if (error) {
-      toast.error("Failed to save shop profile");
-    } else {
+    try {
+      await onSave(form);
       toast.success("Shop profile updated!");
+    } catch (error) {
+      toast.error("Failed to save shop profile");
+    } finally {
+      setSaving(false);
     }
   };
 

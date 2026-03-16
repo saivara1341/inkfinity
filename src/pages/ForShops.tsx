@@ -59,8 +59,8 @@ const howItWorks = [
 const pricing = [
   { label: "Registration Fee", value: "FREE", highlight: true },
   { label: "Monthly Subscription", value: "FREE", highlight: true },
-  { label: "Commission per Order", value: "10%", highlight: false },
-  { label: "Payment Settlement", value: "T+1 Day", highlight: false },
+  { label: "Variable Commission", value: "5% - 10%", highlight: false },
+  { label: "Market Adjustment", value: "Quarterly", highlight: false },
 ];
 
 const testimonials = [
@@ -85,7 +85,7 @@ const testimonials = [
 ];
 
 const faqs = [
-  { q: "Is there any registration fee?", a: "No! Registering your shop on PrintFlow is completely free. We only charge a 10% commission on completed orders." },
+  { q: "Is there any registration fee?", a: "No! Registering your shop on PrintFlow is completely free. We maintain a flexible commission model (starting from 5%) based on volume and category, ensuring maximum profitability for our partners." },
   { q: "How do I receive payments?", a: "Payments are settled to your bank account within T+1 business day after order completion." },
   { q: "What products can I list?", a: "You can list all types of printing products — visiting cards, flex banners, stickers, brochures, wedding cards, and more." },
   { q: "Do I need a GST number?", a: "GST registration is recommended for professional credibility, but you can start without one and add it later." },
@@ -250,9 +250,9 @@ const ForShops = () => {
 
             <div className="bg-card rounded-2xl border border-border p-8 shadow-elevated">
               <div className="text-center mb-8">
-                <p className="text-sm text-accent font-semibold uppercase tracking-wide mb-2">Commission Model</p>
-                <p className="font-display text-5xl font-bold text-foreground">10%</p>
-                <p className="text-muted-foreground mt-2">per completed order — that's it!</p>
+                <p className="text-sm text-accent font-semibold uppercase tracking-wide mb-2">Market-Linked Model</p>
+                <p className="font-display text-5xl font-bold text-foreground">5% - 10%</p>
+                <p className="text-muted-foreground mt-2">flexible commission structure — that's it!</p>
               </div>
 
               <div className="space-y-4">

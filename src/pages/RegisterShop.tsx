@@ -313,7 +313,7 @@ const RegisterShop = () => {
                     <li>• Your shop will be reviewed by our team within 24 hours</li>
                     <li>• Once approved, you'll get access to the Shop Dashboard</li>
                     <li>• You can start adding products and receiving orders immediately</li>
-                    <li>• Zero setup fees — pay only 10% commission on orders</li>
+                    <li>• Zero setup fees — flexible commission (starting 5%)</li>
                   </ul>
                 </div>
               </div>

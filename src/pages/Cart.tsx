@@ -71,6 +71,7 @@ const CartPage = () => {
                               <button
                                 onClick={() => updateQuantity(item.id, item.quantity - 1)}
                                 className="w-8 h-8 rounded-lg border border-input flex items-center justify-center hover:bg-secondary"
+                                disabled={loading}
                               >
                                 <Minus className="w-3 h-3" />
                               </button>
@@ -78,6 +79,7 @@ const CartPage = () => {
                               <button
                                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
                                 className="w-8 h-8 rounded-lg border border-input flex items-center justify-center hover:bg-secondary"
+                                disabled={loading}
                               >
                                 <Plus className="w-3 h-3" />
                               </button>
@@ -89,6 +91,7 @@ const CartPage = () => {
                               <button
                                 onClick={() => removeFromCart(item.id)}
                                 className="text-destructive hover:bg-destructive/10 p-1.5 rounded-lg"
+                                disabled={loading}
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>

@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Zap, IndianRupee, ThumbsUp } from "lucide-react";
+import { Database } from "@/integrations/supabase/types";
+
+type ShopRow = Database["public"]["Tables"]["shops"]["Row"];
 
 export interface ShopProvider {
   id: string;
@@ -14,74 +16,30 @@ export interface ShopProvider {
 }
 
 export const useShopSelection = (service?: string) => {
-  const [shops, setShops] = useState<ShopProvider[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchShops = async () => {
-      setLoading(true);
+  const { data: shops = [], isLoading: loading } = useQuery({
+    queryKey: ["shop-selection", service],
+    queryFn: async () => {
+      let query = supabase.from("shops").select("*").eq("is_active", true).eq("is_verified", true);
       
-      // In a real app, we would fetch from Supabase:
-      // const { data, error } = await supabase.from('shops').select('*').contains('services', [service]);
-      
-      // For now, using mock data as requested to show ratings and costs
-      const mockShops: ShopProvider[] = [
-        { 
-          id: "shop-1", 
-          name: "Quick Print Hub", 
-          rating: 4.8, 
-          distance: "1.2 km", 
-          baseCost: 1.50, 
-          badges: ["Fastest", "Highly Rated"], 
-          icon: "zap",
-          services: ["visiting-cards", "flyers", "banners", "stickers", "id-cards"]
-        },
-        { 
-          id: "shop-2", 
-          name: "Inkfinity Pro Shop", 
-          rating: 4.6, 
-          distance: "2.5 km", 
-          baseCost: 1.20, 
-          badges: ["Best Value"], 
-          icon: "rupee",
-          services: ["visiting-cards", "flyers", "posters", "stickers", "custom"]
-        },
-        { 
-          id: "shop-3", 
-          name: "Elite Printing Solutions", 
-          rating: 4.9, 
-          distance: "3.8 km", 
-          baseCost: 5.00, 
-          badges: ["Premium Quality"], 
-          icon: "thumbs-up",
-          services: ["visiting-cards", "banners", "id-cards", "custom"]
-        },
-        { 
-          id: "shop-4", 
-          name: "Metro Prints", 
-          rating: 4.2, 
-          distance: "0.5 km", 
-          baseCost: 2.00, 
-          badges: ["Local Choice"], 
-          icon: "zap",
-          services: ["visiting-cards", "flyers", "posters"]
-        }
-      ];
+      if (service && service !== "all") {
+        query = query.contains("services", [service]);
+      }
 
-      // Filter by service if provided
-      const filteredShops = service && service !== "all" 
-        ? mockShops.filter(s => s.services.includes(service))
-        : mockShops;
+      const { data, error } = await query;
+      if (error) throw error;
 
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      setShops(filteredShops);
-      setLoading(false);
-    };
-
-    fetchShops();
-  }, [service]);
+      return (data || []).map((shop: ShopRow): ShopProvider => ({
+        id: shop.id,
+        name: shop.name,
+        rating: Number(shop.rating) || 4.5,
+        distance: "Local", // Simplified for now, could be calculated if we had GPS
+        baseCost: Number(shop.price_multiplier) || 1.0,
+        badges: shop.is_verified ? ["Verified Shop"] : [],
+        icon: "zap",
+        services: shop.services || [],
+      }));
+    }
+  });
 
   return { shops, loading };
 };

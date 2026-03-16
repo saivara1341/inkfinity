@@ -8,17 +8,17 @@ import { Badge } from "@/components/ui/badge";
 import { statusColors, statusLabels } from "./ShopOverview";
 import { format } from "date-fns";
 import { toast } from "sonner";
-// Local shim for missing global types
-type Tables<T extends string> = any;
-type Order = any;
+import { Database } from "@/integrations/supabase/types";
+
+type Order = Database["public"]["Tables"]["orders"]["Row"];
 
 const ORDER_STATUSES = ["pending", "confirmed", "designing", "printing", "quality_check", "shipped", "delivered", "cancelled"] as const;
 
 interface Props {
   orders: Order[];
-  onUpdateStatus: (orderId: string, status: string) => Promise<{ error: any }>;
-  onUpdatePayment?: (orderId: string, status: string) => Promise<{ error: any }>;
-  onUpdateTracking?: (orderId: string, trackingInfo: any) => Promise<{ error: any }>;
+  onUpdateStatus: (orderId: string, status: string) => Promise<any>;
+  onUpdatePayment?: (orderId: string, status: string) => Promise<any>;
+  onUpdateTracking?: (orderId: string, trackingInfo: any) => Promise<any>;
 }
 
 export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTracking }: Props) => {
@@ -31,12 +31,13 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     setUpdatingId(orderId);
-    const { error } = await onUpdateStatus(orderId, newStatus);
-    setUpdatingId(null);
-    if (error) {
-      toast.error("Failed to update order status");
-    } else {
+    try {
+      await onUpdateStatus(orderId, newStatus);
       toast.success(`Order updated to ${statusLabels[newStatus]}`);
+    } catch (error) {
+      toast.error("Failed to update order status");
+    } finally {
+      setUpdatingId(null);
     }
   };
 

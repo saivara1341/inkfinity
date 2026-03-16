@@ -49,7 +49,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-primary-foreground/10 mt-12 pt-8 text-center text-sm opacity-50">
-          © 2026 PrintFlow. All rights reserved. | A Product of <a href="https://siddhidynamics.in" target="_blank" rel="noopener noreferrer" className="underline text-accent hover:opacity-100 transition-opacity">Siddhi Dynamics LLP</a>
+          © 2026 PrintFlow. All rights reserved. | A Product of <a href="https://siddhidynamics.in" target="_blank" rel="noopener noreferrer" className="text-accent hover:opacity-100 transition-opacity">Siddhi Dynamics LLP</a>
         </div>
       </div>
     </footer>

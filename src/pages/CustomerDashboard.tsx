@@ -401,6 +401,7 @@ const ProfileView = ({ user, onSignOut }: { user: any; onSignOut: () => void }) 
             <h3 className="font-display text-lg font-bold text-foreground">{form.full_name || "User"}</h3>
             <p className="text-sm text-muted-foreground">{user.email}</p>
             {uploadingAvatar && <p className="text-xs text-accent animate-pulse">Uploading...</p>}
+          </div>
         </div>
 
         <div className="flex gap-4 p-4 rounded-lg bg-accent/5 border border-accent/10 mb-6">

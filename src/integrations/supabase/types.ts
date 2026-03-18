@@ -289,8 +289,11 @@ export interface Database {
           id: string
           phone: string | null
           pincode: string | null
+          qr_code_url: string | null
           state: string | null
+          transaction_phone: string | null
           updated_at: string
+          upi_id: string | null
           user_id: string
         }
         Insert: {
@@ -304,8 +307,11 @@ export interface Database {
           id?: string
           phone?: string | null
           pincode?: string | null
+          qr_code_url?: string | null
           state?: string | null
+          transaction_phone?: string | null
           updated_at?: string
+          upi_id?: string | null
           user_id: string
         }
         Update: {
@@ -319,8 +325,11 @@ export interface Database {
           id?: string
           phone?: string | null
           pincode?: string | null
+          qr_code_url?: string | null
           state?: string | null
+          transaction_phone?: string | null
           updated_at?: string
+          upi_id?: string | null
           user_id?: string
         }
         Relationships: []

@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Printer, Menu, X, ShoppingCart, User, LogOut, MapPin, Settings } from "lucide-react";
+import { Printer, Menu, X, ShoppingCart, User, LogOut, MapPin, Settings, ChevronDown } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -97,19 +97,28 @@ const Navbar = () => {
           {user && <NotificationBell />}
           {user ? (
             <div className="relative" ref={profileRef}>
-              <button
-                onClick={() => setProfileOpen(!profileOpen)}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-secondary transition-colors"
-              >
-                {profile.avatar_url ? (
-                  <img src={profile.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
-                    <span className="text-sm font-bold text-accent">{avatarInitial}</span>
-                  </div>
-                )}
-                <span className="text-sm font-medium text-foreground max-w-[100px] truncate">{displayName}</span>
-              </button>
+              <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-1 hover:bg-secondary transition-colors">
+                <Link
+                  to={`${getDashboardPath()}?tab=profile`}
+                  onClick={() => setProfileOpen(false)}
+                  className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-background transition-colors"
+                >
+                  {profile.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-accent/20">
+                      <span className="text-sm font-bold text-accent">{avatarInitial}</span>
+                    </div>
+                  )}
+                  <span className="text-sm font-medium text-foreground max-w-[100px] truncate">{displayName}</span>
+                </Link>
+                <button
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="p-1.5 rounded-md hover:bg-background transition-colors"
+                >
+                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${profileOpen ? "rotate-180" : ""}`} />
+                </button>
+              </div>
 
               {profileOpen && (
                 <div className="absolute right-0 top-full mt-2 w-56 bg-card rounded-xl border border-border shadow-elevated py-2 z-50">

@@ -177,6 +177,7 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
                 </th>
                 <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Order</th>
                 <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Customer & Product</th>
+                <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Files</th>
                 <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Total</th>
                 <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Payment</th>
                 <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Logistics</th>
@@ -213,6 +214,23 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
                       <td className="px-5 py-4">
                         <p className="text-sm font-medium text-foreground">{order.product_name}</p>
                         <p className="text-xs text-muted-foreground">Qty: {order.quantity} • {specs.size || "Standard"}</p>
+                      </td>
+                      <td className="px-5 py-4">
+                        {(order as any).design_file_url ? (
+                          <a 
+                            href={(order as any).design_file_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors text-xs font-medium w-fit"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            Design
+                          </a>
+                        ) : (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Info className="w-3.5 h-3.5" /> None
+                          </span>
+                        )}
                       </td>
                       <td className="px-5 py-4">
                         <p className="text-sm font-semibold text-foreground">₹{Number(order.grand_total).toLocaleString("en-IN")}</p>

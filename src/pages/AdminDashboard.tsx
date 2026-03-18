@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   LayoutDashboard, Store, Users, CreditCard, BarChart3, Settings,
   Shield, ChevronDown, CheckCircle2, XCircle, Clock, IndianRupee,
-  TrendingUp, AlertTriangle, Bell, Eye, LogOut, Activity, BarChart, FileWarning, HelpCircle
+  TrendingUp, AlertTriangle, Bell, Eye, LogOut, Activity, BarChart, FileWarning, HelpCircle, User, Camera, UploadCloud, Save
 } from "lucide-react";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart as ReBarChart, Bar } from "recharts";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ type Order = Database["public"]["Tables"]["orders"]["Row"];
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type UserRole = Database["public"]["Tables"]["user_roles"]["Row"];
 
-type Tab = "overview" | "shops" | "users" | "orders" | "analytics" | "settings" | "reports";
+type Tab = "overview" | "shops" | "users" | "orders" | "analytics" | "settings" | "reports" | "profile";
 
 const sidebarItems: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
@@ -30,10 +30,17 @@ const sidebarItems: { id: Tab; label: string; icon: typeof LayoutDashboard }[] =
   { id: "users", label: "Marketplace Users", icon: Users },
   { id: "orders", label: "Financial Records", icon: CreditCard },
   { id: "reports", label: "Support Tickets", icon: FileWarning },
+  { id: "profile", label: "My Profile", icon: User },
 ];
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") as Tab;
+  const [activeTab, setActiveTab] = useState<Tab>(
+    initialTab && ["overview", "shops", "users", "orders", "analytics", "settings", "reports", "profile"].includes(initialTab) 
+      ? initialTab 
+      : "overview"
+  );
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -128,6 +135,64 @@ const AdminDashboard = () => {
   });
 
   const loading = roleLoading || shopsLoading || ordersLoading || profilesLoading || rolesLoading;
+
+  const myProfile = profiles.find(p => p.user_id === user?.id);
+  const [profileForm, setProfileForm] = useState({
+    full_name: "", phone: "", upi_id: "", transaction_phone: "", qr_code_url: ""
+  });
+  
+  useEffect(() => {
+    if (myProfile) {
+      setProfileForm({
+        full_name: myProfile.full_name || user?.user_metadata?.full_name || "",
+        phone: myProfile.phone || user?.user_metadata?.phone || "",
+        upi_id: (myProfile as any).upi_id || "",
+        transaction_phone: (myProfile as any).transaction_phone || "",
+        qr_code_url: (myProfile as any).qr_code_url || ""
+      });
+    }
+  }, [myProfile, user]);
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (updates: any) => {
+      const { error } = await supabase.from("profiles").update(updates).eq("user_id", user?.id);
+      if (error) throw error;
+      if (updates.full_name || updates.phone) {
+        await supabase.auth.updateUser({ data: { full_name: updates.full_name, phone: updates.phone } });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      toast.success("Profile updated!");
+    },
+    onError: (err: any) => toast.error("Failed to update profile: " + err.message),
+  });
+
+  const uploadQrMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const ext = file.name.split(".").pop();
+      const path = `${user?.id}/admin_qr_${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+      const url = urlData.publicUrl + `?t=${Date.now()}`;
+      const { error: profileError } = await supabase.from("profiles").update({ qr_code_url: url }).eq("user_id", user?.id);
+      if (profileError) throw profileError;
+      return url;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      toast.success("QR Code updated!");
+    },
+    onError: (err: any) => toast.error("Upload failed: " + err.message),
+  });
+
+  const handleQrUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
+    uploadQrMutation.mutate(file);
+  };
 
   if (!user) return null;
 
@@ -519,6 +584,109 @@ const AdminDashboard = () => {
                       Based on current report density (2.4 reports/100 orders), we recommend implementing **Automated Color Calibration** 
                       for networked print labs to reduce color-related disputes. 
                     </p>
+                  </div>
+                </motion.div>
+              )}
+
+              {activeTab === "profile" && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-3xl space-y-6">
+                  <div className="bg-card rounded-xl border border-border p-6 shadow-card space-y-6">
+                    <div>
+                      <h2 className="font-display font-semibold text-xl text-foreground mb-1">Admin Profile</h2>
+                      <p className="text-sm text-muted-foreground">Manage your personal and system payment details.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm text-muted-foreground mb-1 block">Full Name</label>
+                        <input
+                          type="text"
+                          value={profileForm.full_name}
+                          onChange={(e) => setProfileForm((p) => ({ ...p, full_name: e.target.value }))}
+                          className="w-full px-3 py-2 rounded-lg border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:border-accent"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground mb-1 block">Phone Number</label>
+                        <input
+                          type="tel"
+                          value={profileForm.phone}
+                          onChange={(e) => setProfileForm((p) => ({ ...p, phone: e.target.value }))}
+                          className="w-full px-3 py-2 rounded-lg border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:border-accent"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-border">
+                      <h3 className="font-display font-semibold text-lg text-foreground mb-4 flex items-center gap-2">
+                        <CreditCard className="w-5 h-5 text-accent" /> Platform Payment Info
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                          <label className="text-sm text-muted-foreground mb-1 block">Admin UPI ID</label>
+                          <input
+                            type="text"
+                            placeholder="admin@upi"
+                            value={profileForm.upi_id}
+                            onChange={(e) => setProfileForm((p) => ({ ...p, upi_id: e.target.value }))}
+                            className="w-full px-3 py-2 rounded-lg border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:border-accent"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm text-muted-foreground mb-1 block">Transaction Phone Number</label>
+                          <input
+                            type="tel"
+                            placeholder="+91..."
+                            value={profileForm.transaction_phone}
+                            onChange={(e) => setProfileForm((p) => ({ ...p, transaction_phone: e.target.value }))}
+                            className="w-full px-3 py-2 rounded-lg border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:border-accent"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mb-6">
+                        <label className="text-sm text-muted-foreground mb-3 block">Payment QR Code</label>
+                        <div className="flex items-start gap-6">
+                          {profileForm.qr_code_url ? (
+                            <div className="relative group w-32 h-32 rounded-xl overflow-hidden border border-border shadow-sm">
+                              <img src={profileForm.qr_code_url} alt="QR Code" className="w-full h-full object-cover" />
+                              <label className="absolute inset-0 bg-background/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                <UploadCloud className="w-6 h-6 text-foreground mb-1" />
+                                <span className="text-xs font-medium">Change</span>
+                                <input type="file" accept="image/*" className="hidden" onChange={handleQrUpload} disabled={uploadQrMutation.isPending} />
+                              </label>
+                            </div>
+                          ) : (
+                            <label className="w-32 h-32 rounded-xl border border-dashed border-border hover:border-accent hover:bg-accent/5 transition-colors flex flex-col items-center justify-center cursor-pointer text-muted-foreground hover:text-accent">
+                              <UploadCloud className="w-8 h-8 mb-2" />
+                              <span className="text-xs font-medium text-center px-2">Upload QR Code</span>
+                              <input type="file" accept="image/*" className="hidden" onChange={handleQrUpload} disabled={uploadQrMutation.isPending} />
+                            </label>
+                          )}
+                          <div className="flex-1 text-sm text-muted-foreground">
+                            <p className="mb-2">Upload a high-quality image of your payment QR code.</p>
+                            <p className="text-xs opacity-70">Recommended size: 500x500px. Max size: 5MB.</p>
+                            {uploadQrMutation.isPending && <p className="text-xs text-accent animate-pulse mt-2">Uploading...</p>}
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button 
+                        variant="coral" 
+                        onClick={() => updateProfileMutation.mutate({
+                          full_name: profileForm.full_name,
+                          phone: profileForm.phone,
+                          upi_id: profileForm.upi_id,
+                          transaction_phone: profileForm.transaction_phone
+                        })} 
+                        disabled={updateProfileMutation.isPending}
+                        className="gap-2"
+                      >
+                        <Save className="w-4 h-4" />
+                        {updateProfileMutation.isPending ? "Saving..." : "Save Profile Details"}
+                      </Button>
+                    </div>
                   </div>
                 </motion.div>
               )}

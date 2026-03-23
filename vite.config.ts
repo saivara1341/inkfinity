@@ -4,6 +4,7 @@ import path from "path";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig(({ mode }) => ({
+  base: "/",
   server: {
     port: 3000,
     host: true,

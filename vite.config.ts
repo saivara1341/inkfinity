@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "placeholder.svg"],
+      includeAssets: ["favicon.png"],
       manifest: {
         name: "PrintFlow — India's Smartest Printing Platform",
         short_name: "PrintFlow",
@@ -26,7 +26,7 @@ export default defineConfig(({ mode }) => ({
         theme_color: "#e8613a",
         orientation: "portrait-primary",
         icons: [
-          { src: "/favicon.ico", sizes: "64x64", type: "image/x-icon" },
+          { src: "/favicon.png", sizes: "512x512", type: "image/png" },
         ],
         categories: ["business", "productivity", "shopping"],
       },

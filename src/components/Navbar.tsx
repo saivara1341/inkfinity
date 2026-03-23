@@ -74,14 +74,15 @@ const Navbar = () => {
           <div className="w-9 h-9 rounded-lg bg-gradient-coral flex items-center justify-center">
             <Printer className="w-5 h-5 text-accent-foreground" />
           </div>
-          <span className="font-display text-xl font-bold text-foreground">PrintFlow</span>
+          <span className="font-display text-xl font-bold text-foreground italic">PrintFlow</span>
         </Link>
 
+        {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-8">
           <Link to="/store" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Store</Link>
           <Link to="/catalog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Products</Link>
           <Link to="/store?view=shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-            <MapPin className="w-3.5 h-3.5" /> Find Shops Near You
+            <MapPin className="w-3.5 h-3.5" /> Find Shops
           </Link>
           {(!user || role === "customer") && (
             <Link to="/for-shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">For Shops</Link>
@@ -97,12 +98,8 @@ const Navbar = () => {
           {user && <NotificationBell />}
           {user ? (
             <div className="relative" ref={profileRef}>
-              <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-1 hover:bg-secondary transition-colors">
-                <Link
-                  to={`${getDashboardPath()}?tab=profile`}
-                  onClick={() => setProfileOpen(false)}
-                  className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-background transition-colors"
-                >
+              <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-1 hover:bg-secondary transition-colors cursor-pointer" onClick={() => setProfileOpen(!profileOpen)}>
+                <div className="flex items-center gap-2 px-2 py-1">
                   {profile.avatar_url ? (
                     <img src={profile.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
                   ) : (
@@ -111,13 +108,8 @@ const Navbar = () => {
                     </div>
                   )}
                   <span className="text-sm font-medium text-foreground max-w-[100px] truncate">{displayName}</span>
-                </Link>
-                <button
-                  onClick={() => setProfileOpen(!profileOpen)}
-                  className="p-1.5 rounded-md hover:bg-background transition-colors"
-                >
-                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${profileOpen ? "rotate-180" : ""}`} />
-                </button>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-muted-foreground mr-1.5 transition-transform ${profileOpen ? "rotate-180" : ""}`} />
               </div>
 
               {profileOpen && (
@@ -160,34 +152,74 @@ const Navbar = () => {
           )}
         </div>
 
-        <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        {/* Mobile Nav Toggle */}
+        <div className="flex md:hidden items-center gap-4">
+          {user && <NotificationBell />}
+          <button className="text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
+            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
+      {/* Mobile Menu Overlay */}
       {mobileOpen && (
-        <div className="md:hidden bg-background border-b border-border px-4 py-4 space-y-3">
-          <Link to="/store" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>Store</Link>
-          <Link to="/catalog" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>Products</Link>
-          <Link to="/store?view=shops" className="flex items-center gap-1 text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
-            <MapPin className="w-3.5 h-3.5" /> Find Shops Near You
+        <div className="md:hidden bg-background border-b border-border px-4 py-6 space-y-4 animate-in slide-in-from-top duration-300">
+          <div className="grid grid-cols-2 gap-3">
+             <Link to="/store" className="flex items-center justify-center p-3 rounded-xl bg-secondary/30 text-sm font-medium" onClick={() => setMobileOpen(false)}>Store</Link>
+             <Link to="/catalog" className="flex items-center justify-center p-3 rounded-xl bg-secondary/30 text-sm font-medium" onClick={() => setMobileOpen(false)}>Products</Link>
+          </div>
+          <Link to="/store?view=shops" className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 text-sm font-medium" onClick={() => setMobileOpen(false)}>
+            <MapPin className="w-4 h-4 text-accent" /> Find Shops Near You
           </Link>
+          
           {user ? (
-            <div className="space-y-2 pt-2 border-t border-border">
-              <Link to={getDashboardPath()} className="block text-sm font-medium text-foreground" onClick={() => setMobileOpen(false)}>{getDashboardLabel()}</Link>
-              <Link to="/dashboard?tab=profile" className="block text-sm font-medium text-foreground" onClick={() => setMobileOpen(false)}>My Profile</Link>
-              <button onClick={() => { handleLogout(); setMobileOpen(false); }} className="text-sm font-medium text-destructive flex items-center gap-2">
+            <div className="space-y-3 pt-2">
+              <div className="p-4 rounded-xl bg-accent/5 border border-accent/10">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold mb-2">My Account</p>
+                <div className="space-y-3">
+                  <Link to={getDashboardPath()} className="flex items-center gap-3 text-sm font-medium text-foreground" onClick={() => setMobileOpen(false)}>
+                    <Settings className="w-4 h-4" /> {getDashboardLabel()}
+                  </Link>
+                  <Link to="/dashboard?tab=profile" className="flex items-center gap-3 text-sm font-medium text-foreground" onClick={() => setMobileOpen(false)}>
+                    <User className="w-4 h-4" /> My Profile
+                  </Link>
+                </div>
+              </div>
+              <button 
+                onClick={() => { handleLogout(); setMobileOpen(false); }} 
+                className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-destructive/5 text-destructive font-medium border border-destructive/10"
+              >
                 <LogOut className="w-4 h-4" /> Log Out
               </button>
             </div>
           ) : (
-            <div className="flex gap-2 pt-2">
-              <Button variant="ghost" size="sm" asChild><Link to="/login">Log in</Link></Button>
-              <Button variant="coral" size="sm" asChild><Link to="/signup">Get Started</Link></Button>
+            <div className="flex gap-3 pt-2">
+              <Button className="flex-1" variant="outline" asChild><Link to="/login">Log in</Link></Button>
+              <Button className="flex-1" variant="coral" asChild><Link to="/signup">Sign up</Link></Button>
             </div>
           )}
         </div>
       )}
+
+      {/* Persistent Mobile Bottom Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t border-border flex items-center justify-around h-16 px-6 pb-safe">
+        <Link to="/" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-accent transition-colors">
+          <Printer className="w-5 h-5" />
+          <span className="text-[10px] font-medium">Home</span>
+        </Link>
+        <Link to="/catalog" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-accent transition-colors">
+          <ShoppingCart className="w-5 h-5" />
+          <span className="text-[10px] font-medium">Catalog</span>
+        </Link>
+        <Link to="/store?view=shops" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-accent transition-colors">
+          <MapPin className="w-5 h-5" />
+          <span className="text-[10px] font-medium">Shops</span>
+        </Link>
+        <Link to={getDashboardPath()} className="flex flex-col items-center gap-1 text-muted-foreground hover:text-accent transition-colors">
+          <User className="w-5 h-5" />
+          <span className="text-[10px] font-medium">Account</span>
+        </Link>
+      </div>
     </nav>
   );
 };

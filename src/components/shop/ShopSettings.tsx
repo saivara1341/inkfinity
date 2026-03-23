@@ -94,76 +94,145 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
           />
         </div>
         
-        <div className="pt-4 border-t border-border">
-          <label className="flex items-center gap-3 cursor-pointer group">
-            <input 
-              type="checkbox" 
-              checked={form.accepts_razorpay} 
-              onChange={(e) => setForm((prev) => ({ ...prev, accepts_razorpay: e.target.checked }))}
-              className="w-4 h-4 rounded border-input text-accent focus:ring-accent" 
-            />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">Enable Razorpay Payments</p>
-              <p className="text-xs text-muted-foreground">If enabled, customers can pay via Credit/Debit cards and NetBanking through Razorpay.</p>
+        <div className="pt-6 border-t border-border space-y-6">
+          <div>
+            <h4 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4">Payment Configuration</h4>
+            
+            <div className="p-4 rounded-xl bg-accent/5 border border-accent/10 space-y-4">
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input 
+                  type="checkbox" 
+                  checked={form.accepts_razorpay} 
+                  onChange={(e) => setForm((prev) => ({ ...prev, accepts_razorpay: e.target.checked }))}
+                  className="w-4 h-4 mt-1 rounded border-input text-accent focus:ring-accent" 
+                />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors">Digital Payments (via Razorpay)</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">Enable this to allow customers to pay via Credit/Debit cards, NetBanking, and UPI through the secure Razorpay gateway.</p>
+                </div>
+              </label>
+
+              {form.accepts_razorpay && (
+                <div className="pl-7 space-y-4 animate-in fade-in slide-in-from-left-2">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-white/50 transition-colors">
+                      <input 
+                        type="radio" 
+                        checked={!form.use_custom_razorpay} 
+                        onChange={() => setForm(prev => ({ ...prev, use_custom_razorpay: false }))}
+                        className="w-4 h-4 text-accent" 
+                      />
+                      <div className="text-sm">
+                        <span className="font-medium">Use Platform Gateway</span>
+                        <p className="text-[10px] text-muted-foreground">Proceed with PrintFlow's Razorpay (fast setup)</p>
+                      </div>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-white/50 transition-colors">
+                      <input 
+                        type="radio" 
+                        checked={form.use_custom_razorpay} 
+                        onChange={() => setForm(prev => ({ ...prev, use_custom_razorpay: true }))}
+                        className="w-4 h-4 text-accent" 
+                      />
+                      <div className="text-sm">
+                        <span className="font-medium">Use My Own Razorpay</span>
+                        <p className="text-[10px] text-muted-foreground">Link your own account for direct settlements</p>
+                      </div>
+                    </label>
+                  </div>
+
+                  {form.use_custom_razorpay && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-accent/10">
+                      <div>
+                        <label className="text-[10px] text-muted-foreground mb-1 block uppercase font-bold tracking-wider">Razorpay Key ID</label>
+                        <input
+                          type="password"
+                          value={form.razorpay_key_id}
+                          onChange={(e) => setForm(prev => ({ ...prev, razorpay_key_id: e.target.value }))}
+                          className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                          placeholder="rzp_live_..."
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-muted-foreground mb-1 block uppercase font-bold tracking-wider">Razorpay Key Secret</label>
+                        <input
+                          type="password"
+                          value={form.razorpay_key_secret}
+                          onChange={(e) => setForm(prev => ({ ...prev, razorpay_key_secret: e.target.value }))}
+                          className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                          placeholder="••••••••••••"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          </label>
+          </div>
+
+          <div className="space-y-4">
+            <h4 className="text-sm font-bold text-foreground">Direct Offline Payments</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block uppercase font-semibold">UPI ID</label>
+                <input
+                  type="text"
+                  value={form.upi_id}
+                  onChange={(e) => setForm(prev => ({ ...prev, upi_id: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  placeholder="name@upi"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block uppercase font-semibold">Phone (for GPay/PhonePe)</label>
+                <input
+                  type="text"
+                  value={form.phone}
+                  readOnly
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-secondary/30 text-muted-foreground text-sm cursor-not-allowed"
+                />
+              </div>
+              <div className="col-span-full grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="md:col-span-1">
+                  <label className="text-xs text-muted-foreground mb-1 block uppercase font-semibold">Bank Name</label>
+                  <input
+                    type="text"
+                    value={form.bank_name}
+                    onChange={(e) => setForm(prev => ({ ...prev, bank_name: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="HDFC Bank"
+                  />
+                </div>
+                <div className="md:col-span-1">
+                  <label className="text-xs text-muted-foreground mb-1 block uppercase font-semibold">Account Number</label>
+                  <input
+                    type="text"
+                    value={form.bank_account_number}
+                    onChange={(e) => setForm(prev => ({ ...prev, bank_account_number: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="501XXXXXXXXXXX"
+                  />
+                </div>
+                <div className="md:col-span-1">
+                  <label className="text-xs text-muted-foreground mb-1 block uppercase font-semibold">IFSC Code</label>
+                  <input
+                    type="text"
+                    value={form.ifsc_code}
+                    onChange={(e) => setForm(prev => ({ ...prev, ifsc_code: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="HDFC0001234"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {form.accepts_razorpay && (
-          <div className="p-4 bg-accent/5 rounded-lg border border-accent/10 space-y-4">
-            <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input 
-                  type="radio" 
-                  checked={!form.use_custom_razorpay} 
-                  onChange={() => setForm(prev => ({ ...prev, use_custom_razorpay: false }))}
-                  className="w-4 h-4 text-accent" 
-                />
-                <span className="text-sm font-medium">Use Platform Gateway</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input 
-                  type="radio" 
-                  checked={form.use_custom_razorpay} 
-                  onChange={() => setForm(prev => ({ ...prev, use_custom_razorpay: true }))}
-                  className="w-4 h-4 text-accent" 
-                />
-                <span className="text-sm font-medium">Use My Own Razorpay</span>
-              </label>
-            </div>
-
-            {form.use_custom_razorpay && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block uppercase font-bold tracking-wider">Razorpay Key ID</label>
-                  <input
-                    type="password"
-                    value={form.razorpay_key_id}
-                    onChange={(e) => setForm(prev => ({ ...prev, razorpay_key_id: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="rzp_live_..."
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block uppercase font-bold tracking-wider">Razorpay Key Secret</label>
-                  <input
-                    type="password"
-                    value={form.razorpay_key_secret}
-                    onChange={(e) => setForm(prev => ({ ...prev, razorpay_key_secret: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="••••••••••••"
-                  />
-                </div>
-                <p className="col-span-full text-[10px] text-muted-foreground bg-white/50 p-2 rounded">
-                  <strong>Security Note:</strong> Your credentials are used only for processing payments for your shop orders. Payments will be credited directly to your connected Razorpay account.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-        <Button variant="coral" onClick={handleSave} disabled={saving}>
-          {saving ? "Saving..." : "Save Changes"}
-        </Button>
+        <div className="pt-6">
+          <Button variant="coral" size="lg" className="w-full md:w-auto" onClick={handleSave} disabled={saving}>
+            {saving ? "Saving..." : "Save Payment & Profile Settings"}
+          </Button>
+        </div>
       </div>
     </motion.div>
   );

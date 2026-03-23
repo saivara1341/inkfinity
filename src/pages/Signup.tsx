@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { getRoleBasedPath } from "@/hooks/useRoleRedirect";
+import locationsData from "@/data/india-locations.json";
 
 type UserType = "customer" | "shop";
 
@@ -19,10 +20,11 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "", phone: "", email: "", password: "",
-    shopName: "", shopAddress: "", city: "", state: "", pincode: "", gstNumber: "",
+    shopName: "", shopAddress: "", country: "India", city: "", state: "", pincode: "", gstNumber: "",
     customerType: "personal" as "personal" | "business",
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -77,11 +79,8 @@ const Signup = () => {
     navigate(path);
   };
 
-  const indianCities = [
-    "Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai", "Kolkata",
-    "Pune", "Ahmedabad", "Jaipur", "Lucknow", "Surat", "Indore",
-    "Nagpur", "Coimbatore", "Kochi", "Chandigarh", "Vadodara", "Bhopal"
-  ];
+  const states = Object.keys(locationsData.India);
+  const cities = formData.state ? (locationsData.India as any)[formData.state] || [] : [];
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -135,12 +134,12 @@ const Signup = () => {
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Full Name</label>
-                <input type="text" name="name" placeholder="Rahul Sharma" value={formData.name} onChange={handleChange}
+                <input type="text" name="name" placeholder="Your Name" value={formData.name} onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Email</label>
-                <input type="email" name="email" placeholder="rahul@email.com" value={formData.email} onChange={handleChange}
+                <input type="email" name="email" placeholder="Your Email" value={formData.email} onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
               </div>
               <div>
@@ -204,17 +203,39 @@ const Signup = () => {
                   className="w-full px-4 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">City</label>
-                <select name="city" value={formData.city} onChange={handleChange}
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Country</label>
+                <select name="country" value={formData.country} onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                  <option value="">Select city</option>
-                  {indianCities.map((c) => <option key={c} value={c}>{c}</option>)}
+                  <option value="India">India</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">State</label>
+                <div className="relative">
+                  <select name="state" value={formData.state} onChange={handleChange}
+                    className="w-full px-4 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                    <option value="">Select State</option>
+                    {states.sort().map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">District / City</label>
+                <select name="city" value={formData.city} onChange={handleChange}
+                  disabled={!formData.state}
+                  className="w-full px-4 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50">
+                  <option value="">Select District</option>
+                  {cities.sort().map((c: string) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Pincode</label>
-                <input type="text" name="pincode" placeholder="400001" value={formData.pincode} onChange={handleChange}
+                <input type="text" name="pincode" placeholder="Enter Pincode" value={formData.pincode} onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                {formData.city && !formData.pincode && (
+                  <p className="text-[10px] text-accent mt-1 italic">Tip: Pincode will be verified once entered.</p>
+                )}
               </div>
               <div className="flex gap-3">
                 <Button variant="outline" size="lg" className="flex-1" onClick={() => setStep(1)}>Back</Button>
@@ -253,6 +274,14 @@ const Signup = () => {
 
       <div className="hidden lg:flex flex-1 bg-gradient-coral items-center justify-center p-12">
         <div className="max-w-md text-center">
+          <motion.img 
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            src="/signup-illustration-v2.png" 
+            alt="Printing Service Illustration" 
+            className="w-full max-w-[320px] h-auto mb-8 mx-auto drop-shadow-2xl rounded-2xl" 
+          />
           <h2 className="font-display text-3xl font-bold text-accent-foreground mb-6">
             {userType === "customer" ? "Order prints from anywhere in India" : "Grow your printing business online"}
           </h2>

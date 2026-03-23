@@ -5,6 +5,8 @@ import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig(({ mode }) => ({
   server: {
+    port: 3000,
+    host: true,
     hmr: {
       overlay: false,
     },

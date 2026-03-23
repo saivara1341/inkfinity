@@ -15,11 +15,12 @@ const ShopAIHub = () => {
   const [tokens, setTokens] = useState(850);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Mock logic check for new user (in real app, this would come from props or hook)
-  const isNewUser = tokens === 0 || recentDesigns.length === 0;
+  // Mock logic check for new user
+  const recentDesigns = [] as any[]; // Assuming no data for a truly new user
+  const isNewUser = tokens === 1000 || recentDesigns.length === 0;
 
   // Mock data for recent designs
-  const recentDesignsList = isNewUser ? [] : recentDesigns;
+  const recentDesignsList = recentDesigns;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">

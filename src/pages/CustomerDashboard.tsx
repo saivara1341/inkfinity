@@ -111,6 +111,7 @@ const CustomerDashboard = () => {
 };
 
 const OrdersView = ({ orders }: { orders: Order[] }) => {
+  const navigate = useNavigate();
   const activeOrders = orders.filter((o) => !["delivered", "cancelled"].includes(o.status));
   const totalSpent = orders.reduce((sum, o) => sum + Number(o.grand_total), 0);
 
@@ -191,7 +192,7 @@ const OrdersView = ({ orders }: { orders: Order[] }) => {
                     onClick={() => {
                       // Navigate to customization with existing specs
                       sessionStorage.setItem("reorder_specs", JSON.stringify(order.specifications));
-                      navigate(`/customize/${order.product_id}`);
+                      navigate(`/customize/${(order as any).product_id}`);
                     }}
                   >
                     <RefreshCw className="w-3.5 h-3.5" /> Reorder

@@ -6,7 +6,12 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.4"
+  }
   public: {
     Tables: {
       cart_items: {
@@ -17,7 +22,7 @@ export interface Database {
           product_id: string
           quantity: number
           shop_id: string
-          specifications: Json
+          specifications: Json | null
           user_id: string
         }
         Insert: {
@@ -27,7 +32,7 @@ export interface Database {
           product_id: string
           quantity?: number
           shop_id: string
-          specifications?: Json
+          specifications?: Json | null
           user_id: string
         }
         Update: {
@@ -37,22 +42,24 @@ export interface Database {
           product_id?: string
           quantity?: number
           shop_id?: string
-          specifications?: Json
+          specifications?: Json | null
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "cart_items_product_id_fkey"
             columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "cart_items_shop_id_fkey"
             columns: ["shop_id"]
+            isOneToOne: false
             referencedRelation: "shops"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       design_generations: {
@@ -126,9 +133,10 @@ export interface Database {
           {
             foreignKeyName: "notifications_order_id_fkey"
             columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       orders: {
@@ -205,16 +213,16 @@ export interface Database {
           {
             foreignKeyName: "orders_shop_id_fkey"
             columns: ["shop_id"]
+            isOneToOne: false
             referencedRelation: "shops"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       products: {
         Row: {
           base_price: number
           category: string
-          category_id: string | null
           created_at: string
           description: string | null
           id: string
@@ -223,17 +231,14 @@ export interface Database {
           max_quantity: number | null
           min_quantity: number
           name: string
-          popular: boolean | null
           shop_id: string
           specifications: Json | null
           turnaround_days: number | null
-          unit: string | null
           updated_at: string
         }
         Insert: {
           base_price?: number
           category: string
-          category_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -242,17 +247,14 @@ export interface Database {
           max_quantity?: number | null
           min_quantity?: number
           name: string
-          popular?: boolean | null
           shop_id: string
           specifications?: Json | null
           turnaround_days?: number | null
-          unit?: string | null
           updated_at?: string
         }
         Update: {
           base_price?: number
           category?: string
-          category_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -261,20 +263,19 @@ export interface Database {
           max_quantity?: number | null
           min_quantity?: number
           name?: string
-          popular?: boolean | null
           shop_id?: string
           specifications?: Json | null
           turnaround_days?: number | null
-          unit?: string | null
           updated_at?: string
         }
         Relationships: [
           {
             foreignKeyName: "products_shop_id_fkey"
             columns: ["shop_id"]
+            isOneToOne: false
             referencedRelation: "shops"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       profiles: {
@@ -289,11 +290,11 @@ export interface Database {
           id: string
           phone: string | null
           pincode: string | null
-          qr_code_url: string | null
           state: string | null
-          transaction_phone: string | null
           updated_at: string
           upi_id: string | null
+          qr_code_url: string | null
+          transaction_phone: string | null
           user_id: string
         }
         Insert: {
@@ -307,11 +308,11 @@ export interface Database {
           id?: string
           phone?: string | null
           pincode?: string | null
-          qr_code_url?: string | null
           state?: string | null
-          transaction_phone?: string | null
           updated_at?: string
           upi_id?: string | null
+          qr_code_url?: string | null
+          transaction_phone?: string | null
           user_id: string
         }
         Update: {
@@ -325,11 +326,11 @@ export interface Database {
           id?: string
           phone?: string | null
           pincode?: string | null
-          qr_code_url?: string | null
           state?: string | null
-          transaction_phone?: string | null
           updated_at?: string
           upi_id?: string | null
+          qr_code_url?: string | null
+          transaction_phone?: string | null
           user_id?: string
         }
         Relationships: []
@@ -390,9 +391,10 @@ export interface Database {
           {
             foreignKeyName: "quotations_shop_id_fkey"
             columns: ["shop_id"]
+            isOneToOne: false
             referencedRelation: "shops"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       reviews: {
@@ -430,21 +432,24 @@ export interface Database {
           {
             foreignKeyName: "reviews_order_id_fkey"
             columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "reviews_product_id_fkey"
             columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "reviews_shop_id_fkey"
             columns: ["shop_id"]
+            isOneToOne: false
             referencedRelation: "shops"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       shops: {
@@ -464,10 +469,16 @@ export interface Database {
           pincode: string
           rating: number | null
           services: string[] | null
-          price_multiplier: number | null
-          service_capabilities: Json | null
           state: string
           updated_at: string
+          accepts_razorpay: boolean | null
+          use_custom_razorpay: boolean | null
+          razorpay_key_id: string | null
+          razorpay_key_secret: string | null
+          upi_id: string | null
+          bank_name: string | null
+          bank_account_number: string | null
+          ifsc_code: string | null
         }
         Insert: {
           address?: string | null
@@ -485,10 +496,16 @@ export interface Database {
           pincode: string
           rating?: number | null
           services?: string[] | null
-          price_multiplier?: number | null
-          service_capabilities?: Json | null
           state: string
           updated_at?: string
+          accepts_razorpay?: boolean | null
+          use_custom_razorpay?: boolean | null
+          razorpay_key_id?: string | null
+          razorpay_key_secret?: string | null
+          upi_id?: string | null
+          bank_name?: string | null
+          bank_account_number?: string | null
+          ifsc_code?: string | null
         }
         Update: {
           address?: string | null
@@ -506,10 +523,16 @@ export interface Database {
           pincode?: string
           rating?: number | null
           services?: string[] | null
-          price_multiplier?: number | null
-          service_capabilities?: Json | null
           state?: string
           updated_at?: string
+          accepts_razorpay?: boolean | null
+          use_custom_razorpay?: boolean | null
+          razorpay_key_id?: string | null
+          razorpay_key_secret?: string | null
+          upi_id?: string | null
+          bank_name?: string | null
+          bank_account_number?: string | null
+          ifsc_code?: string | null
         }
         Relationships: []
       }
@@ -549,6 +572,45 @@ export interface Database {
           state?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_reports: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          issue_category: string
+          priority: string | null
+          reporter_id: string | null
+          resolved_at: string | null
+          status: string | null
+          subject_id: string | null
+          subject_type: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          issue_category: string
+          priority?: string | null
+          reporter_id?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          subject_id?: string | null
+          subject_type?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          issue_category?: string
+          priority?: string | null
+          reporter_id?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          subject_id?: string | null
+          subject_type?: string | null
         }
         Relationships: []
       }
@@ -605,15 +667,46 @@ export interface Database {
       }
     }
     Views: {
-      [_ in never]: never
+      shop_performance_analytics: {
+        Row: {
+          average_order_value: number | null
+          fulfillment_rate: number | null
+          shop_id: string | null
+          total_orders: number | null
+          total_revenue: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
         }
         Returns: boolean
+      }
+      register_shop: {
+        Args: {
+          _address?: string
+          _city?: string
+          _description?: string
+          _email?: string
+          _name: string
+          _phone?: string
+          _pincode?: string
+          _services?: string[]
+          _state?: string
+        }
+        Returns: string
       }
     }
     Enums: {
@@ -635,7 +728,138 @@ export interface Database {
   }
 }
 
-export type Tables<T extends keyof Database["public"]["Tables"]> =
-  Database["public"]["Tables"][T]["Row"];
-export type Enums<T extends keyof Database["public"]["Enums"]> =
-  Database["public"]["Enums"][T];
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      app_role: ["admin", "shop_owner", "customer"],
+      order_status: [
+        "pending",
+        "confirmed",
+        "designing",
+        "printing",
+        "quality_check",
+        "shipped",
+        "delivered",
+        "cancelled",
+      ],
+      payment_status: ["pending", "paid", "failed", "refunded"],
+    },
+  },
+} as const

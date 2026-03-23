@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Pencil, Trash2, Package, IndianRupee, Clock, ToggleLeft, ToggleRight, X, ImagePlus, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -56,12 +56,7 @@ export const ShopProducts = ({ shop }: Props) => {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!shop) return;
-    fetchProducts();
-  }, [shop]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     if (!shop) return;
     setLoading(true);
     const { data } = await supabase
@@ -71,7 +66,12 @@ export const ShopProducts = ({ shop }: Props) => {
       .order("created_at", { ascending: false });
     setProducts((data as Product[]) || []);
     setLoading(false);
-  };
+  }, [shop]);
+
+  useEffect(() => {
+    if (!shop) return;
+    fetchProducts();
+  }, [shop, fetchProducts]);
 
   const handleEdit = (product: Product) => {
     setEditingId(product.id);

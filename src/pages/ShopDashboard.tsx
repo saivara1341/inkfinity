@@ -33,6 +33,7 @@ const sidebarItems: { id: Tab; label: string; icon: React.ElementType }[] = [
 const ShopDashboard = () => {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { shop, orders, loading, updateOrderStatus, updateShopProfile } = useShopData();
@@ -52,24 +53,31 @@ const ShopDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <aside className={`${sidebarOpen ? "w-64" : "w-16"} bg-card border-r border-border flex flex-col transition-all duration-300 shrink-0`}>
+      {/* Sidebar - Shared logic for Desktop and Mobile */}
+      <aside className={`
+        ${sidebarOpen ? "translate-x-0 w-64" : "-translate-x-full md:translate-x-0 w-64 md:w-16"} 
+        fixed md:relative z-40 h-full bg-card border-r border-border flex flex-col transition-all duration-300 shrink-0
+        ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+      `}>
         <div className="h-16 flex items-center px-4 border-b border-border gap-3">
           <div className="w-9 h-9 rounded-lg bg-gradient-coral flex items-center justify-center shrink-0">
             <Printer className="w-5 h-5 text-accent-foreground" />
           </div>
-          {sidebarOpen && (
+          {(sidebarOpen || mobileMenuOpen) && (
             <span className="font-display font-bold text-foreground truncate">
               {shop?.name || "My Shop"}
             </span>
           )}
+          <button onClick={() => setMobileMenuOpen(false)} className="md:hidden ml-auto p-2 text-muted-foreground">
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        <nav className="flex-1 py-4 px-2 space-y-1">
+        <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
           {sidebarItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => { setActiveTab(item.id); setMobileMenuOpen(false); }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === item.id
                   ? "bg-accent/10 text-accent"
@@ -77,7 +85,7 @@ const ShopDashboard = () => {
               }`}
             >
               <item.icon className="w-5 h-5 shrink-0" />
-              {sidebarOpen && <span>{item.label}</span>}
+              {(sidebarOpen || mobileMenuOpen) && <span>{item.label}</span>}
             </button>
           ))}
         </nav>
@@ -88,21 +96,37 @@ const ShopDashboard = () => {
             className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
           >
             <LogOut className="w-4 h-4 shrink-0" />
-            {sidebarOpen && <span>Log Out</span>}
+            {(sidebarOpen || mobileMenuOpen) && <span>Log Out</span>}
           </button>
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="w-full flex items-center justify-center py-2 text-muted-foreground hover:text-foreground transition-colors"
+            className="hidden md:flex w-full items-center justify-center py-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ChevronDown className={`w-4 h-4 transition-transform ${sidebarOpen ? "rotate-90" : "-rotate-90"}`} />
           </button>
         </div>
       </aside>
 
+      {/* Mobile Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 md:hidden" 
+          onClick={() => setMobileMenuOpen(false)} 
+        />
+      )}
+
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <header className="h-16 border-b border-border flex items-center justify-between px-6">
-          <h1 className="font-display text-xl font-bold text-foreground capitalize">{activeTab}</h1>
+      <main className="flex-1 overflow-auto min-w-0">
+        <header className="h-16 border-b border-border flex items-center justify-between px-4 md:px-6 sticky top-0 bg-background/80 backdrop-blur-sm z-20">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden p-2 text-muted-foreground hover:text-foreground"
+            >
+              <LayoutDashboard className="w-5 h-5" />
+            </button>
+            <h1 className="font-display text-lg md:text-xl font-bold text-foreground capitalize">{activeTab}</h1>
+          </div>
           <div className="flex items-center gap-3">
             <NotificationBell />
             <div className="w-9 h-9 rounded-full bg-accent/20 flex items-center justify-center">

@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import {
   ShoppingCart, User, MapPin, Clock,
   CheckCircle2, Package, ChevronRight, LogOut, Printer, Truck, AlertCircle,
-  Camera, Plus, Trash2, Save, FileWarning, HelpCircle, ShieldCheck, Briefcase
+  Camera, Plus, Trash2, Save, FileWarning, HelpCircle, ShieldCheck, Briefcase,
+  RefreshCw, Star
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -17,6 +18,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import type { Database } from "@/integrations/supabase/types";
 import ReferralProgram from "@/components/ReferralProgram";
+import ReviewModal from "@/components/modals/ReviewModal";
 
 type Tab = "orders" | "tracking" | "profile";
 type Order = Database["public"]["Tables"]["orders"]["Row"];
@@ -140,10 +142,15 @@ const OrdersView = ({ orders }: { orders: Order[] }) => {
       </div>
     </div>
 
+    {/* Order List */}
+
       {orders.length === 0 ? (
         <div className="bg-card rounded-xl border border-border p-10 text-center shadow-card">
-          <p className="text-muted-foreground mb-4">No orders yet. Start by browsing our catalog!</p>
-          <Button variant="coral" asChild><Link to="/catalog">Browse Catalog</Link></Button>
+          <p className="text-muted-foreground mb-6">No orders yet. Start by browsing our catalog!</p>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Button variant="outline" asChild><Link to="/catalog">Browse Catalog</Link></Button>
+            <Button variant="coral" asChild><Link to="/catalog">Place New Order</Link></Button>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">
@@ -163,13 +170,39 @@ const OrdersView = ({ orders }: { orders: Order[] }) => {
                     {order.estimated_delivery && <span>Est. Delivery: {format(new Date(order.estimated_delivery), "MMM d, yyyy")}</span>}
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 md:gap-4">
                   <span className="text-lg font-display font-bold text-foreground">₹{Number(order.grand_total).toLocaleString("en-IN")}</span>
-                  <Button variant="outline" size="sm" asChild>
+                  
+                  {order.status === "delivered" && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-accent border-accent/30 hover:bg-accent/10"
+                      onClick={() => (window as any).openReviewModal?.(order)}
+                    >
+                      <Star className="w-3.5 h-3.5 mr-1.5 fill-current" /> Rate
+                    </Button>
+                  )}
+
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="gap-1.5 text-accent hover:bg-accent/10"
+                    onClick={() => {
+                      // Navigate to customization with existing specs
+                      sessionStorage.setItem("reorder_specs", JSON.stringify(order.specifications));
+                      navigate(`/customize/${order.product_id}`);
+                    }}
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" /> Reorder
+                  </Button>
+
+                  <Button variant="outline" size="sm" asChild className="hidden sm:flex">
                     <Link to={`/track?order=${order.order_number}`}>Track <ChevronRight className="w-3 h-3" /></Link>
                   </Button>
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive gap-1" onClick={() => (window as any).openReportModal?.(order.id, 'order')}>
-                    <FileWarning className="w-3 h-3" /> Report
+                  
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive p-2" onClick={() => (window as any).openReportModal?.(order.id, 'order')}>
+                    <FileWarning className="w-3.5 h-3.5" />
                   </Button>
                 </div>
               </div>
@@ -178,8 +211,9 @@ const OrdersView = ({ orders }: { orders: Order[] }) => {
         </div>
       )}
 
-      {/* Report Modal Shim - In a real app this would be a Dialog component */}
+      {/* Modals */}
       <ReportModal />
+      <ReviewModal />
 
       <div className="text-center">
         <Button variant="coral" size="lg" asChild>

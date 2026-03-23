@@ -1,10 +1,21 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { ArrowRight, Upload, Truck, CreditCard } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowRight, Upload, Truck, CreditCard, Search } from "lucide-react";
+import { useState } from "react";
 import heroImage from "@/assets/hero-printing.jpg";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/catalog?q=${encodeURIComponent(searchQuery)}`);
+    } else {
+      navigate("/catalog");
+    }
+  };
   return (
     <section className="relative min-h-[90vh] flex items-center pt-24 pb-12 overflow-hidden">
       {/* Dynamic Background Elements */}
@@ -33,13 +44,39 @@ const HeroSection = () => {
               Upload your design, choose your options, and get professional prints from local shops — visiting cards, flyers, posters, banners & more.
             </p>
 
-            <div className="flex flex-wrap gap-4 mb-12">
-              <Button variant="coral" size="lg" className="text-base px-8" asChild>
+            <div className="relative max-w-lg mb-4 animate-reveal" style={{ animationDelay: "0.2s" }}>
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                placeholder="Search products (e.g., business cards, posters)..."
+                className="w-full pl-10 pr-4 py-4 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent shadow-sm"
+              />
+              <Button 
+                variant="coral" 
+                className="absolute right-2 top-1/2 -translate-y-1/2"
+                onClick={handleSearch}
+              >
+                Search
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-3 mb-10 text-xs text-muted-foreground animate-reveal" style={{ animationDelay: "0.25s" }}>
+              <span className="font-semibold">Popular:</span>
+              <Link to="/catalog?category=visiting-cards" className="hover:text-accent border-b border-transparent hover:border-accent pb-0.5">Visiting Cards</Link>
+              <Link to="/catalog?category=id-cards" className="hover:text-accent border-b border-transparent hover:border-accent pb-0.5">ID Cards</Link>
+              <Link to="/catalog?category=posters" className="hover:text-accent border-b border-transparent hover:border-accent pb-0.5">Posters</Link>
+            </div>
+
+            <div className="flex flex-wrap gap-4 mb-12 animate-reveal" style={{ animationDelay: "0.3s" }}>
+              <Button variant="outline" size="lg" className="text-base h-14 px-8" asChild>
                 <Link to="/catalog" className="flex items-center">
-                  Start Printing <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  Browse Full Catalog <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
-              <Button variant="outline" size="lg" className="text-base" asChild>
+              <Button variant="ghost" size="lg" className="text-base h-14" asChild>
                 <Link to="/for-shops">Register Your Shop</Link>
               </Button>
             </div>

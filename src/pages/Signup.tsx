@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Printer, User, Store, ArrowRight, Check } from "lucide-react";
+import { Printer, User, Store, ArrowRight, Check, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +22,7 @@ const Signup = () => {
     shopName: "", shopAddress: "", city: "", state: "", pincode: "", gstNumber: "",
     customerType: "personal" as "personal" | "business",
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -144,9 +145,14 @@ const Signup = () => {
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Password</label>
-                <input type="password" name="password" placeholder="Min. 8 characters" value={formData.password} onChange={handleChange}
-                   className="w-full px-4 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-               </div>
+                <div className="relative">
+                  <input type={showPassword ? "text" : "password"} name="password" placeholder="Min. 8 characters" value={formData.password} onChange={handleChange}
+                    className="w-full px-4 py-2.5 pr-10 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
                {userType === "customer" && (
                  <div>
                    <label className="text-sm font-medium text-foreground mb-1.5 block">Account Type</label>

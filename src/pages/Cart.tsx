@@ -70,8 +70,8 @@ const CartPage = () => {
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                className="w-8 h-8 rounded-lg border border-input flex items-center justify-center hover:bg-secondary"
-                                disabled={loading}
+                                className="w-8 h-8 rounded-lg border border-input flex items-center justify-center hover:bg-secondary disabled:opacity-30 disabled:cursor-not-allowed"
+                                disabled={loading || item.quantity <= (product?.min_quantity || 1)}
                               >
                                 <Minus className="w-3 h-3" />
                               </button>

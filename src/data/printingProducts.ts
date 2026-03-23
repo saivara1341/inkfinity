@@ -151,7 +151,8 @@ const posterSizes: PrintSize[] = [
   { id: "pos-a2", label: "A2", dimensions: "420 × 594 mm", widthMM: 420, heightMM: 594, widthInch: "16.5", heightInch: "23.4", basePrice: 89 },
   { id: "pos-a1", label: "A1", dimensions: "594 × 841 mm", widthMM: 594, heightMM: 841, widthInch: "23.4", heightInch: "33.1", basePrice: 149 },
   { id: "pos-a0", label: "A0", dimensions: "841 × 1189 mm", widthMM: 841, heightMM: 1189, widthInch: "33.1", heightInch: "46.8", basePrice: 299 },
-  { id: "pos-13x17", label: "13 × 17 inch", dimensions: "330 × 432 mm", widthMM: 330, heightMM: 432, widthInch: "13", heightInch: "17", basePrice: 59 },
+  { id: "pos-12x18", label: "12 × 18 inch (Indian Standard)", dimensions: "305 × 457 mm", widthMM: 305, heightMM: 457, widthInch: "12", heightInch: "18", basePrice: 35 },
+  { id: "pos-13x19", label: "13 × 19 inch (Super A3)", dimensions: "330 × 483 mm", widthMM: 330, heightMM: 483, widthInch: "13", heightInch: "19", basePrice: 40 },
   { id: "pos-18x24", label: "18 × 24 inch", dimensions: "457 × 610 mm", widthMM: 457, heightMM: 610, widthInch: "18", heightInch: "24", basePrice: 99 },
   { id: "pos-24x36", label: "24 × 36 inch", dimensions: "610 × 914 mm", widthMM: 610, heightMM: 914, widthInch: "24", heightInch: "36", basePrice: 179 },
   { id: "pos-36x48", label: "36 × 48 inch", dimensions: "914 × 1219 mm", widthMM: 914, heightMM: 1219, widthInch: "36", heightInch: "48", basePrice: 299 },
@@ -220,9 +221,10 @@ const stickerPapers: PaperType[] = [
 // ID CARDS
 // ═══════════════════════════════════════════════
 const idCardSizes: PrintSize[] = [
-  { id: "id-cr80", label: "CR80 Standard", dimensions: "86 × 54 mm", widthMM: 86, heightMM: 54, widthInch: "3.38", heightInch: "2.13", basePrice: 25 },
-  { id: "id-cr79", label: "CR79 (Adhesive Back)", dimensions: "84 × 52 mm", widthMM: 84, heightMM: 52, widthInch: "3.31", heightInch: "2.05", basePrice: 30 },
-  { id: "id-cr100", label: "CR100 (Large)", dimensions: "92 × 60 mm", widthMM: 92, heightMM: 60, widthInch: "3.63", heightInch: "2.36", basePrice: 35 },
+  { id: "id-cr80-l", label: "CR80 Standard (Landscape)", dimensions: "86 × 54 mm", widthMM: 86, heightMM: 54, widthInch: "3.38", heightInch: "2.13", basePrice: 25 },
+  { id: "id-cr80-p", label: "CR80 Standard (Portrait)", dimensions: "54 × 86 mm", widthMM: 54, heightMM: 86, widthInch: "2.13", heightInch: "3.38", basePrice: 25 },
+  { id: "id-cr79-l", label: "CR79 (Landscape)", dimensions: "84 × 52 mm", widthMM: 84, heightMM: 52, widthInch: "3.31", heightInch: "2.05", basePrice: 30 },
+  { id: "id-cr79-p", label: "CR79 (Portrait)", dimensions: "52 × 84 mm", widthMM: 52, heightMM: 84, widthInch: "2.05", heightInch: "3.31", basePrice: 30 },
 ];
 
 const idCardPapers: PaperType[] = [
@@ -301,6 +303,32 @@ const notepadSizes: PrintSize[] = [
   { id: "np-a4", label: "A4 Notepad", dimensions: "210 × 297 mm", widthMM: 210, heightMM: 297, widthInch: "8.3", heightInch: "11.7", basePrice: 50 },
   { id: "np-pocket", label: "Pocket Notepad", dimensions: "90 × 140 mm", widthMM: 90, heightMM: 140, widthInch: "3.5", heightInch: "5.5", basePrice: 25 },
   { id: "np-diary-a5", label: "A5 Diary", dimensions: "148 × 210 mm", widthMM: 148, heightMM: 210, widthInch: "5.8", heightInch: "8.3", basePrice: 120 },
+];
+
+// ═══════════════════════════════════════════════
+// MENU CARDS
+// ═══════════════════════════════════════════════
+const menuCardSizes: PrintSize[] = [
+  { id: "menu-a4-single", label: "A4 Single Page", dimensions: "210 × 297 mm", widthMM: 210, heightMM: 297, widthInch: "8.3", heightInch: "11.7", basePrice: 45 },
+  { id: "menu-a4-bifold", label: "A4 Bi-Fold", dimensions: "210 × 297 mm → 148 × 210 mm", widthMM: 210, heightMM: 297, widthInch: "8.3", heightInch: "11.7", basePrice: 85 },
+  { id: "menu-a3-bifold", label: "A3 Bi-Fold", dimensions: "297 × 420 mm → 210 × 297 mm", widthMM: 297, heightMM: 420, widthInch: "11.7", heightInch: "16.5", basePrice: 145 },
+  { id: "menu-tent", label: "Table Tent", dimensions: "100 × 150 mm", widthMM: 100, heightMM: 150, widthInch: "4", heightInch: "6", basePrice: 35 },
+];
+
+const menuPapers: PaperType[] = [
+  { id: "art-300-lam", label: "300 GSM Laminated", gsm: 300, description: "Standard menu, spill-resistant", priceMultiplier: 1 },
+  { id: "synthetic-non-tear", label: "Synthetic Non-Tearable", gsm: 0, description: "100% waterproof and durable", priceMultiplier: 2.5 },
+  { id: "textured-350", label: "350 GSM Textured", gsm: 350, description: "Premium feel, elegant look", priceMultiplier: 1.8 },
+];
+
+// ═══════════════════════════════════════════════
+// CALENDARS
+// ═══════════════════════════════════════════════
+const calendarSizes: PrintSize[] = [
+  { id: "cal-desk", label: "Desk Calendar (A5)", dimensions: "210 × 148 mm", widthMM: 210, heightMM: 148, widthInch: "8.3", heightInch: "5.8", basePrice: 199 },
+  { id: "cal-wall-a3", label: "Wall Calendar (A3)", dimensions: "297 × 420 mm", widthMM: 297, heightMM: 420, widthInch: "11.7", heightInch: "16.5", basePrice: 399 },
+  { id: "cal-wall-a2", label: "Wall Calendar (A2)", dimensions: "420 × 594 mm", widthMM: 420, heightMM: 594, widthInch: "16.5", heightInch: "23.4", basePrice: 599 },
+  { id: "cal-pocket", label: "Pocket Calendar", dimensions: "89 × 54 mm", widthMM: 89, heightMM: 54, widthInch: "3.5", heightInch: "2.1", basePrice: 10 },
 ];
 
 // ═══════════════════════════════════════════════
@@ -797,6 +825,56 @@ export const productCategories: ProductCategory[] = [
           { min: 100, max: 499, pricePerUnit: 25 },
         ],
         printingMethods: printingMethodsDigital, turnaroundDays: "5-7",
+      },
+    ],
+  },
+  {
+    id: "menu-cards",
+    name: "Menu Cards",
+    description: "Professional menus for restaurants and cafes",
+    icon: "BookOpen",
+    subcategories: [
+      {
+        id: "restaurant-menu", name: "Restaurant Menu", description: "Laminated or synthetic menu cards",
+        startingPrice: "₹45", unit: "per menu", minQty: 10, popular: true,
+        sizes: menuCardSizes, papers: menuPapers, finishes: commonFinishes,
+        quantityTiers: [
+          { min: 10, max: 49, pricePerUnit: 65 }, { min: 50, max: 99, pricePerUnit: 55 },
+          { min: 100, max: 999, pricePerUnit: 45 },
+        ],
+        printingMethods: printingMethodsDigital, turnaroundDays: "3-5",
+      },
+    ],
+  },
+  {
+    id: "calendars",
+    name: "Calendars",
+    description: "Custom calendars for year-round branding",
+    icon: "Clock",
+    subcategories: [
+      {
+        id: "desk-calendar", name: "Desk Calendar", description: "Personalized tent calendars",
+        startingPrice: "₹199", unit: "per unit", minQty: 5, popular: true,
+        sizes: [calendarSizes[0]],
+        papers: [visitingCardPapers[1], visitingCardPapers[2]],
+        finishes: [{ id: "wiro", label: "Wiro Binding", description: "Spiral wire binding", priceAdd: 0 }],
+        quantityTiers: [
+          { min: 5, max: 19, pricePerUnit: 299 }, { min: 20, max: 49, pricePerUnit: 249 },
+          { min: 50, max: 999, pricePerUnit: 199 },
+        ],
+        printingMethods: printingMethodsDigital, turnaroundDays: "5-7",
+      },
+      {
+        id: "wall-calendar", name: "Wall Calendar", description: "Multi-page wall calendars",
+        startingPrice: "₹399", unit: "per unit", minQty: 5,
+        sizes: [calendarSizes[1], calendarSizes[2]],
+        papers: [flyerPapers[2], flyerPapers[3]],
+        finishes: [{ id: "top-tinning", label: "Top Tinning", description: "Metal hanging clip", priceAdd: 0 }],
+        quantityTiers: [
+          { min: 5, max: 19, pricePerUnit: 499 }, { min: 20, max: 49, pricePerUnit: 449 },
+          { min: 50, max: 999, pricePerUnit: 399 },
+        ],
+        printingMethods: printingMethodsDigital, turnaroundDays: "7-10",
       },
     ],
   },

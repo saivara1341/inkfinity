@@ -25,6 +25,7 @@ const Storefront = lazy(() => import("./pages/Storefront"));
 const CartPage = lazy(() => import("./pages/Cart"));
 const ForShops = lazy(() => import("./pages/ForShops"));
 const RegisterShop = lazy(() => import("./pages/RegisterShop"));
+const MobileBottomNav = lazy(() => import("./components/MobileBottomNav"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -73,6 +74,7 @@ const App = () => (
 
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+                <MobileBottomNav />
               </Suspense>
             </BrowserRouter>
           </TooltipProvider>

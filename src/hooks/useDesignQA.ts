@@ -22,7 +22,7 @@ export const useDesignQA = () => {
 
     const fileSizeMb = file.size / (1024 * 1024);
     const warnings: string[] = [];
-    let isValid = true;
+    const isValid = true;
 
     // Rule 1: Resolution/File Size check (Proxy for quality)
     // 300 DPI for a standard visiting card is roughly 2MB+ in raw pixels

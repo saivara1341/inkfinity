@@ -11,6 +11,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import locationsData from "@/data/india-locations.json";
+
+const PINCODE_MAP: Record<string, string> = {
+  "Chennai": "600001",
+  "Mumbai City": "400001",
+  "New Delhi": "110001",
+  "Bengaluru Urban": "560001",
+  "Hyderabad": "500001",
+  "Pune": "411001",
+  "Ahmedabad": "380001",
+  "Kolkata": "700001",
+  "Lucknow": "226001",
+  "Jaipur": "302001"
+};
 
 const SERVICES = [
   "Visiting Cards", "Flyers & Leaflets", "Brochures & Pamphlets",
@@ -18,15 +32,6 @@ const SERVICES = [
   "ID Cards", "Letterheads", "Envelopes", "Packaging",
   "T-Shirt Printing", "Mugs & Merchandise", "Photo Printing",
   "Book Printing", "Wedding Cards"
-];
-
-const INDIAN_STATES = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
-  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
-  "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
-  "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab",
-  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura",
-  "Uttar Pradesh", "Uttarakhand", "West Bengal", "Delhi",
 ];
 
 const RegisterShop = () => {
@@ -37,8 +42,15 @@ const RegisterShop = () => {
   const [form, setForm] = useState({
     name: "", description: "", phone: "", email: "",
     address: "", city: "", state: "", pincode: "",
+    country: "India", district: "",
     services: [] as string[],
   });
+  const [stateSearch, setStateSearch] = useState("");
+  const [districtSearch, setDistrictSearch] = useState("");
+
+  const countries = Object.keys(locationsData);
+  const states = form.country ? Object.keys((locationsData as any)[form.country] || {}) : [];
+  const districts = (form.country && form.state) ? (locationsData as any)[form.country][form.state] || [] : [];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -204,24 +216,49 @@ const RegisterShop = () => {
                     rows={2}
                     className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-foreground mb-1.5 block">City *</label>
-                    <input name="city" value={form.city} onChange={handleChange} placeholder="Mumbai"
-                      className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">Country *</label>
+                    <select name="country" value={form.country} onChange={handleChange}
+                      className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                      {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">State *</label>
-                    <select name="state" value={form.state} onChange={handleChange}
-                      className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                      <option value="">Select state</option>
-                      {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                    <div className="relative">
+                      <select name="state" value={form.state} onChange={(e) => {
+                        setForm({ ...form, state: e.target.value, district: "", pincode: "" });
+                      }}
+                        className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                        <option value="">Select State</option>
+                        {states.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">District *</label>
+                    <select name="district" value={form.district} onChange={(e) => {
+                      const dist = e.target.value;
+                      const autoPin = PINCODE_MAP[dist] || "";
+                      setForm({ ...form, district: dist, city: dist, pincode: autoPin });
+                    }}
+                      disabled={!form.state}
+                      className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50">
+                      <option value="">Select District</option>
+                      {districts.map((d: string) => <option key={d} value={d}>{d}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Pincode *</label>
                     <input name="pincode" value={form.pincode} onChange={handleChange} placeholder="400001" maxLength={6}
                       className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                    {form.district && PINCODE_MAP[form.district] && (
+                      <p className="text-[10px] text-accent mt-1 italic">Auto-filled based on district. Feel free to edit.</p>
+                    )}
                   </div>
                 </div>
               </div>

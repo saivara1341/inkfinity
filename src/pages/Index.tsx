@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import HeroSection from "@/components/landing/HeroSection";
 import FeaturesSection from "@/components/landing/FeaturesSection";
 import ProductShowcase from "@/components/landing/ProductShowcase";
+import ShopShowcase from "@/components/landing/ShopShowcase";
 import HowItWorks from "@/components/landing/HowItWorks";
 import CTASection from "@/components/landing/CTASection";
 
@@ -31,6 +32,7 @@ const Index = () => {
       <Navbar />
       <HeroSection />
       <ProductShowcase />
+      <ShopShowcase />
       <FeaturesSection />
       <HowItWorks />
       <CTASection />

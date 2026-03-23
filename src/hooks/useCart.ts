@@ -48,6 +48,7 @@ export const useCart = (userId?: string) => {
           shop_id: shopId,
           quantity,
           specifications: specs || {},
+          design_file_url: specs?.frontDesign || null,
         });
         if (error) throw error;
       }
@@ -59,13 +60,18 @@ export const useCart = (userId?: string) => {
 
   const updateQuantityMutation = useMutation({
     mutationFn: async ({ itemId, quantity }: { itemId: string; quantity: number }) => {
+      const item = items.find(i => i.id === itemId);
+      const minQty = (item as any)?.product?.min_quantity || 1;
+
       if (quantity <= 0) {
         const { error } = await supabase.from("cart_items").delete().eq("id", itemId);
         if (error) throw error;
       } else {
+        // Enforce min quantity if not deleting
+        const finalQuantity = Math.max(minQty, quantity);
         const { error } = await supabase
           .from("cart_items")
-          .update({ quantity })
+          .update({ quantity: finalQuantity })
           .eq("id", itemId);
         if (error) throw error;
       }

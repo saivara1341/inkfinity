@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -60,19 +60,7 @@ const Storefront = () => {
 
   const shopFilter = searchParams.get("shop");
 
-  // Re-fetch when view/category/sort/shop filter changes
-  useEffect(() => {
-    fetchData();
-  }, [selectedCategory, sortBy, shopFilter]);
-
-  // Sync view from URL
-  useEffect(() => {
-    const urlView = searchParams.get("view");
-    if (urlView === "shops") setView("shops");
-    else if (urlView === "products") setView("products");
-  }, [searchParams]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
 
     // Fetch products with shop info
@@ -110,7 +98,7 @@ const Storefront = () => {
         .eq("is_active", true);
 
       const countMap: Record<string, number> = {};
-      (productCounts || []).forEach((p: any) => {
+      (productCounts || []).forEach((p: { shop_id: string }) => {
         countMap[p.shop_id] = (countMap[p.shop_id] || 0) + 1;
       });
 
@@ -123,7 +111,19 @@ const Storefront = () => {
     }
 
     setLoading(false);
-  };
+  }, [selectedCategory, sortBy, shopFilter]);
+
+  // Re-fetch when view/category/sort/shop filter changes
+  useEffect(() => {
+    fetchData();
+  }, [selectedCategory, sortBy, shopFilter, fetchData]);
+
+  // Sync view from URL
+  useEffect(() => {
+    const urlView = searchParams.get("view");
+    if (urlView === "shops") setView("shops");
+    else if (urlView === "products") setView("products");
+  }, [searchParams]);
 
   const filteredProducts = products.filter((p) =>
     !searchQuery ||
@@ -143,9 +143,12 @@ const Storefront = () => {
       toast.error("Please log in to add items to cart");
       return;
     }
-    const { error } = await addToCart(product.id, product.shop_id, product.min_quantity);
-    if (error) toast.error("Failed to add to cart");
-    else toast.success(`${product.name} added to cart!`);
+    try {
+      await addToCart(product.id, product.shop_id, product.min_quantity);
+      toast.success(`${product.name} added to cart!`);
+    } catch (error) {
+      toast.error("Failed to add to cart");
+    }
   };
 
   // Get the shop name if filtering by shop

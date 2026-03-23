@@ -217,15 +217,31 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
                       </td>
                       <td className="px-5 py-4">
                         {(order as any).design_file_url ? (
-                          <a 
-                            href={(order as any).design_file_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors text-xs font-medium w-fit"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                            Design
-                          </a>
+                          <div className="flex flex-col gap-2">
+                            <div className="w-12 h-12 rounded bg-muted border border-border overflow-hidden group/thumb relative">
+                              <img 
+                                src={(order as any).design_file_url} 
+                                alt="Design" 
+                                className="w-full h-full object-cover"
+                              />
+                              <a 
+                                href={(order as any).design_file_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity"
+                              >
+                                <ExternalLink className="w-4 h-4 text-white" />
+                              </a>
+                            </div>
+                            <a 
+                              href={(order as any).design_file_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-[10px] font-medium text-accent hover:underline flex items-center gap-1"
+                            >
+                              <Download className="w-3 h-3" /> Download
+                            </a>
+                          </div>
                         ) : (
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
                             <Info className="w-3.5 h-3.5" /> None
@@ -282,22 +298,48 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
                       </td>
                       <td className="px-5 py-4 text-xs text-muted-foreground">{format(new Date(order.created_at), "MMM d, h:mm a")}</td>
                       <td className="px-5 py-4 text-right">
-                        <Select
-                          value={order.status}
-                          onValueChange={(val) => handleStatusChange(order.id, val)}
-                          disabled={updatingId === order.id || order.status === "delivered" || order.status === "cancelled"}
-                        >
-                          <SelectTrigger className="h-8 w-[140px] text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ORDER_STATUSES.map((s) => (
-                              <SelectItem key={s} value={s} className="text-xs">
-                                {statusLabels[s]}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <div className="flex flex-col items-end gap-2">
+                          {order.status !== "delivered" && order.status !== "cancelled" && (
+                            <Button
+                              size="sm"
+                              variant="accent"
+                              className="h-7 text-[10px] font-bold uppercase w-[140px]"
+                              disabled={updatingId === order.id}
+                              onClick={() => {
+                                const currentIndex = ORDER_STATUSES.indexOf(order.status as any);
+                                if (currentIndex < ORDER_STATUSES.length - 2) { // up to 'shipped'
+                                  handleStatusChange(order.id, ORDER_STATUSES[currentIndex + 1]);
+                                } else if (order.status === "shipped") {
+                                  handleStatusChange(order.id, "delivered");
+                                }
+                              }}
+                            >
+                              {order.status === "pending" ? "Confirm Order" :
+                               order.status === "confirmed" ? "Start Design" :
+                               order.status === "designing" ? "Start Printing" :
+                               order.status === "printing" ? "Quality Check" :
+                               order.status === "quality_check" ? (isPickup ? "Ready Pickup" : "Mark Shipped") :
+                               order.status === "shipped" ? "Mark Delivered" : "Update"}
+                            </Button>
+                          )}
+
+                          <Select
+                            value={order.status}
+                            onValueChange={(val) => handleStatusChange(order.id, val)}
+                            disabled={updatingId === order.id || order.status === "delivered" || order.status === "cancelled"}
+                          >
+                            <SelectTrigger className="h-8 w-[140px] text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ORDER_STATUSES.map((s) => (
+                                <SelectItem key={s} value={s} className="text-xs">
+                                  {statusLabels[s]}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </td>
                     </tr>
                   );

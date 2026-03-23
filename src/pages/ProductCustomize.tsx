@@ -16,6 +16,7 @@ import { lazy, Suspense } from "react";
 const ProductPreview3D = lazy(() => import("@/components/ProductPreview3D"));
 import AIDesignGenerator from "@/components/AIDesignGenerator";
 import QuotationGenerator from "@/components/QuotationGenerator";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useDesignQA } from "@/hooks/useDesignQA";
 import { getSubcategoryById, getAllSubcategories } from "@/data/printingProducts";
 import type { PrintSize, PaperType, FinishType } from "@/data/printingProducts";
@@ -43,7 +44,6 @@ const ProductCustomize = () => {
   const shopId = queryParams.get("shopId");
   const [uploading, setUploading] = useState(false);
   
-  const { analyzeDesign, qaResult, isAnalyzing, resetQA } = useDesignQA();
   const { addToCart } = useCart(user?.id);
   
   const [dbProduct, setDbProduct] = useState<any>(null);
@@ -111,13 +111,26 @@ const ProductCustomize = () => {
   const [selectedSize, setSelectedSize] = useState<PrintSize>(product?.sizes[0] || {} as PrintSize);
   const [selectedPaper, setSelectedPaper] = useState<PaperType>(product?.papers[0] || {} as PaperType);
   const [selectedFinish, setSelectedFinish] = useState<FinishType>(product?.finishes[0] || {} as FinishType);
-  const [quantity, setQuantity] = useState(product?.minQty || 100);
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [aiDesignUrl, setAiDesignUrl] = useState<string | null>(null);
-  const [validation, setValidation] = useState<FileValidation | null>(null);
-  const [isValidating, setIsValidating] = useState(false);
+  const [quantity, setQuantity] = useState(product?.minQty || 1);
+  
+  // Design State
+  const [frontFile, setFrontFile] = useState<File | null>(null);
+  const [frontPreview, setFrontPreview] = useState<string | null>(null);
+  const [frontAiUrl, setFrontAiUrl] = useState<string | null>(null);
+  const [frontValidation, setFrontValidation] = useState<FileValidation | null>(null);
+  
+  const [backFile, setBackFile] = useState<File | null>(null);
+  const [backPreview, setBackPreview] = useState<string | null>(null);
+  const [backAiUrl, setBackAiUrl] = useState<string | null>(null);
+  const [backValidation, setBackValidation] = useState<FileValidation | null>(null);
+  
+  const [useSameImage, setUseSameImage] = useState(false);
   const [printSides, setPrintSides] = useState<"single" | "double">("single");
+
+  // Design Quality Audits
+  const frontQA = useDesignQA();
+  const backQA = useDesignQA();
+
   const [matchingShops, setMatchingShops] = useState<any[]>([]);
   const [selectedShopId, setSelectedShopId] = useState<string>("");
   const [loadingShops, setLoadingShops] = useState(false);
@@ -128,7 +141,9 @@ const ProductCustomize = () => {
       if (!selectedSize.id) setSelectedSize(product.sizes[0] || {} as PrintSize);
       if (!selectedPaper.id) setSelectedPaper(product.papers[0] || {} as PaperType);
       if (!selectedFinish.id) setSelectedFinish(product.finishes[0] || {} as FinishType);
-      if (quantity < (product.minQty || 1)) setQuantity(product.minQty || 100);
+      
+      const minVal = product.minQty || 1;
+      if (quantity < minVal) setQuantity(minVal);
 
       // Reset shop selection when product changes
       setSelectedShopId("");
@@ -174,6 +189,38 @@ const ProductCustomize = () => {
         }
       };
       fetchMatchingShops();
+    }
+  }, [product, quantity, selectedFinish.id, selectedPaper.id, selectedSize.id]);
+
+  // Handle Reorder Specs
+  useEffect(() => {
+    const reorderSpecsStr = sessionStorage.getItem("reorder_specs");
+    if (reorderSpecsStr && product) {
+      try {
+        const specs = JSON.parse(reorderSpecsStr);
+        if (specs.size) {
+          const size = product.sizes.find((s: any) => s.label === specs.size);
+          if (size) setSelectedSize(size);
+        }
+        if (specs.paper) {
+          const paper = product.papers.find((p: any) => p.label === specs.paper);
+          if (paper) setSelectedPaper(paper);
+        }
+        if (specs.finish) {
+          const finish = product.finishes.find((f: any) => f.label === specs.finish);
+          if (finish) setSelectedFinish(finish);
+        }
+        if (specs.sides) setPrintSides(specs.sides);
+        if (specs.useSameImage !== undefined) setUseSameImage(specs.useSameImage);
+        if (specs.frontDesign) setFrontAiUrl(specs.frontDesign);
+        if (specs.backDesign) setBackAiUrl(specs.backDesign);
+        
+        // Clear it so it doesn't persist on fresh navigations
+        sessionStorage.removeItem("reorder_specs");
+        toast.info("Previous order specifications applied!");
+      } catch (err) {
+        console.error("Error parsing reorder specs:", err);
+      }
     }
   }, [product]);
   
@@ -263,28 +310,58 @@ const ProductCustomize = () => {
     });
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, side: "front" | "back" = "front") => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setIsValidating(true);
-    setUploadedFile(file);
-    if (file.type.startsWith("image/")) {
-      setPreviewUrl(URL.createObjectURL(file));
-      // AI QA Analysis
-      await analyzeDesign(file);
-    } else {
-      setPreviewUrl(null);
-    }
+
     const result = await validateFile(file);
-    setValidation(result);
-    setIsValidating(false);
+    const isImage = file.type.startsWith("image/");
+    const preview = isImage ? URL.createObjectURL(file) : null;
+
+    if (side === "front") {
+      setFrontFile(file);
+      setFrontPreview(preview);
+      setFrontValidation(result);
+      setFrontAiUrl(null); // Clear AI url if manual upload
+      if (isImage) await frontQA.analyzeDesign(file);
+      
+      if (useSameImage) {
+        setBackFile(file);
+        setBackPreview(preview);
+        setBackValidation(result);
+        setBackAiUrl(null);
+        if (isImage) await backQA.analyzeDesign(file);
+      }
+    } else {
+      setBackFile(file);
+      setBackPreview(preview);
+      setBackValidation(result);
+      setBackAiUrl(null);
+      if (isImage) await backQA.analyzeDesign(file);
+    }
   };
 
-  const removeFile = () => {
-    setUploadedFile(null);
-    setPreviewUrl(null);
-    setValidation(null);
-    resetQA();
+  const removeFile = (side: "front" | "back" = "front") => {
+    if (side === "front") {
+      setFrontFile(null);
+      setFrontPreview(null);
+      setFrontValidation(null);
+      setFrontAiUrl(null);
+      frontQA.resetQA();
+      if (useSameImage) {
+        setBackFile(null);
+        setBackPreview(null);
+        setBackValidation(null);
+        setBackAiUrl(null);
+        backQA.resetQA();
+      }
+    } else {
+      setBackFile(null);
+      setBackPreview(null);
+      setBackValidation(null);
+      setBackAiUrl(null);
+      backQA.resetQA();
+    }
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -320,15 +397,86 @@ const ProductCustomize = () => {
     };
   };
 
+  const handleProceedToCheckout = async () => {
+    if (!user) { toast.error("Please log in first"); navigate("/login"); return; }
+    
+    if (!selectedShopId) {
+      toast.error("Please select a print shop to continue");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      let frontUrl = frontAiUrl || "";
+      let backUrl = backAiUrl || "";
+
+      if (frontFile) {
+        const ext = frontFile.name.split(".").pop();
+        const path = `${user.id}/front_${Date.now()}.${ext}`;
+        const { error: uploadError } = await supabase.storage.from("designs").upload(path, frontFile);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage.from("designs").getPublicUrl(path);
+        frontUrl = urlData.publicUrl;
+      }
+
+      if (printSides === "double" && !useSameImage && backFile) {
+        const ext = backFile.name.split(".").pop();
+        const path = `${user.id}/back_${Date.now()}.${ext}`;
+        const { error: uploadError } = await supabase.storage.from("designs").upload(path, backFile);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage.from("designs").getPublicUrl(path);
+        backUrl = urlData.publicUrl;
+      } else if (useSameImage || printSides === "single") {
+        backUrl = frontUrl;
+      }
+
+      sessionStorage.setItem("design_file_url", frontUrl || "");
+      sessionStorage.setItem("back_design_file_url", backUrl || "");
+      
+      sessionStorage.setItem("customize_product", JSON.stringify({
+        name: product.name,
+        category: product.categoryId,
+        size: selectedSize.label,
+        paper: selectedPaper.label,
+        finish: selectedFinish.label,
+        sides: printSides,
+        quantity,
+        unitPrice: price.perUnit,
+        total: price.total,
+        shopId: shopId || (dbProduct as any)?.shop_id || null,
+        qaWarnings: frontQA.qaResult?.warnings || [],
+      }));
+
+      await addToCart(
+        product.id,
+        selectedShopId,
+        quantity,
+        {
+          size: selectedSize.label,
+          paper: selectedPaper.label,
+          finish: selectedFinish.label,
+          sides: printSides,
+          useSameImage,
+          frontDesign: frontUrl,
+          backDesign: backUrl,
+        }
+      );
+
+      navigate("/checkout");
+    } catch (err: any) {
+      toast.error("Failed to add to cart: " + err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleShareWhatsApp = () => {
-    const message = `Check out this design I created on PrintFlow for my ${product.name}! 🚀\n\nView design: ${previewUrl || aiDesignUrl}`;
+    const preview = frontPreview || frontAiUrl || "";
+    const message = `Check out this design I created on PrintFlow for my ${product.name}! 🚀\n\nView design: ${preview}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
   };
 
   const price = calculatePrice();
-
-
-
 
   return (
     <div className="min-h-screen bg-background">
@@ -499,104 +647,150 @@ const ProductCustomize = () => {
                   <label className="text-sm text-muted-foreground">Custom:</label>
                   <Input
                     type="number"
-                    min={product.quantityTiers[0].min}
+                    min={product.minQty || 1}
                     value={quantity}
-                    onChange={(e) => setQuantity(Math.max(product.quantityTiers[0].min, parseInt(e.target.value) || 0))}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value) || 0;
+                      const minVal = product.minQty || 1;
+                      setQuantity(val > 0 ? Math.max(minVal, val) : minVal);
+                    }}
                     className="w-28"
                   />
-                  <span className="text-sm text-muted-foreground">Min: {product.quantityTiers[0].min}</span>
+                  <span className="text-sm text-muted-foreground">Min: {product.minQty || 1}</span>
                 </div>
               </div>
 
-              {/* File Upload */}
+              {/* Design Upload Section */}
               <div className="bg-card rounded-xl border border-border p-5 shadow-card">
-                <h3 className="font-display font-semibold text-foreground mb-4">6. Upload Your Design</h3>
-                
-                {!uploadedFile ? (
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-accent/50 hover:bg-accent/5 transition-all"
-                  >
-                    <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                    <p className="font-medium text-foreground mb-1">Click to upload or drag and drop</p>
-                    <p className="text-sm text-muted-foreground">PNG, JPG, or PDF (max 25MB)</p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Recommended: 300 DPI • {selectedSize.dimensions} with 3mm bleed
-                    </p>
-                  </div>
-                ) : (
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-display font-semibold text-foreground">6. Upload Your Design</h3>
+                  {printSides === "double" && (
+                    <div className="flex items-center gap-2">
+                      <Checkbox 
+                        id="same-image" 
+                        checked={useSameImage} 
+                        onCheckedChange={(checked) => {
+                          setUseSameImage(!!checked);
+                          if (checked && frontFile) {
+                            setBackFile(frontFile);
+                            setBackPreview(frontPreview);
+                            setBackValidation(frontValidation);
+                            if (frontQA.qaResult) backQA.analyzeDesign(frontFile);
+                          }
+                        }} 
+                      />
+                      <label htmlFor="same-image" className="text-sm text-muted-foreground cursor-pointer">Use same image for both sides</label>
+                    </div>
+                  )}
+                </div>
+
+                <div className={`grid grid-cols-1 ${printSides === "double" && !useSameImage ? "md:grid-cols-2" : ""} gap-6`}>
+                  {/* Front Design */}
                   <div className="space-y-4">
-                    <div className="flex gap-4">
-                      {previewUrl && (
-                        <div className="w-40 h-24 rounded-lg overflow-hidden bg-secondary flex items-center justify-center">
-                          <img src={previewUrl} alt="Preview" className="max-w-full max-h-full object-contain" />
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <p className="font-medium text-foreground flex items-center gap-2">
-                              <FileImage className="w-4 h-4" />
-                              {uploadedFile.name}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB • {validation?.format}
-                            </p>
-                          </div>
-                          <button onClick={removeFile} className="p-1 hover:bg-secondary rounded">
-                            <X className="w-5 h-5 text-muted-foreground" />
-                          </button>
-                        </div>
-                        
-                        {(validation || qaResult || isAnalyzing) && (
-                          <div className="mt-3 space-y-3 p-3 bg-secondary/20 rounded-lg border border-border">
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                                <Sparkles className="w-3 h-3 text-accent" /> AI Design Quality Audit
-                              </h4>
-                              {isAnalyzing && <span className="text-[10px] text-accent animate-pulse">Analyzing Pixels...</span>}
+                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      {printSides === "double" ? "Front Side" : "Design"}
+                    </p>
+                    {!frontFile ? (
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-accent/50 hover:bg-accent/5 transition-all"
+                      >
+                        <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+                        <p className="font-medium text-foreground text-sm mb-1">Upload Front</p>
+                        <p className="text-[10px] text-muted-foreground">PNG, JPG, or PDF (max 25MB)</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex gap-4">
+                          {frontPreview && (
+                            <div className="w-24 h-16 rounded-lg overflow-hidden bg-secondary flex items-center justify-center shrink-0">
+                              <img src={frontPreview} alt="Front Preview" className="max-w-full max-h-full object-contain" />
                             </div>
-                            
-                            {validation?.dimensions?.width > 0 && (
-                              <p className="text-sm text-muted-foreground">
-                                {validation.dimensions.width} × {validation.dimensions.height} px (~{validation.dpi} DPI)
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between">
+                              <p className="font-medium text-foreground text-sm truncate flex items-center gap-2">
+                                <FileImage className="w-3 h-3" /> {frontFile.name}
+                              </p>
+                              <button onClick={() => removeFile("front")} className="p-1 hover:bg-secondary rounded">
+                                <X className="w-4 h-4 text-muted-foreground" />
+                              </button>
+                            </div>
+                            {frontQA.isAnalyzing && <p className="text-[10px] text-accent animate-pulse">Analyzing...</p>}
+                            {frontQA.qaResult?.warnings?.[0] && (
+                              <p className="text-[10px] text-warning truncate flex items-center gap-1">
+                                <AlertTriangle className="w-3 h-3" /> {frontQA.qaResult.warnings[0]}
                               </p>
                             )}
-                            
-                            {qaResult?.warnings.map((warn, i) => (
-                              <div key={`qa-${i}`} className="flex items-start gap-2 text-warning text-sm">
-                                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" /><span>{warn}</span>
-                              </div>
-                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
-                            {!isAnalyzing && validation?.isValid && qaResult?.warnings.length === 0 && (
-                              <div className="flex items-center gap-2 text-success text-sm">
-                                <CheckCircle2 className="w-4 h-4" /><span>Design is professionally print-ready!</span>
+                  {/* Back Design (Only for double-sided and not same image) */}
+                  {printSides === "double" && !useSameImage && (
+                    <div className="space-y-4">
+                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Back Side</p>
+                      {!backFile ? (
+                        <div
+                          onClick={() => {
+                            const input = document.createElement("input");
+                            input.type = "file";
+                            input.accept = ".png,.jpg,.jpeg,.pdf";
+                            input.onchange = (e) => handleFileUpload(e as any, "back");
+                            input.click();
+                          }}
+                          className="border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-accent/50 hover:bg-accent/5 transition-all"
+                        >
+                          <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+                          <p className="font-medium text-foreground text-sm mb-1">Upload Back</p>
+                          <p className="text-[10px] text-muted-foreground">Unique design for reverse side</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="flex gap-4">
+                            {backPreview && (
+                              <div className="w-24 h-16 rounded-lg overflow-hidden bg-secondary flex items-center justify-center shrink-0">
+                                <img src={backPreview} alt="Back Preview" className="max-w-full max-h-full object-contain" />
                               </div>
                             )}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between">
+                                <p className="font-medium text-foreground text-sm truncate flex items-center gap-2">
+                                  <FileImage className="w-3 h-3" /> {backFile.name}
+                                </p>
+                                <button onClick={() => removeFile("back")} className="p-1 hover:bg-secondary rounded">
+                                  <X className="w-4 h-4 text-muted-foreground" />
+                                </button>
+                              </div>
+                              {backQA.isAnalyzing && <p className="text-[10px] text-accent animate-pulse">Analyzing...</p>}
+                              {backQA.qaResult?.warnings?.[0] && (
+                                <p className="text-[10px] text-warning truncate flex items-center gap-1">
+                                  <AlertTriangle className="w-3 h-3" /> {backQA.qaResult.warnings[0]}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="gap-1"><ZoomIn className="w-4 h-4" /> Preview</Button>
-                      <Button variant="outline" size="sm" className="gap-1 border-accent/30 text-accent hover:bg-accent/5" onClick={handleShareWhatsApp}>
-                        <Share2 className="w-4 h-4" /> Share on WhatsApp
-                      </Button>
-                      <Button variant="outline" size="sm" className="gap-1" onClick={removeFile}><RotateCcw className="w-4 h-4" /> Replace</Button>
-                    </div>
-                  </div>
-                )}
-                
-                <input ref={fileInputRef} type="file" accept=".png,.jpg,.jpeg,.pdf" onChange={handleFileUpload} className="hidden" />
+                  )}
+                </div>
+
+                <input ref={fileInputRef} type="file" accept=".png,.jpg,.jpeg,.pdf" onChange={(e) => handleFileUpload(e, "front")} className="hidden" />
                 
                 {/* AI Design Generator */}
                 <div className="mt-4">
                   <AIDesignGenerator
                     productType={product.categoryName}
                     onDesignSelected={(url) => {
-                      setAiDesignUrl(url);
-                      setPreviewUrl(url);
+                      setFrontAiUrl(url);
+                      setFrontPreview(url);
+                      if (useSameImage) {
+                        setBackAiUrl(url);
+                        setBackPreview(url);
+                      }
                     }}
                   />
                 </div>
@@ -685,7 +879,7 @@ const ProductCustomize = () => {
                     }
                     width={selectedSize.widthMM}
                     height={selectedSize.heightMM}
-                    imageUrl={previewUrl || aiDesignUrl}
+                    imageUrl={frontPreview || frontAiUrl || ""}
                     label={product.name}
                     finishId={selectedFinish.id}
                   />
@@ -766,60 +960,13 @@ const ProductCustomize = () => {
                     variant="coral" 
                     size="lg" 
                     className="w-full gap-2"
-                    disabled={!uploadedFile || (validation != null && !validation.isValid) || uploading}
-                    onClick={async () => {
-                      if (!user) { toast.error("Please log in first"); navigate("/login"); return; }
-                      if (!uploadedFile) return;
-                      setUploading(true);
-                      try {
-                        const ext = uploadedFile.name.split(".").pop();
-                        const path = `${user.id}/${Date.now()}.${ext}`;
-                        const { error: uploadError } = await supabase.storage.from("designs").upload(path, uploadedFile);
-                        if (uploadError) throw uploadError;
-                        const { data: urlData } = supabase.storage.from("designs").getPublicUrl(path);
-                        // Store in sessionStorage for checkout to pick up
-                        sessionStorage.setItem("design_file_url", urlData.publicUrl);
-                        sessionStorage.setItem("customize_product", JSON.stringify({
-                          name: product.name,
-                          category: product.categoryId,
-                          size: selectedSize.label,
-                          paper: selectedPaper.label,
-                          finish: selectedFinish.label,
-                          sides: printSides,
-                          quantity,
-                          unitPrice: price.perUnit,
-                          total: price.total,
-                          shopId: shopId || (dbProduct as any)?.shop_id || null,
-                          qaWarnings: qaResult?.warnings || [],
-                        }));
-
-                        // Add to cart in database
-                        const { error: cartError } = await addToCart(
-                          product.id,
-                          selectedShopId,
-                          quantity,
-                          {
-                            size: selectedSize.label,
-                            paper: selectedPaper.label,
-                            finish: selectedFinish.label,
-                            sides: printSides,
-                          }
-                        );
-
-                        if (cartError) throw cartError;
-
-                        navigate("/checkout");
-                      } catch (err: any) {
-                        toast.error("Failed to add to cart: " + err.message);
-                      } finally {
-                        setUploading(false);
-                      }
-                    }}
+                    disabled={(!frontFile && !frontAiUrl) || (printSides === "double" && !useSameImage && !backFile && !backAiUrl) || !selectedShopId || uploading}
+                    onClick={handleProceedToCheckout}
                   >
                     {uploading ? "Uploading..." : "Proceed to Checkout"} <ChevronRight className="w-4 h-4" />
                   </Button>
                   
-                  {!uploadedFile && (
+                  {(!frontFile && !frontAiUrl) && (
                     <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1">
                       <Info className="w-3 h-3" /> Upload your design to continue
                     </p>
@@ -831,16 +978,15 @@ const ProductCustomize = () => {
                     🚚 Estimated delivery: <strong className="text-foreground">{product.turnaroundDays} business days</strong>
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    🖨️ {product.printingMethods[0]?.label}
+                    🖨️ {product.printingMethods?.[0]?.label || "Standard Printing"}
                   </p>
                 </div>
 
-                {/* Quotation */}
                 <div className="mt-4">
                   <QuotationGenerator
                     items={[{
                       name: product.name,
-                      specifications: `${selectedSize.label} • ${selectedPaper.label} • ${selectedFinish.label} • ${printSides}-sided`,
+                      specifications: `${selectedSize.label} - ${selectedPaper.label} - ${selectedFinish.label} - ${printSides}-sided`,
                       quantity,
                       unitPrice: parseFloat(price.perUnit),
                       total: parseInt(price.total),

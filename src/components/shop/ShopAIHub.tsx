@@ -15,12 +15,11 @@ const ShopAIHub = () => {
   const [tokens, setTokens] = useState(850);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // Mock logic check for new user (in real app, this would come from props or hook)
+  const isNewUser = tokens === 0 || recentDesigns.length === 0;
+
   // Mock data for recent designs
-  const recentDesigns = [
-    { id: 1, name: "Modern Business Card", date: "2 mins ago", type: "Business Card", img: "https://images.unsplash.com/photo-1589939705384-5185138a047a?w=400&h=250&fit=crop" },
-    { id: 2, name: "Premium Banner", date: "1 hour ago", type: "Banner", img: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=400&h=250&fit=crop" },
-    { id: 3, name: "Minimalist Sticker", date: "3 hours ago", type: "Sticker", img: "https://images.unsplash.com/photo-1586075010633-de982cd26f1c?w=400&h=250&fit=crop" },
-  ];
+  const recentDesignsList = isNewUser ? [] : recentDesigns;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -116,32 +115,39 @@ const ShopAIHub = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {recentDesigns.map((design) => (
-            <div key={design.id} className="group relative bg-card border border-border rounded-xl overflow-hidden hover:shadow-md transition-all duration-300">
-              <div className="aspect-[16/10] overflow-hidden">
-                <img 
-                  src={design.img} 
-                  alt={design.name} 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                  <Button size="icon" variant="secondary" className="rounded-full w-8 h-8">
-                    <Download className="w-4 h-4" />
-                  </Button>
-                  <Button size="icon" variant="secondary" className="rounded-full w-8 h-8">
-                    <ExternalLink className="w-4 h-4" />
-                  </Button>
+          {recentDesignsList.length > 0 ? (
+            recentDesignsList.map((design) => (
+              <div key={design.id} className="group relative bg-card border border-border rounded-xl overflow-hidden hover:shadow-md transition-all duration-300">
+                <div className="aspect-[16/10] overflow-hidden">
+                  <img 
+                    src={design.img} 
+                    alt={design.name} 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <Button size="icon" variant="secondary" className="rounded-full w-8 h-8">
+                      <Download className="w-4 h-4" />
+                    </Button>
+                    <Button size="icon" variant="secondary" className="rounded-full w-8 h-8">
+                      <ExternalLink className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="p-3">
+                  <div className="flex justify-between items-start mb-1">
+                    <h4 className="font-medium text-sm truncate">{design.name}</h4>
+                    <Badge variant="outline" className="text-[10px] h-4">{design.type}</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{design.date}</p>
                 </div>
               </div>
-              <div className="p-3">
-                <div className="flex justify-between items-start mb-1">
-                  <h4 className="font-medium text-sm truncate">{design.name}</h4>
-                  <Badge variant="outline" className="text-[10px] h-4">{design.type}</Badge>
-                </div>
-                <p className="text-xs text-muted-foreground">{design.date}</p>
-              </div>
+            ))
+          ) : (
+            <div className="col-span-full py-12 text-center bg-secondary/10 rounded-xl border border-dashed border-border">
+              <Sparkles className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-50" />
+              <p className="text-sm text-muted-foreground">No AI designs generated yet. Start your first pack above!</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
 

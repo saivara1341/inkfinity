@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -10,10 +10,9 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
-// Local shim for missing global types
-type Tables<T extends string> = any;
-type Order = any;
+import { type Database, type Tables } from "@/integrations/supabase/types";
+
+type Order = Database["public"]["Tables"]["orders"]["Row"];
 
 const statusSteps = [
   { id: "pending", label: "Order Received", icon: Package, description: "Order confirmed & payment received" },
@@ -36,13 +35,7 @@ const OrderTracking = () => {
   const specs = order?.specifications as any || {};
   const isPickup = specs.shipping_method === "shop_pickup";
 
-  useEffect(() => {
-    if (searchParams.get("order")) {
-      handleTrack(searchParams.get("order")!);
-    }
-  }, []);
-
-  const handleTrack = async (id?: string) => {
+  const handleTrack = useCallback(async (id?: string) => {
     const searchId = id || trackingId;
     if (!searchId.trim()) return;
     setLoading(true);
@@ -54,7 +47,7 @@ const OrderTracking = () => {
       .eq("order_number", searchId.trim())
       .maybeSingle();
 
-    setOrder(orderData);
+    setOrder(orderData as unknown as Order);
 
     if (orderData?.shop_id) {
       const { data: shopData } = await supabase
@@ -68,7 +61,14 @@ const OrderTracking = () => {
     }
 
     setLoading(false);
-  };
+  }, [trackingId]);
+
+  useEffect(() => {
+    const orderId = searchParams.get("order");
+    if (orderId) {
+      handleTrack(orderId);
+    }
+  }, [searchParams, handleTrack]);
 
   const handleReorder = () => {
     if (!order) return;
@@ -111,7 +111,7 @@ const OrderTracking = () => {
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [order?.id]);
+  }, [order]);
 
   const currentStepIndex = order ? statusSteps.findIndex((s) => s.id === order.status) : -1;
 

@@ -30,11 +30,29 @@ export const useCart = (userId?: string) => {
   });
 
   const addMutation = useMutation({
-    mutationFn: async ({ productId, shopId, quantity, specs }: { productId: string; shopId: string; quantity: number; specs?: any }) => {
+    mutationFn: async ({ 
+      productId, 
+      shopId, 
+      quantity, 
+      specs,
+      productName,
+      categoryName
+    }: { 
+      productId: string | null; 
+      shopId: string; 
+      quantity: number; 
+      specs?: any;
+      productName?: string;
+      categoryName?: string;
+    }) => {
       if (!userId) throw new Error("Not logged in");
       
       // Check if already in cart
-      const existing = items.find((i) => i.product_id === productId);
+      const existing = items.find((i) => 
+        (productId && i.product_id === productId) || 
+        (!productId && i.generic_product_id === specs?.genericProductId)
+      );
+
       if (existing) {
         const { error } = await supabase
           .from("cart_items")
@@ -44,12 +62,15 @@ export const useCart = (userId?: string) => {
       } else {
         const { error } = await supabase.from("cart_items").insert({
           user_id: userId,
-          product_id: productId,
+          product_id: productId as any, // Might be null for generic
           shop_id: shopId,
           quantity,
           specifications: specs || {},
           design_file_url: specs?.frontDesign || null,
-        });
+          generic_product_id: specs?.genericProductId || null,
+          product_name: productName || null,
+          category_name: categoryName || null
+        } as any);
         if (error) throw error;
       }
     },
@@ -111,8 +132,8 @@ export const useCart = (userId?: string) => {
   return {
     items,
     loading,
-    addToCart: (productId: string, shopId: string, quantity: number, specs?: any) => 
-      addMutation.mutateAsync({ productId, shopId, quantity, specs }),
+    addToCart: (productId: string | null, shopId: string, quantity: number, specs?: any, productName?: string, categoryName?: string) => 
+      addMutation.mutateAsync({ productId, shopId, quantity, specs, productName, categoryName }),
     updateQuantity: (itemId: string, quantity: number) => 
       updateQuantityMutation.mutateAsync({ itemId, quantity }),
     removeFromCart: (itemId: string) => 

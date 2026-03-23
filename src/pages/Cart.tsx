@@ -61,10 +61,10 @@ const CartPage = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="font-display font-semibold text-foreground truncate">
-                            {product?.name || "Product"}
+                            {product?.name || (item as any).product_name || "Product"}
                           </h4>
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            {shop?.name} • {product?.category}
+                            {shop?.name} • {product?.category || (item as any).category_name || "Custom Printing"}
                           </p>
                           <div className="flex items-center justify-between mt-3">
                             <div className="flex items-center gap-2">

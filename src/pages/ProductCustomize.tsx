@@ -76,10 +76,10 @@ const ProductCustomize = () => {
             id: data.id,
             name: data.name,
             description: data.description,
-            categoryId: data.category_id || data.category,
+            categoryId: (data as any).category_id || data.category,
             categoryName: data.category,
             startingPrice: "₹" + data.base_price,
-            unit: data.unit || "per unit",
+            unit: (data as any).unit || "per unit",
             sizes: (data.specifications as any)?.sizes || [],
             papers: (data.specifications as any)?.papers || [],
             finishes: (data.specifications as any)?.finishes || [],
@@ -171,15 +171,15 @@ const ProductCustomize = () => {
             }
 
             setMatchingShops(finalData);
-            // Default to lowest price multiplier
-            const sortedByPrice = [...finalData].sort((a, b) => (a.price_multiplier || 1) - (b.price_multiplier || 1));
-            setSelectedShopId(sortedByPrice[0].id);
+            // Default to shopId from URL if present, otherwise lowest price multiplier
+            const sortedByPrice = [...finalData].sort((a, b) => ((a as any).price_multiplier || 1) - ((b as any).price_multiplier || 1));
+            setSelectedShopId(shopId || sortedByPrice[0].id);
           } else {
             // Fallback: fetch all active shops if no specific match
             const { data: allShops } = await supabase.from("shops").select("*").eq("is_active", true);
             if (allShops) {
               setMatchingShops(allShops);
-              if (allShops.length > 0) setSelectedShopId(allShops[0].id);
+              if (allShops.length > 0) setSelectedShopId(shopId || allShops[0].id);
             }
           }
         } catch (err) {
@@ -448,7 +448,7 @@ const ProductCustomize = () => {
       }));
 
       await addToCart(
-        product.id,
+        (dbProduct as any)?.id || null,
         selectedShopId,
         quantity,
         {
@@ -459,7 +459,10 @@ const ProductCustomize = () => {
           useSameImage,
           frontDesign: frontUrl,
           backDesign: backUrl,
-        }
+          genericProductId: product.id,
+        },
+        product.name,
+        product.categoryName
       );
 
       navigate("/checkout");

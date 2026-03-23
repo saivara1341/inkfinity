@@ -28,6 +28,7 @@ const Catalog = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<"products" | "shops">("products");
 
+  const [selectedProductSlug, setSelectedProductSlug] = useState<string | null>(null);
   const { shops, loading: shopsLoading } = useShopSelection(activeCategory);
 
   const { data: allProducts = [], isLoading: loadingProducts } = useQuery({
@@ -44,15 +45,15 @@ const Catalog = () => {
         id: p.id,
         name: p.name,
         description: p.description,
-        categoryId: p.category_id || p.category,
+        categoryId: (p as any).category_id || p.category,
         categoryName: p.category,
         startingPrice: "₹" + p.base_price,
-        unit: p.unit || "per unit",
+        unit: (p as any).unit || "per unit",
         sizes: (p.specifications as any)?.sizes || [],
         papers: (p.specifications as any)?.papers || [],
         turnaroundDays: p.turnaround_days,
         minQty: p.min_quantity,
-        popular: p.popular
+        popular: (p as any).popular
       }));
 
       const staticProducts = getAllSubcategories();
@@ -205,9 +206,15 @@ const Catalog = () => {
                       transition={{ delay: i * 0.02 }}
                       layout
                     >
-                      <Link
-                        to={`/customize/${product.id}`}
-                        className="block bg-card rounded-xl border border-border p-5 shadow-card hover:shadow-elevated hover:border-accent/30 transition-all group h-full"
+                      <div
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setActiveCategory(product.categoryId);
+                          setSelectedProductSlug(product.id);
+                          setViewMode("shops");
+                          window.scrollTo({ top: 300, behavior: "smooth" });
+                        }}
+                        className="block bg-card rounded-xl border border-border p-5 shadow-card hover:shadow-elevated hover:border-accent/30 transition-all group h-full cursor-pointer"
                       >
                         <div className="flex items-start justify-between mb-3">
                           <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
@@ -248,17 +255,47 @@ const Catalog = () => {
                         </div>
 
                         <Button variant="coral" size="sm" className="w-full gap-1">
-                          Customize & Order <ChevronRight className="w-3 h-3" />
+                          View Shops <ChevronRight className="w-4 h-4" />
                         </Button>
-                      </Link>
+                      </div>
                     </motion.div>
                   );
                 })}
               </AnimatePresence>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              <AnimatePresence mode="popLayout">
+            <div className="space-y-6">
+              {viewMode === "shops" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 bg-accent/5 border border-accent/20 rounded-xl flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                      <Paintbrush className="w-5 h-5 text-accent" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {selectedProductSlug ? (
+                          <>Shops offering <span className="text-accent font-bold">{allProducts.find(p => p.id === selectedProductSlug)?.name}</span></>
+                        ) : (
+                          <>Printing Shops for {productCategories.find(c => c.id === activeCategory)?.name || "All Categories"}</>
+                        )}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Select a shop to customize your order</p>
+                    </div>
+                  </div>
+                  {selectedProductSlug && (
+                    <Button variant="ghost" size="sm" onClick={() => setSelectedProductSlug(null)} className="text-xs h-8">
+                      View All Products
+                    </Button>
+                  )}
+                </motion.div>
+              )}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                <AnimatePresence mode="popLayout">
                 {shops.map((shop, i) => {
                   const ShopIcon = shop.icon === "zap" ? Zap : shop.icon === "rupee" ? IndianRupee : ThumbsUp;
                   return (
@@ -269,7 +306,7 @@ const Catalog = () => {
                       transition={{ delay: i * 0.05 }}
                     >
                       <Link
-                        to={`/customize/${activeCategory}?shopId=${shop.id}`}
+                        to={`/customize/${selectedProductSlug || activeCategory}?shopId=${shop.id}`}
                         className="block bg-card rounded-xl border border-border p-6 shadow-card hover:shadow-elevated hover:border-accent/30 transition-all group relative overflow-hidden"
                       >
                         {shop.badges.includes("Highly Rated") && (
@@ -329,6 +366,7 @@ const Catalog = () => {
                 })}
               </AnimatePresence>
             </div>
+          </div>
           )}
 
           {filtered.length === 0 && (

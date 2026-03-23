@@ -10,8 +10,8 @@ serve(async (req) => {
 
   try {
     const { productType, businessName, tagline, phone, email, colors, style } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    const AI_GATEWAY_API_KEY = Deno.env.get("AI_GATEWAY_API_KEY");
+    if (!AI_GATEWAY_API_KEY) throw new Error("AI_GATEWAY_API_KEY not configured");
 
     const prompt = `Generate a professional ${productType || "visiting card"} design for an Indian business with these details:
 - Business Name: ${businessName || "Sample Business"}
@@ -26,7 +26,7 @@ Create a clean, print-ready design on a solid white background. Include the busi
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${AI_GATEWAY_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

@@ -201,12 +201,12 @@ async function handleCustomerMenu(supabase: any, pid: string, token: string, fro
     }
     case "cust_quote": {
       await sendMessage(pid, token, from,
-        "💰 *Quick Quotation*\n\nVisiting Cards (100 qty): ~₹276 incl. GST\nFlyers A5 (500 qty): ~₹2,360\nBanners 4×6 ft: ~₹531\n\nFor a detailed quote, visit:\nhttps://inkfinity.lovable.app/customize/visiting-cards\n\nOr type *order* to place one now!"
+        "💰 *Quick Quotation*\n\nVisiting Cards (100 qty): ~₹276 incl. GST\nFlyers A5 (500 qty): ~₹2,360\nBanners 4×6 ft: ~₹531\n\nFor a detailed quote, visit:\nhttps://printflow.in/customize/visiting-cards\n\nOr type *order* to place one now!"
       );
       break;
     }
     case "cust_support": {
-      await sendMessage(pid, token, from, "💬 *Support*\n\nFor assistance, please:\n📧 Email: support@printflow.in\n🌐 Web: https://inkfinity.lovable.app\n\nOr describe your issue here and we'll get back to you.");
+      await sendMessage(pid, token, from, "💬 *Support*\n\nFor assistance, please:\n📧 Email: support@printflow.in\n🌐 Web: https://printflow.in\n\nOr describe your issue here and we'll get back to you.");
       break;
     }
     default: {
@@ -307,7 +307,7 @@ async function handleOrderFlow(supabase: any, pid: string, token: string, from: 
       });
 
       await sendMessage(pid, token, from,
-        `✅ *Order Placed Successfully!*\n\n🆔 Order No: *${orderNumber}*\n💰 Total: ₹${total.toFixed(0)}\n\nTrack your order anytime by sending the order number.\n\nVisit https://inkfinity.lovable.app/track for detailed tracking.\n\nType *menu* to go back.`
+        `✅ *Order Placed Successfully!*\n\n🆔 Order No: *${orderNumber}*\n💰 Total: ₹${total.toFixed(0)}\n\nTrack your order anytime by sending the order number.\n\nVisit https://printflow.in/track for detailed tracking.\n\nType *menu* to go back.`
       );
       await updateSession(supabase, from, { conversation_state: "customer_menu", context: {} });
     } else {
@@ -414,7 +414,7 @@ async function handleShopMenu(supabase: any, pid: string, token: string, from: s
       break;
     }
     case "shop_webapp": {
-      await sendMessage(pid, token, from, "🌐 Open your full dashboard:\nhttps://inkfinity.lovable.app/shop\n\nType *menu* to continue here.");
+      await sendMessage(pid, token, from, "🌐 Open your full dashboard:\nhttps://printflow.in/shop\n\nType *menu* to continue here.");
       break;
     }
     default: {

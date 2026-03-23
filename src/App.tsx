@@ -74,8 +74,8 @@ const App = () => (
 
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-                <MobileBottomNav />
               </Suspense>
+              <MobileBottomNav />
             </BrowserRouter>
           </TooltipProvider>
         </AuthProvider>

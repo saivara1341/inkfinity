@@ -36,7 +36,7 @@ const MobileBottomNav = () => {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-lg border-t border-border px-6 py-3 z-50 flex items-center justify-between pb-safe">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border px-6 py-3 z-[100] flex items-center justify-between shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
       {navItems.map((item) => {
         const isActive = location.pathname === item.path;
         return (

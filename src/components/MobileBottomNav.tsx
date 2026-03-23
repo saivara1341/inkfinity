@@ -1,8 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { Home, ShoppingBag, ShoppingCart, User } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "../integrations/supabase/client";
 
 const MobileBottomNav = () => {
   const location = useLocation();

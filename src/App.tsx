@@ -46,6 +46,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <MobileBottomNav />
               <Suspense fallback={<Loading />}>
                 <Routes>
                   {/* Public routes */}
@@ -75,7 +76,6 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
-              <MobileBottomNav />
             </BrowserRouter>
           </TooltipProvider>
         </AuthProvider>

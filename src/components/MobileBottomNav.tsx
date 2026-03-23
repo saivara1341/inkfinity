@@ -36,22 +36,23 @@ const MobileBottomNav = () => {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border px-6 py-3 z-[100] flex items-center justify-between shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
-      {navItems.map((item) => {
-        const isActive = location.pathname === item.path;
-        return (
-          <Link
-            key={item.label}
-            to={item.path}
-            className={`flex flex-col items-center gap-1 transition-colors ${
-              isActive ? "text-accent" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <item.icon className={`w-5 h-5 ${isActive ? "fill-current/20" : ""}`} />
-            <span className="text-[10px] font-medium tracking-wide">{item.label}</span>
-          </Link>
-        );
-      })}
+    <div className="fixed bottom-0 left-0 right-0 h-16 bg-background border-t border-border z-[100] md:hidden flex items-center justify-around px-4">
+      <Link to="/" className="flex flex-col items-center gap-1">
+        <Home className="w-5 h-5" />
+        <span className="text-[10px]">Home</span>
+      </Link>
+      <Link to="/store" className="flex flex-col items-center gap-1">
+        <ShoppingBag className="w-5 h-5" />
+        <span className="text-[10px]">Store</span>
+      </Link>
+      <Link to="/cart" className="flex flex-col items-center gap-1">
+        <ShoppingCart className="w-5 h-5" />
+        <span className="text-[10px]">Cart</span>
+      </Link>
+      <Link to={user ? getDashboardPath() : "/login"} className="flex flex-col items-center gap-1">
+        <User className="w-5 h-5" />
+        <span className="text-[10px]">Account</span>
+      </Link>
     </div>
   );
 };

@@ -3,6 +3,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import printerImg from "../assets/3d-printer-loading.png";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -89,13 +91,45 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   if (authLoading || checking) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center relative overflow-hidden">
+        {/* Subtle Background Glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
         
-        <div className="relative z-10 flex flex-col items-center gap-6">
-          <div className="w-12 h-12 rounded-full border-4 border-accent/20 border-t-accent animate-spin" />
+        <div className="relative z-10 flex flex-col items-center">
+          {/* Animated 3D Printer */}
+          <div className="relative w-32 h-32 mb-6">
+            <motion.img 
+              src={printerImg} 
+              alt="Verifying..."
+              className="w-full h-full object-contain relative z-20"
+              animate={{ y: [-3, 3, -3], rotate: [-1, 1, -1] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            />
+            {/* Minimal Printing Effect */}
+            <div className="absolute top-[60%] left-1/2 -translate-x-1/2 w-[500%] h-20 overflow-hidden z-10">
+              <motion.div
+                className="absolute top-0 left-[40%] right-[40%] h-12 bg-gradient-to-b from-white to-accent/20 rounded-sm border border-white/30"
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: [0, 60], opacity: [0, 1, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              />
+            </div>
+          </div>
+          
           <div className="text-center">
-            <div className="text-sm font-medium text-muted-foreground tracking-widest uppercase mb-1">Secure Access</div>
-            <div className="text-xs text-muted-foreground/60 animate-pulse">Verifying credentials...</div>
+            <div className="text-sm font-display font-bold text-accent tracking-widest uppercase mb-1">Secure Access</div>
+            <div className="flex items-center gap-1.5 justify-center">
+              <span className="text-xs text-muted-foreground/60 italic">Verifying credentials</span>
+              <div className="flex gap-0.5">
+                {[0, 1, 2].map((i) => (
+                  <motion.div 
+                    key={i}
+                    className="w-0.5 h-0.5 rounded-full bg-accent/40"
+                    animate={{ opacity: [0.2, 1, 0.2] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>

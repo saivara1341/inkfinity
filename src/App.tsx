@@ -45,7 +45,7 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <BrowserRouter>
+            <BrowserRouter basename="/inkfinity">
               <MobileBottomNav />
               <Suspense fallback={<Loading />}>
                 <Routes>

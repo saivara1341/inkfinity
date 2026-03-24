@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import locationsData from "@/data/india-locations.json";
+import { useLocation } from "@/contexts/LocationContext";
 
 const PINCODE_MAP: Record<string, string> = {
   "Chennai": "600001",
@@ -44,7 +45,10 @@ const RegisterShop = () => {
     address: "", city: "", state: "", pincode: "",
     country: "India", district: "",
     services: [] as string[],
+    latitude: null as number | null,
+    longitude: null as number | null,
   });
+  const { location, requestLocation, loading: locationLoading } = useLocation();
   const [stateSearch, setStateSearch] = useState("");
   const [districtSearch, setDistrictSearch] = useState("");
 
@@ -91,6 +95,8 @@ const RegisterShop = () => {
       _state: form.state,
       _pincode: form.pincode,
       _services: form.services,
+      _latitude: form.latitude,
+      _longitude: form.longitude,
     });
 
     if (error) {
@@ -167,13 +173,13 @@ const RegisterShop = () => {
               <div className="space-y-4">
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1.5 block">Shop Name *</label>
-                  <input name="name" value={form.name} onChange={handleChange} placeholder="e.g. Raj Digital Prints"
+                  <input name="name" value={form.name} onChange={handleChange} placeholder="Your Shop Name"
                     className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1.5 block">Description</label>
                   <textarea name="description" value={form.description} onChange={handleChange}
-                    placeholder="Tell customers about your shop, specialties, equipment..."
+                    placeholder="Your Shop Description (Tell customers about your shop, specialties...)"
                     rows={3}
                     className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
                 </div>
@@ -182,7 +188,7 @@ const RegisterShop = () => {
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Phone Number *</label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <input name="phone" value={form.phone} onChange={handleChange} placeholder="+91 98765 43210"
+                      <input name="phone" value={form.phone} onChange={handleChange} placeholder="Your Phone Number"
                         className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                     </div>
                   </div>
@@ -190,7 +196,7 @@ const RegisterShop = () => {
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Email *</label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <input name="email" value={form.email} onChange={handleChange} placeholder="shop@email.com" type="email"
+                      <input name="email" value={form.email} onChange={handleChange} placeholder="Your Shop Email" type="email"
                         className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                     </div>
                   </div>
@@ -212,7 +218,7 @@ const RegisterShop = () => {
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1.5 block">Full Address *</label>
                   <textarea name="address" value={form.address} onChange={handleChange}
-                    placeholder="Shop No, Building, Street, Landmark..."
+                    placeholder="Your Shop Address (Shop No, Building, Street, Landmark...)"
                     rows={2}
                     className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
                 </div>
@@ -254,13 +260,47 @@ const RegisterShop = () => {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Pincode *</label>
-                    <input name="pincode" value={form.pincode} onChange={handleChange} placeholder="400001" maxLength={6}
+                    <input name="pincode" value={form.pincode} onChange={handleChange} placeholder="Your Pincode" maxLength={6}
                       className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                     {form.district && PINCODE_MAP[form.district] && (
                       <p className="text-[10px] text-accent mt-1 italic">Auto-filled based on district. Feel free to edit.</p>
                     )}
                   </div>
                 </div>
+
+                {/* GPS Location Support */}
+                <div className="bg-accent/5 p-4 rounded-xl border border-accent/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+                      <MapPin className="w-5 h-5 text-accent" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Exact GPS Location</p>
+                      <p className="text-xs text-muted-foreground">Pick your shop's exact location for local discovery</p>
+                    </div>
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="coral" 
+                    size="sm" 
+                    onClick={async () => {
+                      await requestLocation();
+                      if (location) {
+                        setForm(prev => ({ ...prev, latitude: location.latitude, longitude: location.longitude }));
+                        toast.success("Exact coordinates captured!");
+                      }
+                    }}
+                    disabled={locationLoading}
+                    className="gap-2 w-full sm:w-auto"
+                  >
+                    {form.latitude ? "Update Location" : "Get Current Location"}
+                  </Button>
+                </div>
+                {form.latitude && (
+                  <p className="text-[10px] text-success text-center italic">
+                    Coordinates Captured: {form.latitude.toFixed(4)}, {form.longitude?.toFixed(4)}
+                  </p>
+                )}
               </div>
               <div className="flex gap-3">
                 <Button variant="outline" size="lg" onClick={() => setStep(1)}>

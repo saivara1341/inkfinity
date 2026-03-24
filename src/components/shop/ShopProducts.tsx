@@ -46,6 +46,8 @@ const emptyForm = {
   imageFile: null as File | null,
   imagePreview: "",
   price_tiers: [{ min: 1, price_per_unit: 0 }] as { min: number; price_per_unit: number }[],
+  sizes: [] as string[],
+  materials: [] as string[],
 };
 
 export const ShopProducts = ({ shop }: Props) => {
@@ -87,6 +89,8 @@ export const ShopProducts = ({ shop }: Props) => {
       imageFile: null,
       imagePreview: product.images?.[0] || "",
       price_tiers: (product.specifications as any)?.price_tiers || [{ min: 1, price_per_unit: product.base_price }],
+      sizes: (product.specifications as any)?.sizes || [],
+      materials: (product.specifications as any)?.materials || [],
     });
     setShowForm(true);
   };
@@ -151,7 +155,9 @@ export const ShopProducts = ({ shop }: Props) => {
       images,
       specifications: {
         ...((editingId ? products.find(p => p.id === editingId)?.specifications : {}) as any),
-        price_tiers: form.price_tiers
+        price_tiers: form.price_tiers,
+        sizes: form.sizes,
+        materials: form.materials,
       }
     };
 
@@ -306,6 +312,30 @@ export const ShopProducts = ({ shop }: Props) => {
                 </label>
               </div>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm text-muted-foreground mb-1 block">Available Sizes (comma separated)</label>
+                <input
+                  type="text"
+                  value={form.sizes.join(", ")}
+                  onChange={(e) => setForm({ ...form, sizes: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
+                  placeholder="e.g. A4, A3, 3.5x2 inch"
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground mb-1 block">Materials (comma separated)</label>
+                <input
+                  type="text"
+                  value={form.materials.join(", ")}
+                  onChange={(e) => setForm({ ...form, materials: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
+                  placeholder="e.g. 300gsm Glossy, Matte, Vinyl"
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+            </div>
+
             <div className="bg-secondary/20 rounded-xl p-4 border border-dashed border-border">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">

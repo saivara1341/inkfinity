@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
+import { Helmet } from "react-helmet-async";
 import { Link, useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -8,18 +9,99 @@ import { Button } from "@/components/ui/button";
 import { 
   Search, ContactRound, FileText, GalleryVerticalEnd, RectangleHorizontal, 
   Sticker, IdCard, Paintbrush, BookOpen, Smartphone, Heart, Mail, Package, 
-  Award, Shirt, BookText, Star, ChevronRight, IndianRupee, Clock, Filter, MapPin, Zap, ThumbsUp
+  Award, Shirt, BookText, Star, ChevronRight, IndianRupee, Clock, Filter, MapPin, Zap, ThumbsUp, Store
 } from "lucide-react";
 import { type LucideIcon } from "lucide-react";
 import { productCategories, getAllSubcategories, type ProductCategory } from "@/data/printingProducts";
 import { useShopSelection, type ShopProvider } from "@/hooks/useShopSelection";
+import { useLocation } from "@/contexts/LocationContext";
 import { useQuery } from "@tanstack/react-query";
+import SEO from "@/components/SEO";
 
 const iconMap: Record<string, LucideIcon> = {
   ContactRound, FileText, GalleryVerticalEnd, RectangleHorizontal,
   Sticker, IdCard, Paintbrush, BookOpen, Smartphone, Heart, Mail,
   Package, Award, Shirt, BookText,
-}
+  "zap": Zap,
+  "rupee": IndianRupee,
+  "thumbs-up": ThumbsUp
+};
+
+const ShopCard = ({ 
+  shop, 
+  ShopIcon, 
+  i, 
+  selectedProductSlug, 
+  activeCategory 
+}: { 
+  shop: ShopProvider; 
+  ShopIcon: LucideIcon; 
+  i: number; 
+  selectedProductSlug: string | null; 
+  activeCategory: string;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ delay: i * 0.05 }}
+  >
+    <Link
+      to={`/customize/${selectedProductSlug || activeCategory}?shopId=${shop.id}`}
+      className="block bg-card rounded-xl border border-border p-6 shadow-card hover:shadow-elevated hover:border-accent/30 transition-all group relative overflow-hidden h-full"
+    >
+      {shop.badges.includes("Highly Rated") && (
+        <div className="absolute top-0 right-0">
+          <div className="bg-accent text-accent-foreground text-[8px] font-bold uppercase tracking-wider px-6 py-1 rotate-45 translate-x-3 -translate-y-1 shadow-sm">
+            Highly Rated
+          </div>
+        </div>
+      )}
+      <div className="flex items-start gap-4 mb-4">
+        <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent/20 transition-colors">
+          <ShopIcon className="w-7 h-7 text-accent" />
+        </div>
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-display font-bold text-foreground group-hover:text-accent transition-colors line-clamp-1">{shop.name}</h3>
+            <span className="flex items-center gap-0.5 text-xs text-yellow-500 font-bold bg-yellow-500/10 px-1.5 py-0.5 rounded shrink-0">
+              <Star className="w-3 h-3 fill-current" /> {shop.rating}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <MapPin className="w-3 h-3 text-accent" /> {shop.distance} from you
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between py-3 border-y border-border mb-4">
+        <div>
+          <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Starting From</p>
+          <p className="text-xl font-display font-bold text-foreground flex items-center gap-0.5">
+            <IndianRupee className="w-4 h-4" />{shop.baseCost}
+          </p>
+        </div>
+        <div className="text-right">
+           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Fastest Delivery</p>
+           <p className="text-sm font-medium text-foreground flex items-center gap-1.5 justify-end">
+             <Clock className="w-3.5 h-3.5 text-accent" /> 2 Days
+           </p>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-1.5 mb-5">
+        {shop.badges.map(badge => (
+          <span key={badge} className="text-[10px] px-2 py-0.5 rounded-full border border-border bg-secondary/50 text-muted-foreground font-medium">
+            {badge}
+          </span>
+        ))}
+      </div>
+
+      <Button variant="coral" size="sm" className="w-full gap-1">
+        Select Shop <ChevronRight className="w-3 h-3" />
+      </Button>
+    </Link>
+  </motion.div>
+);
 
 const Catalog = () => {
   const { category } = useParams();
@@ -29,7 +111,8 @@ const Catalog = () => {
   const [viewMode, setViewMode] = useState<"products" | "shops">("products");
 
   const [selectedProductSlug, setSelectedProductSlug] = useState<string | null>(null);
-  const { shops, loading: shopsLoading } = useShopSelection(activeCategory);
+  const { location } = useLocation();
+  const { shops, loading: shopsLoading } = useShopSelection(activeCategory, location);
 
   const { data: allProducts = [], isLoading: loadingProducts } = useQuery({
     queryKey: ["catalog-products"],
@@ -75,6 +158,10 @@ const Catalog = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title={activeCategory === "all" ? "All Printing Products" : productCategories.find(c => c.id === activeCategory)?.name}
+        description={`Professional printing services for ${activeCategory === "all" ? "all types of documents, marketing materials and gifts" : productCategories.find(c => c.id === activeCategory)?.name} in your region. Fast delivery and best prices.`}
+      />
       <Navbar />
       <div className="pt-24 pb-16">
         <div className="container mx-auto px-4">
@@ -294,79 +381,58 @@ const Catalog = () => {
                 </motion.div>
               )}
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                <AnimatePresence mode="popLayout">
-                {shops.map((shop, i) => {
-                  const ShopIcon = shop.icon === "zap" ? Zap : shop.icon === "rupee" ? IndianRupee : ThumbsUp;
+              <AnimatePresence mode="popLayout">
+                {(() => {
+                  const nearbyShops = shops.filter(s => (s as any).rawDistance <= 50);
+                  const otherShops = shops.filter(s => (s as any).rawDistance > 50);
+                  
+                  if (shops.length === 0) {
+                    return (
+                      <div className="text-center py-20 bg-secondary/10 rounded-2xl border border-dashed border-border" key="no-shops">
+                        <Store className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-20" />
+                        <p className="text-muted-foreground">No shops found for this category.</p>
+                      </div>
+                    );
+                  }
+
                   return (
-                    <motion.div
-                      key={shop.id}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: i * 0.05 }}
-                    >
-                      <Link
-                        to={`/customize/${selectedProductSlug || activeCategory}?shopId=${shop.id}`}
-                        className="block bg-card rounded-xl border border-border p-6 shadow-card hover:shadow-elevated hover:border-accent/30 transition-all group relative overflow-hidden"
-                      >
-                        {shop.badges.includes("Highly Rated") && (
-                          <div className="absolute top-0 right-0">
-                            <div className="bg-accent text-accent-foreground text-[8px] font-bold uppercase tracking-wider px-6 py-1 rotate-45 translate-x-3 -translate-y-1 shadow-sm">
-                              Highly Rated
-                            </div>
-                          </div>
-                        )}
-                        <div className="flex items-start gap-4 mb-4">
-                          <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent/20 transition-colors">
-                            <ShopIcon className="w-7 h-7 text-accent" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-display font-bold text-foreground group-hover:text-accent transition-colors">{shop.name}</h3>
-                              <span className="flex items-center gap-0.5 text-xs text-yellow-500 font-bold bg-yellow-500/10 px-1.5 py-0.5 rounded">
-                                <Star className="w-3 h-3 fill-current" /> {shop.rating}
-                              </span>
-                            </div>
-                            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                              <MapPin className="w-3 h-3" /> {shop.distance} from you
-                            </p>
+                    <div className="space-y-10" key="shops-list">
+                      {nearbyShops.length > 0 && (
+                        <div className="space-y-4">
+                          <h3 className="text-sm font-bold text-accent uppercase tracking-wider flex items-center gap-2">
+                            <MapPin className="w-4 h-4" /> Nearby in your Region
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                            {nearbyShops.map((shop, i) => {
+                              const ShopIcon = iconMap[shop.icon] || Zap;
+                              return (
+                                <ShopCard key={shop.id} shop={shop} ShopIcon={ShopIcon} i={i} selectedProductSlug={selectedProductSlug} activeCategory={activeCategory} />
+                              );
+                            })}
                           </div>
                         </div>
-
-                        <div className="flex items-center justify-between py-3 border-y border-border mb-4">
-                          <div>
-                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Starting From</p>
-                            <p className="text-xl font-display font-bold text-foreground flex items-center gap-0.5">
-                              <IndianRupee className="w-4 h-4" />{shop.baseCost}
-                              <span className="text-[10px] text-muted-foreground font-normal ml-1">/ unit</span>
-                            </p>
-                          </div>
-                          <div className="text-right">
-                             <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Fastest Delivery</p>
-                             <p className="text-sm font-medium text-foreground flex items-center gap-1.5 justify-end">
-                               <Clock className="w-3.5 h-3.5 text-accent" /> 2 Days
-                             </p>
+                      )}
+                      
+                      {otherShops.length > 0 && (
+                        <div className="space-y-4">
+                          <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2 px-1">
+                            {nearbyShops.length > 0 ? "Other Regions" : "Shops in Other Regions"}
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                            {otherShops.map((shop, i) => {
+                              const ShopIcon = iconMap[shop.icon] || Zap;
+                              return (
+                                <ShopCard key={shop.id} shop={shop} ShopIcon={ShopIcon} i={i + nearbyShops.length} selectedProductSlug={selectedProductSlug} activeCategory={activeCategory} />
+                              );
+                            })}
                           </div>
                         </div>
-
-                        <div className="flex flex-wrap gap-1.5 mb-5">
-                          {shop.badges.map(badge => (
-                            <span key={badge} className="text-[10px] px-2 py-0.5 rounded-full border border-border bg-secondary/50 text-muted-foreground font-medium">
-                              {badge}
-                            </span>
-                          ))}
-                        </div>
-
-                        <Button variant="coral" size="sm" className="w-full gap-1">
-                          Select Shop <ChevronRight className="w-3 h-3" />
-                        </Button>
-                      </Link>
-                    </motion.div>
+                      )}
+                    </div>
                   );
-                })}
+                })()}
               </AnimatePresence>
             </div>
-          </div>
           )}
 
           {filtered.length === 0 && (

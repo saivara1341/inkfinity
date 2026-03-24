@@ -45,6 +45,14 @@ const ProtectedRoute = ({ children, requiredRole }: Props) => {
 
         if (mounted) {
           const userRole = data?.role as string;
+          
+          if (!userRole) {
+            // New user from Google or someone who hasn't chosen a role yet
+            navigate("/onboarding", { replace: true });
+            setChecking(false);
+            return;
+          }
+
           if (userRole === requiredRole || userRole === "admin") {
             setAuthorized(true);
           } else {
@@ -75,9 +83,16 @@ const ProtectedRoute = ({ children, requiredRole }: Props) => {
 
   if (authLoading || checking) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <div className="w-10 h-10 rounded-full border-4 border-accent/20 border-t-accent animate-spin" />
-        <div className="text-sm font-medium text-muted-foreground animate-pulse">Verifying access...</div>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
+        
+        <div className="relative z-10 flex flex-col items-center gap-6">
+          <div className="w-12 h-12 rounded-full border-4 border-accent/20 border-t-accent animate-spin" />
+          <div className="text-center">
+            <div className="text-sm font-medium text-muted-foreground tracking-widest uppercase mb-1">Secure Access</div>
+            <div className="text-xs text-muted-foreground/60 animate-pulse">Verifying credentials...</div>
+          </div>
+        </div>
       </div>
     );
   }

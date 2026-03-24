@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "@/components/NotificationBell";
 import { supabase } from "@/integrations/supabase/client";
+import { useLocation } from "@/contexts/LocationContext";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -14,6 +15,7 @@ const Navbar = () => {
   const [profile, setProfile] = useState<{ full_name: string | null; avatar_url: string | null }>({ full_name: null, avatar_url: null });
   const navigate = useNavigate();
   const profileRef = useRef<HTMLDivElement>(null);
+  const { location, city, requestLocation, loading: locationLoading } = useLocation();
 
   useEffect(() => {
     if (!user) { setRole(null); return; }
@@ -87,6 +89,28 @@ const Navbar = () => {
           {(!user || role === "customer") && (
             <Link to="/for-shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">For Shops</Link>
           )}
+
+          {/* Location Pill */}
+          <div className="ml-4 flex items-center">
+            {!location ? (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={requestLocation}
+                disabled={locationLoading}
+                className="h-8 gap-1.5 text-xs font-semibold text-accent hover:text-accent hover:bg-accent/10 rounded-full border border-accent/20"
+              >
+                <MapPin className="w-3 h-3" /> {locationLoading ? "Detecting..." : "Near Me"}
+              </Button>
+            ) : (
+              <div 
+                onClick={requestLocation}
+                className="h-8 flex items-center gap-1.5 px-3 bg-accent/5 border border-accent/20 text-accent text-xs font-semibold rounded-full cursor-pointer hover:bg-accent/10 transition-colors"
+              >
+                <MapPin className="w-3 h-3 fill-accent" /> {city || "Detected"}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="hidden md:flex items-center gap-3">

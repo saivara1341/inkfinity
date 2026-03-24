@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { getRoleBasedPath } from "@/hooks/useRoleRedirect";
 import locationsData from "@/data/india-locations.json";
+import signupIllustration from "@/assets/signup-illustration-v2.png";
 
 type UserType = "customer" | "shop";
 
@@ -134,7 +135,7 @@ const Signup = () => {
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Full Name</label>
-                <input type="text" name="name" placeholder="Your Name" value={formData.name} onChange={handleChange}
+                <input type="text" name="name" placeholder="Your Full Name" value={formData.name} onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
               </div>
               <div>
@@ -145,7 +146,7 @@ const Signup = () => {
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Password</label>
                 <div className="relative">
-                  <input type={showPassword ? "text" : "password"} name="password" placeholder="Min. 8 characters" value={formData.password} onChange={handleChange}
+                  <input type={showPassword ? "text" : "password"} name="password" placeholder="Your Password (Min. 8 characters)" value={formData.password} onChange={handleChange}
                     className="w-full px-4 py-2.5 pr-10 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -199,7 +200,7 @@ const Signup = () => {
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Shop Name</label>
-                <input type="text" name="shopName" placeholder="Raj Digital Prints" value={formData.shopName} onChange={handleChange}
+                <input type="text" name="shopName" placeholder="Your Shop Name" value={formData.shopName} onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
               </div>
               <div>
@@ -231,7 +232,7 @@ const Signup = () => {
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Pincode</label>
-                <input type="text" name="pincode" placeholder="Enter Pincode" value={formData.pincode} onChange={handleChange}
+                <input type="text" name="pincode" placeholder="Your Pincode" value={formData.pincode} onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                 {formData.city && !formData.pincode && (
                   <p className="text-[10px] text-accent mt-1 italic">Tip: Pincode will be verified once entered.</p>
@@ -278,7 +279,7 @@ const Signup = () => {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            src="/signup-illustration-v2.png" 
+            src={signupIllustration} 
             alt="Printing Service Illustration" 
             className="w-full max-w-[320px] h-auto mb-8 mx-auto drop-shadow-2xl rounded-2xl" 
           />

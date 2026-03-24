@@ -55,7 +55,7 @@ const Login = () => {
               <label className="text-sm font-medium text-foreground mb-1.5 block">Email</label>
               <input
                 type="email"
-                placeholder="you@example.com"
+                placeholder="Your Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -66,7 +66,7 @@ const Login = () => {
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
+                  placeholder="Your Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleEmailLogin()}

@@ -3,9 +3,9 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
 export default defineConfig(({ mode }) => ({
-  base: "./",
+  base: "/inkfinity/",
   server: {
-    port: 3000,
+    port: 3001,
     host: true,
     hmr: {
       overlay: false,

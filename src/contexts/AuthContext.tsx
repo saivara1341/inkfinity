@@ -52,7 +52,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: metadata, emailRedirectTo: window.location.origin },
+        options: { 
+          data: metadata, 
+          emailRedirectTo: `${window.location.origin}${window.location.pathname}`
+        },
       });
       return { error: error as Error | null };
     } catch (err) {
@@ -82,7 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: `${window.location.origin}${window.location.pathname}`,
         }
       });
       if (error) throw error;

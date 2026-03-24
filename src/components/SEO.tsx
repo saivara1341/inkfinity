@@ -24,6 +24,10 @@ const SEO = ({
       {/* Standard metadata */}
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
+      
+      {/* Security Headers (Simplified for Meta tags) */}
+      <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
+      <meta name="referrer" content="strict-origin-when-cross-origin" />
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={type} />

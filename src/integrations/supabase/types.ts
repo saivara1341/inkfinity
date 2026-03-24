@@ -21,7 +21,7 @@ export type Database = {
           id: string
           product_id: string
           quantity: number
-          shop_id: string
+          shop_id: string | null
           specifications: Json | null
           user_id: string
         }
@@ -31,7 +31,7 @@ export type Database = {
           id?: string
           product_id: string
           quantity?: number
-          shop_id: string
+          shop_id?: string | null
           specifications?: Json | null
           user_id: string
         }
@@ -41,7 +41,7 @@ export type Database = {
           id?: string
           product_id?: string
           quantity?: number
-          shop_id?: string
+          shop_id?: string | null
           specifications?: Json | null
           user_id?: string
         }

@@ -1,40 +1,43 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
-interface Props {
+interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: "admin" | "shop_owner" | "customer";
+  requiredRole?: string;
 }
 
-const ProtectedRoute = ({ children, requiredRole }: Props) => {
+const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
-  const [authorized, setAuthorized] = useState(false);
+  const [authorized, setAuthorized] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(true);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     let mounted = true;
 
-    const checkAccess = async () => {
-      if (authLoading) return;
-
-      if (!user) {
-        if (mounted) navigate("/login", { replace: true });
-        return;
-      }
-
-      if (!requiredRole) {
+    const checkAuth = async () => {
+      if (!supabase) {
+        console.error("Supabase client is not initialized. Please check your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.");
         if (mounted) {
-          setAuthorized(true);
           setChecking(false);
+          setAuthorized(false);
         }
         return;
       }
-
+      
       try {
+        if (!user) {
+          if (mounted) {
+            setChecking(false);
+            setAuthorized(false);
+          }
+          return;
+        }
+
         const { data, error } = await supabase
           .from("user_roles")
           .select("role")
@@ -56,25 +59,27 @@ const ProtectedRoute = ({ children, requiredRole }: Props) => {
           if (userRole === requiredRole || userRole === "admin") {
             setAuthorized(true);
           } else {
-            toast.error("Unauthorized access. Redirecting to your dashboard.");
-            // Redirect based on current role
-            if (userRole === "shop_owner") navigate("/shop", { replace: true });
-            else if (userRole === "admin") navigate("/admin", { replace: true });
-            else navigate("/dashboard", { replace: true });
+            setAuthorized(false);
           }
           setChecking(false);
         }
-      } catch (err) {
-        console.error("Error checking role access:", err);
+      } catch (error) {
+        console.error("Error in ProtectedRoute:", error);
         if (mounted) {
-          toast.error("Authentication error. Redirecting to dashboard.");
-          navigate("/dashboard", { replace: true });
+          setAuthorized(false);
           setChecking(false);
         }
       }
     };
 
-    checkAccess();
+    if (!authLoading) {
+      if (!user) {
+        setAuthorized(false);
+        setChecking(false);
+      } else {
+        checkAuth();
+      }
+    }
 
     return () => {
       mounted = false;
@@ -97,7 +102,14 @@ const ProtectedRoute = ({ children, requiredRole }: Props) => {
     );
   }
 
-  if (!authorized) return null;
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (authorized === false) {
+    const redirectPath = requiredRole === "shop_owner" ? "/dashboard" : "/shop";
+    return <Navigate to={redirectPath} replace />;
+  }
 
   return <>{children}</>;
 };

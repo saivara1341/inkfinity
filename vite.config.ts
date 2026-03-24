@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    VitePWA({
+    /* VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.png"],
       manifest: {
@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => ({
           },
         ],
       },
-    }),
+    }), */
   ].filter(Boolean),
   resolve: {
     alias: {

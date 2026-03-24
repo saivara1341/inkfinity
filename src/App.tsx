@@ -9,9 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LocationProvider } from "@/contexts/LocationContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { HelmetProvider } from "react-helmet-async";
-import { motion, AnimatePresence } from "framer-motion";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import printerImg from "./assets/3d-printer-loading.png";
 import Index from "./pages/Index";
 console.log("INDEX IMPORTED");
 const Catalog = lazy(() => import("./pages/Catalog"));
@@ -41,60 +39,21 @@ const Loading = () => (
     {/* Subtle Background Glow */}
     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
     
-    <div className="relative z-10 flex flex-col items-center">
-      {/* 3D Printer Illustration */}
-      <div className="relative w-48 h-48 mb-8">
-        <motion.img 
-          src={printerImg} 
-          alt="Loading..."
-          className="w-full h-full object-contain relative z-20"
-          initial={{ y: 0 }}
-          animate={{ y: [-5, 5, -5] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        />
-        
-        {/* Animated Printing Sheets */}
-        <div className="absolute top-[60%] left-1/2 -translate-x-1/2 w-[60%] h-32 overflow-hidden z-10">
-          {[0, 1, 2].map((i) => (
-            <motion.div
-              key={i}
-              className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-white to-primary/20 rounded-sm border border-white/50 shadow-sm"
-              initial={{ y: -40, opacity: 0 }}
-              animate={{ 
-                y: [0, 100], 
-                opacity: [0, 1, 1, 0],
-                scale: [0.95, 1, 1, 0.95]
-              }}
-              transition={{ 
-                duration: 2.5, 
-                repeat: Infinity, 
-                delay: i * 0.8,
-                ease: "linear"
-              }}
-            />
-          ))}
+    <div className="relative z-10 flex flex-col items-center gap-8">
+      <div className="relative">
+        <div className="w-20 h-20 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-primary/20 animate-pulse" />
         </div>
       </div>
       
-      <div className="text-center space-y-3">
-        <h2 className="text-2xl font-display font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-display font-medium bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
           PrintFlow
         </h2>
-        <div className="flex flex-col items-center gap-1">
-          <p className="text-muted-foreground font-medium text-xs tracking-[0.2em] uppercase">
-            Printing your experience
-          </p>
-          <div className="flex gap-1">
-            {[0, 1, 2].map((i) => (
-              <motion.div 
-                key={i}
-                className="w-1 h-1 rounded-full bg-primary"
-                animate={{ opacity: [0.3, 1, 0.3] }}
-                transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-              />
-            ))}
-          </div>
-        </div>
+        <p className="text-muted-foreground font-medium animate-pulse tracking-wide uppercase text-xs">
+          Crafting your experience...
+        </p>
       </div>
     </div>
   </div>

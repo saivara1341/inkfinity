@@ -20,7 +20,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     let mounted = true;
 
     const checkAuth = async () => {
-      if (!supabase) {
+      if (!supabase.isInitialized) {
         console.error("Supabase client is not initialized. Please check your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.");
         if (mounted) {
           setChecking(false);

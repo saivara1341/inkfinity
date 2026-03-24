@@ -9,7 +9,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { HelmetProvider } from "react-helmet-async";
 import ErrorBoundary from "@/components/ErrorBoundary";
-const Index = lazy(() => import("./pages/Index"));
+import Index from "./pages/Index";
+console.log("INDEX IMPORTED");
 const Catalog = lazy(() => import("./pages/Catalog"));
 const ProductCustomize = lazy(() => import("./pages/ProductCustomize"));
 const Checkout = lazy(() => import("./pages/Checkout"));
@@ -38,8 +39,10 @@ const Loading = () => (
   </div>
 );
 
-const App = () => (
-  <ErrorBoundary>
+const App = () => {
+  console.log("App Component Rendering");
+  return (
+    <ErrorBoundary>
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
@@ -82,7 +85,8 @@ const App = () => (
         </AuthProvider>
       </QueryClientProvider>
     </HelmetProvider>
-  </ErrorBoundary>
-);
+    </ErrorBoundary>
+  );
+};
 
 export default App;

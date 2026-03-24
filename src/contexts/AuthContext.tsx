@@ -22,6 +22,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
+    if (!supabase) {
+      console.warn("Supabase client not initialized. Auth features will be disabled.");
+      setLoading(false);
+      return;
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (mounted) {
@@ -82,6 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signInWithGoogle = async () => {
     try {
+      if (!supabase) throw new Error("Supabase client not initialized");
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {

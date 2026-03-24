@@ -50,7 +50,7 @@ const App = () => (
               <Suspense fallback={<Loading />}>
                 <Routes>
                   {/* Public routes */}
-                  <Route path="/" element={<Index />} />
+                  <Route path="/" element={<div style={{padding: '50px', background: 'red', color: 'white'}}>HELLO WORLD - TEST</div>} />
                   <Route path="/store" element={<Storefront />} />
                   <Route path="/catalog" element={<Catalog />} />
                   <Route path="/catalog/:category" element={<Catalog />} />

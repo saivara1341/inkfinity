@@ -2,6 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      console.log("INDEX.HTML EXECUTING");
+      window.addEventListener('error', function(e) {
+        alert("RUNTIME ERROR: " + e.message);
+      });
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- TODO: Set the document title to the name of your application -->
     <title>PrintFlow — India&#39;s Smartest Printing Platform</title>

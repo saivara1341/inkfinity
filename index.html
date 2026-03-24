@@ -2,12 +2,18 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- Deployment Trigger: $(date) -->
     <script>
-      console.log("INDEX.HTML EXECUTING");
-      window.addEventListener('error', function(e) {
-        alert("RUNTIME ERROR: " + e.message);
-      });
+      // SELF-HEALING: Force unregister any stale service workers
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+            console.log("Unregistered stale service worker");
+          }
+        });
+      }
+      // Clear cache on load
+      console.log("INDEX.HTML EXECUTING - V18");
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- TODO: Set the document title to the name of your application -->

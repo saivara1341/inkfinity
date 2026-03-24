@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      // SELF-HEALING: Force unregister any stale service workers
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+            console.log("Unregistered stale service worker");
+          }
+        });
+      }
+      // Clear cache on load
+      console.log("INDEX.HTML EXECUTING - V18");
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- TODO: Set the document title to the name of your application -->
+    <title>PrintFlow — India&#39;s Smartest Printing Platform</title>
+    <meta name="description" content="Upload your design and get professional prints from local shops — visiting cards, flyers, posters, banners &amp; more.">
+    <meta name="author" content="PrintFlow" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="PrintFlow" />
+    <meta name="theme-color" content="#e8613a" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="apple-touch-icon" href="favicon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="PrintFlow — India's Smartest Printing Platform">
+    <meta property="og:description" content="Upload your design and get professional prints from local shops — visiting cards, flyers, posters, banners &amp; more.">
+    <meta property="og:image" content="og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="PrintFlow — India's Smartest Printing Platform">
+    <meta name="twitter:description" content="Upload your design and get professional prints from local shops — visiting cards, flyers, posters, banners &amp; more.">
+    <meta name="twitter:image" content="og-image.png" />
+  <script type="module" crossorigin src="/inkfinity/assets/index-aC9CXmJ1.js"></script>
+  <link rel="stylesheet" crossorigin href="/inkfinity/assets/index-B_L1p_Gl.css">
+</head>
+
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

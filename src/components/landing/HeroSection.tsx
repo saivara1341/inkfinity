@@ -38,7 +38,7 @@ const HeroSection = () => {
       </div>
 
       {/* Mobile-Only Top Search Bar */}
-      <div className="px-4 mb-6 md:hidden">
+      <div className="px-4 mb-10 md:hidden pt-4">
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -90,16 +90,6 @@ const HeroSection = () => {
             }}
             className="text-center lg:text-left"
           >
-            <motion.div 
-              variants={{
-                hidden: { opacity: 0, scale: 0.8, y: 20 },
-                visible: { opacity: 1, scale: 1, y: 0 }
-              }}
-              className="inline-flex items-center gap-2 bg-accent/10 text-accent rounded-full px-4 py-2 text-sm font-semibold mb-8 shadow-sm border border-accent/20"
-            >
-              <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-              Serving 500+ Print Shops in India
-            </motion.div>
 
             <motion.h1 
               variants={{
@@ -170,11 +160,12 @@ const HeroSection = () => {
 
 
             {/* Trust Badges / Features for Mobile */}
-            <div className="flex flex-row justify-between items-center gap-2 pt-6 border-t border-border/50 sm:grid sm:grid-cols-3 sm:gap-6">
+            <div className="flex flex-row justify-between items-center gap-2 pt-6 border-t border-border/50 sm:grid sm:grid-cols-4 sm:gap-6">
               {[
                 { icon: Upload, text: "Preview" },
                 { icon: CreditCard, text: "UPI" },
-                { icon: Truck, text: "Fast" }
+                { icon: Truck, text: "Fast" },
+                { icon: Search, text: "Quality" }
               ].map((item, index) => (
                 <div key={index} className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-1.5 sm:gap-3 text-xs sm:text-sm text-foreground/80 font-medium whitespace-nowrap">
                   <div className="p-1.5 sm:p-2 rounded-lg bg-accent/10">
@@ -183,6 +174,28 @@ const HeroSection = () => {
                   <span>{item.text}</span>
                 </div>
               ))}
+            </div>
+
+            {/* Mobile Animation Space */}
+            <div className="h-24 flex items-center justify-center md:hidden pt-8">
+              <div className="relative w-48 h-12 bg-secondary/20 rounded-xl overflow-hidden border border-border/50">
+                <motion.div 
+                  animate={{ x: [-100, 100] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-accent/30 to-transparent"
+                />
+                <div className="absolute inset-0 flex items-center justify-center gap-2">
+                  <Printer className="w-4 h-4 text-accent animate-bounce" />
+                  <span className="text-[10px] font-bold text-accent/60 tracking-widest uppercase">Printing in Progress...</span>
+                </div>
+                {/* Paper Animation */}
+                <motion.div 
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: [-10, -50], opacity: [0, 1, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-20 bg-card rounded shadow-sm border border-border/50 z-[-1]"
+                />
+              </div>
             </div>
           </motion.div>
 

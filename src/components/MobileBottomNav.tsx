@@ -41,8 +41,36 @@ const MobileBottomNav = () => {
     return location.pathname.startsWith(path);
   };
 
+  const [visible, setVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Show when scrolling up or at top
+      if (currentScrollY < lastScrollY || currentScrollY < 100) {
+        setVisible(true);
+      } 
+      // Hide when scrolling down
+      else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setVisible(false);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-20 bg-background/80 backdrop-blur-xl border-t border-border/50 z-[100] md:hidden flex items-center justify-around px-6 pb-4 pt-2">
+    <motion.div 
+      initial={{ y: 0 }}
+      animate={{ y: visible ? 0 : 100 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      className="fixed bottom-0 left-0 right-0 h-20 bg-background/80 backdrop-blur-xl border-t border-border/50 z-[100] md:hidden flex items-center justify-around px-6 pb-4 pt-2"
+    >
       <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent pointer-events-none" />
       
       {navItems.map((item) => {
@@ -90,7 +118,7 @@ const MobileBottomNav = () => {
           </Link>
         );
       })}
-    </div>
+    </motion.div>
   );
 };
 

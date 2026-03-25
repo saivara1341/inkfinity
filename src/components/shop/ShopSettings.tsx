@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Loader2, QrCode, Upload, X, Info, Sparkles, ShieldCheck, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { Database } from "@/integrations/supabase/types";
+import { Badge } from "@/components/ui/badge";
 
 type Shop = Database["public"]["Tables"]["shops"]["Row"];
 
@@ -10,6 +12,7 @@ interface Props {
   shop: Shop | null;
   onSave: (updates: Partial<Shop>) => Promise<any>;
 }
+
 
 export const ShopSettings = ({ shop, onSave }: Props) => {
   const [form, setForm] = useState({
@@ -29,7 +32,11 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
     use_custom_razorpay: (shop as any)?.use_custom_razorpay || false,
     razorpay_key_id: (shop as any)?.razorpay_key_id || "",
     razorpay_key_secret: (shop as any)?.razorpay_key_secret || "",
+    whatsapp_number: (shop as any)?.whatsapp_number || "",
+    qr_code_url: (shop as any)?.qr_code_url || "",
+    is_verified: (shop as any)?.is_verified || false,
   });
+  const [uploadingQr, setUploadingQr] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -69,8 +76,54 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-2xl">
-      <div className="bg-card rounded-xl border border-border p-6 shadow-card space-y-4">
-        <h3 className="font-display font-semibold text-foreground">Shop Information</h3>
+      <div className="bg-card rounded-xl border border-border p-6 shadow-card space-y-6">
+        {/* Verification Status Card */}
+        <div className={`p-5 rounded-2xl border flex items-center justify-between transition-all ${
+          (shop as any).is_verified 
+            ? "bg-blue-500/5 border-blue-500/20" 
+            : "bg-amber-500/5 border-amber-500/20"
+        }`}>
+          <div className="flex items-center gap-4">
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
+              (shop as any).is_verified ? "bg-blue-500/10 text-blue-500" : "bg-amber-500/10 text-amber-500"
+            }`}>
+              {(shop as any).is_verified ? <ShieldCheck className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
+            </div>
+            <div>
+              <p className="text-base font-bold text-foreground flex items-center gap-2">
+                {(shop as any).is_verified ? "Verified Merchant" : "Verification Required"}
+                {(shop as any).is_verified && <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center"><ShieldCheck className="w-2.5 h-2.5 text-white fill-white" /></div>}
+              </p>
+              <p className="text-xs text-muted-foreground font-medium">
+                {(shop as any).is_verified 
+                  ? "Your shop is a trusted PrintFlow partner." 
+                  : "Submit your business details to build buyer trust."}
+              </p>
+            </div>
+          </div>
+          {!(shop as any).is_verified && (
+            <Button variant="outline" size="sm" className="border-amber-500/50 text-amber-600 hover:bg-amber-500/10 rounded-xl" onClick={() => toast.success("Verification request submitted! We will contact you shortly.")}>
+              Verify Now
+            </Button>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between border-t border-border pt-6">
+          <h3 className="font-display font-semibold text-lg text-foreground">Shop Information</h3>
+          <Badge variant="outline" className="bg-accent/5 border-accent/20 text-accent gap-1.5 py-1 px-3">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span className="text-xs font-bold">{(shop as any).commission_rate || 5}% Platform Fee</span>
+          </Badge>
+        </div>
+        
+        <div className="bg-secondary/20 rounded-lg p-3 flex gap-3 border border-border/50 items-start">
+          <Info className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+          <div className="text-xs text-muted-foreground leading-relaxed">
+            <p className="font-bold text-foreground mb-1">Market-Linked Pricing</p>
+            Your shop is currently on a <span className="text-accent font-bold">{(shop as any).commission_rate || 5}%</span> commission model. Pay only when you earn. This fee covers digital security, tracking, and the order discussion hub.
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {fields.map((f) => (
             <div key={f.key}>
@@ -182,6 +235,73 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
                   className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   placeholder="name@upi"
                 />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block uppercase font-semibold">WhatsApp Number</label>
+                <input
+                  type="text"
+                  value={form.whatsapp_number}
+                  onChange={(e) => setForm(prev => ({ ...prev, whatsapp_number: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  placeholder="+91 XXXXX XXXXX"
+                />
+              </div>
+              <div className="col-span-full">
+                <label className="text-xs text-muted-foreground mb-1 block uppercase font-semibold">Payment QR Code</label>
+                <div className="flex items-center gap-4 p-4 border-2 border-dashed border-border rounded-xl bg-secondary/10 hover:bg-secondary/20 transition-all">
+                  {form.qr_code_url ? (
+                    <div className="relative w-24 h-24 bg-white p-1 rounded-lg shadow-sm border border-border">
+                      <img src={form.qr_code_url} alt="QR Code" className="w-full h-full object-contain" />
+                      <button 
+                        onClick={() => setForm(prev => ({ ...prev, qr_code_url: "" }))}
+                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 shadow-md hover:bg-destructive/90"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-24 h-24 flex items-center justify-center bg-secondary/30 rounded-lg text-muted-foreground">
+                      <QrCode className="w-8 h-8 opacity-20" />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">Upload your Payment QR</p>
+                    <p className="text-[10px] text-muted-foreground mb-3">Accept payments directly to your wallet</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      disabled={uploadingQr} 
+                      onClick={() => {
+                        const input = document.createElement("input");
+                        input.type = "file";
+                        input.accept = "image/*";
+                        input.onchange = async (e) => {
+                          const file = (e.target as HTMLInputElement).files?.[0];
+                          if (!file) return;
+                          setUploadingQr(true);
+                          try {
+                            const { supabase } = await import("@/integrations/supabase/client");
+                            const fileExt = file.name.split('.').pop();
+                            const filePath = `shop-qrs/${shop?.id}/${Math.random()}.${fileExt}`;
+                            const { error: uploadError } = await supabase.storage.from("shop-logos").upload(filePath, file);
+                            if (uploadError) throw uploadError;
+                            const { data: { publicUrl } } = supabase.storage.from("shop-logos").getPublicUrl(filePath);
+                            setForm(prev => ({ ...prev, qr_code_url: publicUrl }));
+                            toast.success("QR Code uploaded!");
+                          } catch (err) {
+                            toast.error("Upload failed");
+                          } finally {
+                            setUploadingQr(false);
+                          }
+                        };
+                        input.click();
+                      }}
+                    >
+                      {uploadingQr ? <Loader2 className="w-3 h-3 animate-spin mr-2" /> : <Upload className="w-3 h-3 mr-2" />}
+                      {form.qr_code_url ? "Replace QR" : "Upload QR"}
+                    </Button>
+                  </div>
+                </div>
               </div>
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block uppercase font-semibold">Phone (for GPay/PhonePe)</label>

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { Star, MapPin, ChevronRight, Store } from "lucide-react";
+import { Star, MapPin, ChevronRight, Store, ShieldCheck, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
@@ -13,6 +13,7 @@ const ShopShowcase = () => {
         .from("shops")
         .select("*")
         .eq("is_active", true)
+        .order("is_promoted", { ascending: false })
         .order("rating", { ascending: false })
         .limit(4);
       
@@ -82,9 +83,16 @@ const ShopShowcase = () => {
                   </div>
                 </div>
 
-                <h3 className="font-display font-bold text-lg text-foreground mb-1 group-hover:text-accent transition-colors">
+                <h3 className="font-display font-bold text-lg text-foreground mb-1 group-hover:text-accent transition-colors flex items-center gap-1.5">
                   {shop.name}
+                  {(shop as any).is_verified && <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center shrink-0"><ShieldCheck className="w-2.5 h-2.5 text-white fill-white" /></div>}
                 </h3>
+                {(shop as any).is_promoted && (
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-accent uppercase tracking-widest mb-2">
+                    <Crown className="w-3 h-3" />
+                    Featured Partner
+                  </div>
+                )}
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-6">
                   <MapPin className="w-3.5 h-3.5" />
                   {shop.city}, {shop.state}

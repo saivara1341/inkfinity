@@ -13,10 +13,12 @@ export interface ShopProvider {
   badges: string[];
   icon: "zap" | "rupee" | "thumbs-up";
   services: string[];
+  is_verified?: boolean;
+  is_promoted?: boolean;
 }
 
 export const useShopSelection = (service?: string, userLocation?: { latitude: number; longitude: number } | null) => {
-  const { data: shops = [], isLoading: loading } = useQuery({
+  const { data: shops = [], isLoading: loading, isError } = useQuery({
     queryKey: ["shop-selection", service, userLocation?.latitude, userLocation?.longitude],
     queryFn: async () => {
       let query = supabase.from("shops").select("*").eq("is_active", true);
@@ -62,16 +64,19 @@ export const useShopSelection = (service?: string, userLocation?: { latitude: nu
           badges: shop.is_verified ? ["Verified Shop"] : [],
           icon: "zap",
           services: shop.services || [],
+          is_verified: shop.is_verified,
+          is_promoted: shop.is_promoted,
         };
       });
 
-      // Sort by distance if location available, else by rating
+      // Sort by promotion first, then distance
       return mappedShops.sort((a, b) => {
+        if (a.is_promoted !== b.is_promoted) return a.is_promoted ? -1 : 1;
         if (a.rawDistance !== b.rawDistance) return a.rawDistance - b.rawDistance;
         return b.rating - a.rating;
       });
     }
   });
 
-  return { shops, loading };
+  return { shops, loading, isError };
 };

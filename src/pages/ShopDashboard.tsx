@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingCart, BarChart3, Settings,
-  ChevronDown, Printer, Bell, LogOut, Package, Sparkles, Megaphone, FileWarning
+  ChevronDown, Printer, Bell, LogOut, Package, Sparkles, Megaphone, FileWarning, ShoppingBag
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -17,12 +17,13 @@ import { ShopProducts } from "@/components/shop/ShopProducts";
 import ShopAIHub from "@/components/shop/ShopAIHub";
 import ShopMarketing from "@/components/shop/ShopMarketing";
 
-type Tab = "overview" | "orders" | "products" | "analytics" | "ai-hub" | "marketing" | "settings" | "support";
+type Tab = "overview" | "orders" | "products" | "analytics" | "ai-hub" | "marketing" | "settings" | "support" | "sourcing";
 
 const sidebarItems: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "products", label: "Products", icon: Package },
   { id: "orders", label: "Orders", icon: ShoppingCart },
+  { id: "sourcing", label: "Material Sourcing", icon: ShoppingBag },
   { id: "ai-hub", label: "AI Design Hub", icon: Sparkles },
   { id: "marketing", label: "Marketing", icon: Megaphone },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
@@ -153,6 +154,20 @@ const ShopDashboard = () => {
           {activeTab === "analytics" && <ShopAnalytics orders={orders} />}
           {activeTab === "settings" && (
             <ShopSettings shop={shop} onSave={updateShopProfile} />
+          )}
+          {activeTab === "sourcing" && (
+            <div className="bg-card rounded-xl border border-border p-8 text-center space-y-6 shadow-card">
+              <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto">
+                <ShoppingBag className="w-8 h-8 text-accent" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-display font-bold text-foreground">B2B Material Sourcing</h2>
+                <p className="text-muted-foreground max-w-sm mx-auto">Connect directly with manufacturers and distributors for bulk paper, ink, and supplies at wholesale rates.</p>
+              </div>
+              <Button variant="coral" size="lg" onClick={() => navigate("/sourcing")}>
+                Go to Sourcing Portal
+              </Button>
+            </div>
           )}
           {activeTab === "support" && (
             <div className="bg-card rounded-xl border border-border p-8 text-center space-y-4 shadow-card">

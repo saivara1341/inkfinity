@@ -9,6 +9,9 @@ import { statusColors, statusLabels } from "./ShopOverview";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { Database } from "@/integrations/supabase/types";
+import { OrderMessages } from "../OrderMessages";
+import { MessageSquare } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 type Order = Database["public"]["Tables"]["orders"]["Row"];
 
@@ -23,11 +26,25 @@ interface Props {
 
 export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTracking }: Props) => {
   const [statusFilter, setStatusFilter] = useState("all");
+  const [verticalFilter, setVerticalFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkStatus, setBulkStatus] = useState<string>("");
+  const [messagingOrderId, setMessagingOrderId] = useState<string | null>(null);
 
-  const filtered = statusFilter === "all" ? orders : orders.filter((o) => o.status === statusFilter);
+  const filtered = orders.filter((o) => {
+    const statusMatch = statusFilter === "all" || o.status === statusFilter;
+    const verticalMatch = verticalFilter === "all" || 
+      (verticalFilter === "hospital" && o.product_name.toLowerCase().includes("medical")) ||
+      (verticalFilter === "wedding" && o.product_name.toLowerCase().includes("wedding")) ||
+      (verticalFilter === "standard" && !o.product_name.toLowerCase().includes("medical") && !o.product_name.toLowerCase().includes("wedding"));
+    const searchMatch = !searchQuery || 
+      o.order_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      o.product_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      o.delivery_address?.toLowerCase().includes(searchQuery.toLowerCase());
+    return statusMatch && verticalMatch && searchMatch;
+  });
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     setUpdatingId(orderId);
@@ -119,21 +136,87 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
     labelWindow.document.close();
   };
 
+  const handleExportCSV = () => {
+    if (filtered.length === 0) {
+      toast.error("No orders to export");
+      return;
+    }
+    
+    const headers = ["Order Date", "Order Number", "Product", "Quantity", "Grand Total (INR)", "Commission (INR)", "Vendor Payout (INR)", "Status", "Payment"];
+    const rows = filtered.map(o => [
+      format(new Date(o.created_at), "yyyy-MM-dd HH:mm"),
+      o.order_number,
+      o.product_name,
+      o.quantity,
+      o.grand_total,
+      (o as any).platform_margin_total || 0,
+      (o as any).vendor_payout_total || 0,
+      o.status,
+      o.payment_status
+    ]);
+    
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `PrintFlow_Orders_${format(new Date(), "yyyyMMdd")}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("CSV Exported successfully");
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap gap-2">
-          {["all", ...ORDER_STATUSES].map((s) => (
-            <button
-              key={s}
-              onClick={() => { setStatusFilter(s); setSelectedIds([]); }}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                statusFilter === s ? "bg-accent text-accent-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-              }`}
-            >
-              {s === "all" ? "All Orders" : statusLabels[s] || s}
-            </button>
-          ))}
+        <div className="flex flex-col gap-4 flex-1">
+          <div className="relative w-full max-w-md">
+            <Input 
+              placeholder="Search by Order #, product, or address..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-4 h-10 bg-card shadow-sm border-border focus:ring-accent/20"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {["all", ...ORDER_STATUSES].map((s) => (
+              <button
+                key={s}
+                onClick={() => { setStatusFilter(s); setSelectedIds([]); }}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  statusFilter === s ? "bg-accent text-accent-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                }`}
+              >
+                {s === "all" ? "All Statuses" : statusLabels[s] || s}
+              </button>
+            ))}
+          </div>
+          
+          <div className="flex flex-wrap gap-2">
+            {[
+              { id: "all", label: "All Sectors" },
+              { id: "hospital", label: "🏥 Hospital" },
+              { id: "wedding", label: "✨ Wedding" },
+              { id: "standard", label: "📦 Standard" }
+            ].map((v) => (
+              <button
+                key={v.id}
+                onClick={() => { setVerticalFilter(v.id); setSelectedIds([]); }}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                  verticalFilter === v.id ? "bg-accent/10 border-accent text-accent" : "bg-background border-border text-muted-foreground hover:border-accent/40"
+                }`}
+              >
+                {v.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="gap-2" onClick={handleExportCSV}>
+            <Download className="w-4 h-4" /> Export CSV
+          </Button>
         </div>
 
         {selectedIds.length > 0 && (
@@ -208,6 +291,9 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
                           )}
                           {(order as any).is_frequent && (
                             <Badge variant="outline" className="text-[10px] border-amber-200 text-amber-600 bg-amber-50">Frequent Client</Badge>
+                          )}
+                          {order.quantity >= 1000 && (
+                            <Badge variant="outline" className="text-[10px] border-red-200 text-red-600 bg-red-50 animate-pulse">Large Bulk Order</Badge>
                           )}
                         </div>
                       </td>
@@ -302,7 +388,7 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
                           {order.status !== "delivered" && order.status !== "cancelled" && (
                             <Button
                               size="sm"
-                              variant="accent"
+                              variant="coral"
                               className="h-7 text-[10px] font-bold uppercase w-[140px]"
                               disabled={updatingId === order.id}
                               onClick={() => {
@@ -323,22 +409,32 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
                             </Button>
                           )}
 
-                          <Select
-                            value={order.status}
-                            onValueChange={(val) => handleStatusChange(order.id, val)}
-                            disabled={updatingId === order.id || order.status === "delivered" || order.status === "cancelled"}
-                          >
-                            <SelectTrigger className="h-8 w-[140px] text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {ORDER_STATUSES.map((s) => (
-                                <SelectItem key={s} value={s} className="text-xs">
-                                  {statusLabels[s]}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <div className="flex flex-col gap-2">
+                            <Select
+                              value={order.status}
+                              onValueChange={(val) => handleStatusChange(order.id, val)}
+                              disabled={updatingId === order.id || order.status === "delivered" || order.status === "cancelled"}
+                            >
+                              <SelectTrigger className="h-8 w-[140px] text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {ORDER_STATUSES.map((s) => (
+                                  <SelectItem key={s} value={s} className="text-xs">
+                                    {statusLabels[s]}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-[10px] w-[140px] gap-1"
+                              onClick={() => setMessagingOrderId(order.id)}
+                            >
+                              <MessageSquare className="w-3 h-3" /> Discuss Order
+                            </Button>
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -348,6 +444,19 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
           </table>
         </div>
       )}
+
+      {/* Messaging Portal */}
+      <Dialog open={!!messagingOrderId} onOpenChange={(open) => !open && setMessagingOrderId(null)}>
+        <DialogContent className="sm:max-w-[450px] p-0 border-none bg-transparent shadow-none">
+          {messagingOrderId && (
+            <OrderMessages 
+              orderId={messagingOrderId} 
+              shopOwnerId={orders.find(o => o.id === messagingOrderId)?.shop_id || ""}
+              onClose={() => setMessagingOrderId(null)} 
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };

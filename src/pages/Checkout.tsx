@@ -8,15 +8,16 @@ import {
   MapPin, Truck, Store, CreditCard, IndianRupee,
   ChevronRight, Check, Edit2, Plus, Bike, Package,
   Smartphone, Building2, Star, Zap, ThumbsUp, Crown, AlertTriangle,
-  Info
+  Info, Copy, ExternalLink, QrCode, X
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart, type CartItem } from "@/hooks/useCart";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Database } from "@/integrations/supabase/types";
 import { toast } from "sonner";
+import { Database } from "@/integrations/supabase/types";
 import { Badge } from "@/components/ui/badge";
+import { paymentService } from "@/services/PaymentService";
 
 type Address = Database["public"]["Tables"]["user_addresses"]["Row"];
 type Shop = Database["public"]["Tables"]["shops"]["Row"];
@@ -111,7 +112,22 @@ const Checkout = () => {
         pincode: defaultAddr.pincode || "",
       }));
     }
-  }, [savedAddresses, selectedAddressId, user?.user_metadata?.phone]); // Only run when addresses load
+  }, [savedAddresses, selectedAddressId, user?.user_metadata?.phone]);
+
+  const [selectedShopId, setSelectedShopId] = useState<string>(() => {
+    const saved = sessionStorage.getItem("customize_product");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.shopId) return parsed.shopId;
+      } catch (e) {
+        console.error("Failed to parse customize_product for shopId:", e);
+      }
+    }
+    return "";
+  });
+
+  const currentShop = shops.find(s => s.id === (items[0]?.shop_id || selectedShopId));
 
   // if (!user) return null; // MOVED BELOW ALL HOOKS
 
@@ -131,25 +147,6 @@ const Checkout = () => {
   const grandTotal = totalAmount + deliveryPrice + gst;
 
 
-  const [selectedShopId, setSelectedShopId] = useState<string>(() => {
-    const saved = sessionStorage.getItem("customize_product");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed.shopId) return parsed.shopId;
-      } catch (e) {
-        console.error("Failed to parse customize_product for shopId:", e);
-      }
-    }
-    return "";
-  });
-
-  // Default to first shop if none selected
-  useEffect(() => {
-    if (!selectedShopId && shops.length > 0) {
-      setSelectedShopId(shops[0].id);
-    }
-  }, [shops, selectedShopId]);
 
   const placeOrderMutation = useMutation({
     mutationFn: async () => {
@@ -164,6 +161,11 @@ const Checkout = () => {
         const itemTotal = unitPrice * item.quantity;
         const itemGst = Math.round(itemTotal * 0.18);
         const itemDelivery = items.length === 1 ? deliveryPrice : Math.round(deliveryPrice / items.length);
+
+        const commissionRate = currentShop?.commission_rate || 5.0;
+        const itemGrandTotal = ((item.specifications as any)?.total || itemTotal) + itemGst + itemDelivery;
+        const platformMargin = (itemGrandTotal * commissionRate) / 100;
+        const vendorPayout = itemGrandTotal - platformMargin;
 
         const itemOrderNumber = items.length > 1
           ? orderNumber + "-" + item.product_id.slice(0, 4).toUpperCase()
@@ -180,7 +182,9 @@ const Checkout = () => {
           total_price: (item.specifications as any)?.total || itemTotal,
           gst_amount: itemGst,
           delivery_charge: itemDelivery,
-          grand_total: ((item.specifications as any)?.total || itemTotal) + itemGst + itemDelivery,
+          grand_total: itemGrandTotal,
+          platform_margin_total: platformMargin,
+          vendor_payout_total: vendorPayout,
           delivery_address: fullAddress,
           specifications: {
             ...(item.specifications as object || {}),
@@ -235,64 +239,25 @@ const Checkout = () => {
     }
 
     try {
-      // 1. Load Razorpay SDK
-      const res = await new Promise((resolve) => {
-        const script = document.createElement("script");
-        script.src = "https://checkout.razorpay.com/v1/checkout.js";
-        script.onload = () => resolve(true);
-        script.onerror = () => resolve(false);
-        document.body.appendChild(script);
+      // Create a temporary order in Supabase first to get an ID
+      // Or we can use a generated receipt ID
+      const orderId = "ORD-" + Date.now().toString().slice(-6);
+
+      await paymentService.initiateRazorpayPayment({
+        amount: grandTotal,
+        currency: "INR",
+        orderId: orderId,
+        customerName: addressForm.name,
+        customerEmail: user?.email || "",
+        customerPhone: addressForm.phone,
+        keyId: currentShop?.razorpay_key_id,
       });
 
-      if (!res) {
-        toast.error("Razorpay SDK failed to load. Are you online?");
-        return;
-      }
-
-      // 2. Create Razorpay Order via Edge Function
-      const { data: orderData, error: orderError } = await supabase.functions.invoke("create-razorpay-order", {
-        body: {
-          amount: grandTotal,
-          currency: "INR",
-          receipt: "order_rcptid_" + Date.now(),
-          notes: {
-            user_id: user?.id,
-            total_items: items.length
-          }
-        }
-      });
-
-      if (orderError) throw orderError;
-
-      // 3. Open Razorpay Checkout
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: "PrintFlow",
-        description: "Payment for your order",
-        order_id: orderData.id,
-        handler: async (response: any) => {
-          // 4. On success, trigger our internal order placement
-          // We pass the razorpay_payment_id to the mutation if we want to store it
-          placeOrderMutation.mutate();
-        },
-        prefill: {
-          name: addressForm.name,
-          contact: addressForm.phone,
-          email: user?.email
-        },
-        theme: {
-          color: "#e8613a"
-        }
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-
+      // On success (handled in PaymentService for DB update), trigger the success flow
+      placeOrderMutation.mutate();
     } catch (error: any) {
       console.error("Payment Error:", error);
-      toast.error("Payment initialization failed: " + error.message);
+      toast.error("Payment failed: " + error.message);
     }
   };
 
@@ -660,32 +625,96 @@ const Checkout = () => {
                       )}
 
                       {paymentMethod === "manual" && (
-                        <div className="p-5 bg-accent/5 rounded-lg border border-accent/20 mb-6">
-                          <div className="flex items-center gap-3 mb-4">
-                            <IndianRupee className="w-5 h-5 text-accent" />
-                            <span className="text-sm text-foreground font-bold">Manual Payment (Direct to Shop)</span>
+                        <div className="p-5 bg-accent/5 rounded-lg border border-accent/20 mb-6 space-y-6">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <IndianRupee className="w-5 h-5 text-accent" />
+                              <span className="text-sm text-foreground font-bold">Direct Payment to Shop</span>
+                            </div>
+                            {(shops.find(s => s.id === (items[0]?.shop_id || selectedShopId)) as any)?.qr_code_url && (
+                              <button 
+                                onClick={() => {
+                                  const url = (shops.find(s => s.id === (items[0]?.shop_id || selectedShopId)) as any)?.qr_code_url;
+                                  if (url) window.open(url, "_blank");
+                                }}
+                                className="flex items-center gap-1.5 px-2 py-1 bg-white border border-border rounded-md text-[10px] font-bold text-foreground hover:bg-secondary transition-colors"
+                              >
+                                <QrCode className="w-3 h-3 text-accent" /> View QR
+                              </button>
+                            )}
                           </div>
                           
-                          <div className="space-y-3 pl-8">
-                            <div>
-                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-0.5">UPI ID</p>
-                              <p className="text-sm font-medium text-foreground">{shops.find(s => s.id === (items[0]?.shop_id || selectedShopId))?.upi_id || "payment@printflow"}</p>
+                          <div className="space-y-4">
+                            {/* UPI ID with Copy */}
+                            <div className="p-3 bg-white/50 rounded-xl border border-border flex items-center justify-between group">
+                              <div>
+                                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-0.5">UPI ID</p>
+                                <p className="text-sm font-medium text-foreground">{shops.find(s => s.id === (items[0]?.shop_id || selectedShopId))?.upi_id || "payment@printflow"}</p>
+                              </div>
+                              <button 
+                                onClick={() => {
+                                  const upi = shops.find(s => s.id === (items[0]?.shop_id || selectedShopId))?.upi_id || "payment@printflow";
+                                  navigator.clipboard.writeText(upi);
+                                  toast.success("UPI ID copied!");
+                                }}
+                                className="p-2 rounded-lg bg-secondary text-muted-foreground hover:bg-accent/10 hover:text-accent transition-all"
+                              >
+                                <Copy className="w-4 h-4" />
+                              </button>
+                            </div>
+
+                            {/* App Deep Links */}
+                            <div className="grid grid-cols-3 gap-2">
+                              {[
+                                { name: "GPay", color: "bg-[#4285F4]/10 text-[#4285F4]", scheme: "googlepay" },
+                                { name: "PhonePe", color: "bg-[#5f259f]/10 text-[#5f259f]", scheme: "phonepe" },
+                                { name: "Paytm", color: "bg-[#00baf2]/10 text-[#00baf2]", scheme: "paytm" }
+                              ].map(app => (
+                                <button
+                                  key={app.name}
+                                  onClick={() => {
+                                    const upiId = shops.find(s => s.id === (items[0]?.shop_id || selectedShopId))?.upi_id || "payment@printflow";
+                                    const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(shops.find(s => s.id === (items[0]?.shop_id || selectedShopId))?.name || "PrintFlow")}&am=${grandTotal}&cu=INR`;
+                                    window.open(upiUrl);
+                                  }}
+                                  className={`flex flex-col items-center justify-center py-2.5 rounded-xl border border-transparent hover:border-accent/20 transition-all ${app.color}`}
+                                >
+                                  <ExternalLink className="w-3 h-3 mb-1" />
+                                  <span className="text-[10px] font-bold">{app.name}</span>
+                                </button>
+                              ))}
                             </div>
                             
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-0.5">Mobile Number</p>
-                                <p className="text-sm font-medium text-foreground">{shops.find(s => s.id === (items[0]?.shop_id || selectedShopId))?.phone || "Contact Shop"}</p>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="p-3 bg-white/50 rounded-xl border border-border flex items-center justify-between">
+                                <div className="min-w-0">
+                                  <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-0.5">Mobile Number</p>
+                                  <p className="text-sm font-medium text-foreground truncate">{shops.find(s => s.id === (items[0]?.shop_id || selectedShopId))?.phone || "Contact Shop"}</p>
+                                </div>
+                                <button 
+                                  onClick={() => {
+                                    const phone = shops.find(s => s.id === (items[0]?.shop_id || selectedShopId))?.phone || "";
+                                    if (phone) {
+                                      navigator.clipboard.writeText(phone);
+                                      toast.success("Phone number copied!");
+                                    }
+                                  }}
+                                  className="p-1.5 rounded-md hover:bg-accent/10 text-muted-foreground hover:text-accent transition-colors"
+                                >
+                                  <Copy className="w-3.5 h-3.5" />
+                                </button>
                               </div>
-                              <div>
+                              <div className="p-3 bg-white/50 rounded-xl border border-border">
                                 <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-0.5">Bank Name</p>
                                 <p className="text-sm font-medium text-foreground">{(shops.find(s => s.id === (items[0]?.shop_id || selectedShopId)) as any)?.bank_name || "HDFC Bank"}</p>
                               </div>
                             </div>
                           </div>
                           
-                          <div className="mt-4 p-3 bg-white/50 rounded border border-accent/10">
-                            <p className="text-[10px] text-muted-foreground">Please share the transaction screenshot with the shop after payment to confirm your order.</p>
+                          <div className="p-3 bg-amber-500/5 rounded-xl border border-amber-500/10">
+                            <p className="text-[10px] text-amber-700 leading-relaxed font-medium">
+                              ⚠️ Please complete the payment in your UPI app and come back here to click "Complete Order". You'll need to share the screenshot with the shop later.
+                            </p>
                           </div>
                         </div>
                       )}

@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 
-interface ProtectedRouteProps {
+export interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: string;
+  requiredRole?: string | string[];
 }
 
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
@@ -38,17 +38,22 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
           return;
         }
 
+        // TRY to fetch role from user_roles (may fail if RLS recursion persists)
         const { data, error } = await supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", user.id)
           .maybeSingle();
 
-        if (error) throw error;
+        let userRole = data?.role as string;
+        
+        // FALLBACK: Use user metadata if DB query fails or returns nothing
+        if (!userRole || error) {
+          if (error) console.warn("Note: user_roles query failed (likely RLS recursion). Using metadata fallback.");
+          userRole = user.user_metadata?.user_role;
+        }
 
         if (mounted) {
-          const userRole = data?.role as string;
-          
           if (!userRole) {
             // New user from Google or someone who hasn't chosen a role yet
             navigate("/onboarding", { replace: true });
@@ -56,7 +61,11 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
             return;
           }
 
-          if (userRole === requiredRole || userRole === "admin") {
+          // Check if user has required role or is admin
+          const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+          const isAuthorized = !requiredRole || roles.includes(userRole) || userRole === "admin";
+
+          if (isAuthorized) {
             setAuthorized(true);
           } else {
             setAuthorized(false);

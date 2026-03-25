@@ -253,6 +253,20 @@ const invitationSizes: PrintSize[] = [
   { id: "inv-large", label: "Large", dimensions: "200 × 150 mm", widthMM: 200, heightMM: 150, widthInch: "7.9", heightInch: "5.9", basePrice: 20 },
   { id: "inv-a5", label: "A5", dimensions: "148 × 210 mm", widthMM: 148, heightMM: 210, widthInch: "5.8", heightInch: "8.3", basePrice: 18 },
   { id: "inv-scroll", label: "Scroll Card", dimensions: "203 × 114 mm (rolled)", widthMM: 203, heightMM: 114, widthInch: "8", heightInch: "4.5", basePrice: 50 },
+  { id: "inv-acrylic", label: "Acrylic Invitation", dimensions: "127 × 178 mm", widthMM: 127, heightMM: 178, widthInch: "5", heightInch: "7", basePrice: 250 },
+];
+
+const hospitalSizes: PrintSize[] = [
+  { id: "hosp-bill-a5", label: "Bill Book A5", dimensions: "148 × 210 mm", widthMM: 148, heightMM: 210, widthInch: "5.8", heightInch: "8.3", basePrice: 120 },
+  { id: "hosp-bill-dl", label: "Bill Book DL", dimensions: "99 × 210 mm", widthMM: 99, heightMM: 210, widthInch: "3.9", heightInch: "8.3", basePrice: 90 },
+  { id: "hosp-record-a4", label: "Patient File A4", dimensions: "210 × 297 mm", widthMM: 210, heightMM: 297, widthInch: "8.3", heightInch: "11.7", basePrice: 45 },
+  { id: "hosp-pres-a5", label: "Prescription Pad A5", dimensions: "148 × 210 mm", widthMM: 148, heightMM: 210, widthInch: "5.8", heightInch: "8.3", basePrice: 35 },
+];
+
+const hospitalPapers: PaperType[] = [
+  { id: "ncr-2-part", label: "NCR 2-Part (Duplicate)", gsm: 0, description: "Carbonless duplicate paper", priceMultiplier: 1 },
+  { id: "ncr-3-part", label: "NCR 3-Part (Triplicate)", gsm: 0, description: "Carbonless triplicate paper", priceMultiplier: 1.5 },
+  { id: "bond-100", label: "100 GSM Ledger Bond", gsm: 100, description: "Durable ledger paper", priceMultiplier: 1.2 },
 ];
 
 // ═══════════════════════════════════════════════
@@ -875,6 +889,58 @@ export const productCategories: ProductCategory[] = [
           { min: 50, max: 999, pricePerUnit: 399 },
         ],
         printingMethods: printingMethodsDigital, turnaroundDays: "7-10",
+      },
+    ],
+  },
+  {
+    id: "hospital-management",
+    name: "Hospital & Medical",
+    description: "Specialized printing for healthcare operations",
+    icon: "Stethoscope",
+    subcategories: [
+      {
+        id: "medical-bill-book", name: "Medical Bill Book", description: "Carbonless duplicate or triplicate bill books",
+        startingPrice: "₹90", unit: "per book", minQty: 10,
+        sizes: hospitalSizes.filter(s => s.id.includes("bill")),
+        papers: hospitalPapers.filter(p => p.id.includes("ncr")),
+        finishes: [{ id: "binding", label: "Book Binding", description: "Perforated with hard cover", priceAdd: 0 }],
+        quantityTiers: [
+          { min: 10, max: 24, pricePerUnit: 150 }, { min: 25, max: 49, pricePerUnit: 120 },
+          { min: 50, max: 999, pricePerUnit: 90 },
+        ],
+        printingMethods: printingMethodsDigital, turnaroundDays: "4-6",
+      },
+      {
+        id: "patient-file", name: "Patient Record File", description: "Durable folders for medical history",
+        startingPrice: "₹15", unit: "each", minQty: 100,
+        sizes: [hospitalSizes[2]],
+        papers: [visitingCardPapers[1], visitingCardPapers[2]],
+        finishes: [{ id: "none", label: "Standard", description: "With file clip", priceAdd: 0 }],
+        quantityTiers: [
+          { min: 100, max: 249, pricePerUnit: 25 }, { min: 250, max: 499, pricePerUnit: 18 },
+          { min: 500, max: 9999, pricePerUnit: 15 },
+        ],
+        printingMethods: printingMethodsDigital, turnaroundDays: "5-7",
+      },
+    ],
+  },
+  {
+    id: "premium-weddings",
+    name: "Luxury Weddings",
+    description: "High-end stationery for the perfect celebration",
+    icon: "Sparkles",
+    subcategories: [
+      {
+        id: "laser-cut-wedding", name: "Laser-Cut Invitation", description: "Intricate laser-cut designs on premium paper",
+        startingPrice: "₹85", unit: "per card", minQty: 50, popular: true,
+        sizes: invitationSizes.slice(0, 4),
+        papers: [visitingCardPapers[3], visitingCardPapers[4], visitingCardPapers[7]],
+        finishes: [visitingCardFinishes[4], { id: "laser-cut", label: "Laser Cutting", description: "Complex die-cut patterns", priceAdd: 40 }],
+        quantityTiers: [
+          { min: 50, max: 99, pricePerUnit: 150 }, { min: 100, max: 249, pricePerUnit: 120 },
+          { min: 250, max: 999, pricePerUnit: 85 },
+        ],
+        printingMethods: printingMethodsDigital, turnaroundDays: "10-14",
       },
     ],
   },

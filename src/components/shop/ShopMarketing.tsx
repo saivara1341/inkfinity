@@ -130,6 +130,65 @@ const ShopMarketing = () => {
         ))}
       </div>
 
+      {/* Promotion Hub (B2C Ads) */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-coral/10 flex items-center justify-center">
+            <TrendingUp className="w-6 h-6 text-coral" />
+          </div>
+          <div>
+            <h3 className="text-xl font-display font-bold text-foreground">Regional Promotion Hub</h3>
+            <p className="text-sm text-muted-foreground underline decoration-dotted underline-offset-4 cursor-help" title="Based on current market trends and your shop's performance">Your current regional rank: <span className="text-foreground font-bold italic">#12 in Hyderabad</span></p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="border-border shadow-sm hover:border-accent/40 transition-colors">
+            <CardHeader className="pb-4">
+              <div className="flex justify-between items-start">
+                <CardTitle className="text-lg">Top Search Spotlight</CardTitle>
+                <Badge className="bg-green-500/10 text-green-500 border-none">Most Effective</Badge>
+              </div>
+              <CardDescription>Appear as the #1 result for customers searching for prints in your city.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Ad Reach (Local)</span>
+                <span className="font-bold text-foreground">~500 customers/day</span>
+              </div>
+              <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+                <div className="h-full bg-accent w-4/5" />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button variant="coral" className="w-full gap-2">
+                <Zap className="w-4 h-4" /> Start Boosting (₹99/day)
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <Card className="border-border shadow-sm hover:border-accent/40 transition-colors bg-secondary/5 opacity-75 grayscale-0">
+             <CardHeader className="pb-4">
+              <div className="flex justify-between items-start">
+                <CardTitle className="text-lg">Location Targeter</CardTitle>
+                <Badge variant="outline" className="border-muted-foreground/30 text-muted-foreground">Coming Soon</Badge>
+              </div>
+              <CardDescription>Pick specific pincodes or 5km radius to target high-intent buyers.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+               <div className="p-3 bg-card border border-border rounded-lg flex items-center justify-between opacity-50">
+                  <span className="text-sm">Target: Secunderabad, HI...</span>
+                  <Badge variant="secondary">0.5 KM</Badge>
+               </div>
+               <p className="text-[10px] text-muted-foreground">Select up to 3 priority zones for localized visibility.</p>
+            </CardContent>
+            <CardFooter>
+              <Button variant="outline" className="w-full" disabled>Expand Targeting</Button>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
+
       <div className="bg-secondary/30 rounded-2xl p-6 border border-border">
         <div className="flex flex-col md:flex-row gap-6 items-center">
           <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center shrink-0">

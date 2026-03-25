@@ -43,7 +43,8 @@ const Signup = () => {
     setLoading(true);
     const { error } = await signUp(formData.email, formData.password, { 
       full_name: formData.name,
-      customer_type: formData.customerType 
+      customer_type: formData.customerType,
+      user_role: userType === "shop" ? "shop_owner" : "customer"
     });
     if (error) {
       toast({ title: "Signup failed", description: error.message, variant: "destructive" });

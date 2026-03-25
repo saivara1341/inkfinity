@@ -15,8 +15,10 @@ import { Input } from "@/components/ui/input";
 import { lazy, Suspense } from "react";
 const ProductPreview3D = lazy(() => import("@/components/ProductPreview3D"));
 import AIDesignGenerator from "@/components/AIDesignGenerator";
+import AdobeExpressEditor from "@/components/AdobeExpressEditor";
 import QuotationGenerator from "@/components/QuotationGenerator";
 import { Checkbox } from "@/components/ui/checkbox";
+import ShareControl from "@/components/ShareControl";
 import { useDesignQA } from "@/hooks/useDesignQA";
 import { getSubcategoryById, getAllSubcategories } from "@/data/printingProducts";
 import type { PrintSize, PaperType, FinishType } from "@/data/printingProducts";
@@ -126,6 +128,8 @@ const ProductCustomize = () => {
   
   const [useSameImage, setUseSameImage] = useState(false);
   const [printSides, setPrintSides] = useState<"single" | "double">("single");
+  const [showAdobeEditor, setShowAdobeEditor] = useState(false);
+  const [adobeTargetSide, setAdobeTargetSide] = useState<"front" | "back">("front");
 
   // Design Quality Audits
   const frontQA = useDesignQA();
@@ -365,6 +369,20 @@ const ProductCustomize = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const handleAdobeDesignSave = (url: string) => {
+    if (adobeTargetSide === "front") {
+      setFrontAiUrl(url);
+      setFrontPreview(url);
+      if (useSameImage) {
+        setBackAiUrl(url);
+        setBackPreview(url);
+      }
+    } else {
+      setBackAiUrl(url);
+      setBackPreview(url);
+    }
+  };
+
   // Price calculation
   const calculatePrice = () => {
     const tier = product.quantityTiers.find(t => quantity >= t.min && quantity <= t.max) || product.quantityTiers[0];
@@ -502,8 +520,21 @@ const ProductCustomize = () => {
                 <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-2">
                   <ArrowLeft className="w-4 h-4" /> Back
                 </button>
-                <h1 className="font-display text-3xl font-bold text-foreground mb-1">{product.name}</h1>
-                <p className="text-muted-foreground">{product.description}</p>
+                <div className="flex items-start justify-between gap-4 mb-2">
+                  <div>
+                    <h1 className="font-display text-3xl font-bold text-foreground mb-1">{product.name}</h1>
+                    <p className="text-muted-foreground">{product.description}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <ShareControl 
+                      title={`${product.name} on PrintFlow`}
+                      text={`Check out this ${product.name} on PrintFlow! You can customize and print it professionally.`}
+                      url={`/customize/${category}${shopId ? `?shopId=${shopId}` : ''}`}
+                      variant="secondary"
+                      size="md"
+                    />
+                  </div>
+                </div>
                 <div className="flex items-center gap-3 mt-2">
                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock className="w-3 h-3" /> {product.turnaroundDays} business days
@@ -783,20 +814,41 @@ const ProductCustomize = () => {
 
                 <input ref={fileInputRef} type="file" accept=".png,.jpg,.jpeg,.pdf" onChange={(e) => handleFileUpload(e, "front")} className="hidden" />
                 
-                {/* AI Design Generator */}
-                <div className="mt-4">
-                  <AIDesignGenerator
-                    productType={product.categoryName}
-                    onDesignSelected={(url) => {
-                      setFrontAiUrl(url);
-                      setFrontPreview(url);
-                      if (useSameImage) {
-                        setBackAiUrl(url);
-                        setBackPreview(url);
-                      }
+                {/* Adobe Express & AI Design Generator */}
+                <div className="mt-4 flex flex-col sm:flex-row gap-4">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1 gap-2 border-accent/20 bg-accent/5 hover:bg-accent/10 text-accent transition-all animate-shimmer bg-[linear-gradient(110deg,#fcf4f2,45%,#fff,55%,#fcf4f2)] bg-[length:200%_100%]"
+                    onClick={() => {
+                      setAdobeTargetSide("front");
+                      setShowAdobeEditor(true);
                     }}
-                  />
+                  >
+                    <Sparkles className="w-4 h-4" /> Design with Adobe Express (Pro)
+                  </Button>
+                  
+                  <div className="flex-1">
+                    <AIDesignGenerator
+                      productType={product.categoryName}
+                      onDesignSelected={(url) => {
+                        setFrontAiUrl(url);
+                        setFrontPreview(url);
+                        if (useSameImage) {
+                          setBackAiUrl(url);
+                          setBackPreview(url);
+                        }
+                      }}
+                    />
+                  </div>
                 </div>
+
+                {showAdobeEditor && (
+                  <AdobeExpressEditor
+                    productType={product.name}
+                    onDesignSave={handleAdobeDesignSave}
+                    onClose={() => setShowAdobeEditor(false)}
+                  />
+                )}
               </div>
 
               {/* Shop Selection */}

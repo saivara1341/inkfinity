@@ -11,6 +11,7 @@ import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ShareControl from "@/components/ShareControl";
 
 interface Product {
   id: string;
@@ -174,9 +175,18 @@ const Storefront = () => {
                   </div>
                 </div>
               </div>
-              <Button variant="outline" size="sm" onClick={() => { searchParams.delete("shop"); setSearchParams(searchParams); }}>
-                <X className="w-3.5 h-3.5 mr-1" /> Clear Filter
-              </Button>
+              <div className="flex items-center gap-2">
+                <ShareControl 
+                  title={`${activeShop.name} on PrintFlow`}
+                  text={`Check out this amazing print shop: ${activeShop.name}!`}
+                  url={`/store?view=products&shop=${activeShop.id}`}
+                  variant="ghost"
+                  size="sm"
+                />
+                <Button variant="outline" size="sm" onClick={() => { searchParams.delete("shop"); setSearchParams(searchParams); }}>
+                  <X className="w-3.5 h-3.5 mr-1" /> Clear Filter
+                </Button>
+              </div>
             </motion.div>
           )}
 
@@ -335,8 +345,16 @@ const Storefront = () => {
                           className="flex-1 gap-1"
                           onClick={() => handleAddToCart(product)}
                         >
-                          <ShoppingCart className="w-3.5 h-3.5" /> Add to Cart
+                          <ShoppingCart className="w-3.5 h-3.5" /> Add
                         </Button>
+                        <ShareControl 
+                          title={product.name}
+                          text={`Check out this ${product.name} on PrintFlow!`}
+                          url={`/customize/${product.id}`}
+                          variant="secondary"
+                          size="sm"
+                          showLabel={false}
+                        />
                       </div>
                     </div>
                   </motion.div>
@@ -380,13 +398,23 @@ const Storefront = () => {
                     {shop.description && (
                       <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{shop.description}</p>
                     )}
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">{shop.product_count} products</span>
+                    <div className="flex items-center justify-between mt-auto pt-3 border-t border-border/50">
+                      <div className="flex items-center gap-4">
+                        <ShareControl 
+                          title={shop.name}
+                          text={`Check out this shop on PrintFlow: ${shop.name}`}
+                          url={`/store?view=products&shop=${shop.id}`}
+                          variant="ghost"
+                          size="sm"
+                          showLabel={false}
+                        />
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{shop.product_count} products</span>
+                      </div>
                       <Link
                         to={`/store?view=products&shop=${shop.id}`}
-                        className="text-sm text-accent font-medium flex items-center gap-1 hover:underline"
+                        className="text-sm text-accent font-bold flex items-center gap-1 hover:underline group/link"
                       >
-                        View Shop <ChevronRight className="w-3 h-3" />
+                        View Shop <ChevronRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
                       </Link>
                     </div>
                   </motion.div>

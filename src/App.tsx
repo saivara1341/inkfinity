@@ -19,6 +19,8 @@ const OrderSuccess = lazy(() => import("./pages/OrderSuccess"));
 const OrderTracking = lazy(() => import("./pages/OrderTracking"));
 const CustomerDashboard = lazy(() => import("./pages/CustomerDashboard"));
 const ShopDashboard = lazy(() => import("./pages/ShopDashboard"));
+const SupplierDashboard = lazy(() => import("./pages/SupplierDashboard"));
+const SourcingPortal = lazy(() => import("./pages/SourcingPortal"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Login = lazy(() => import("./pages/Login"));
 const Signup = lazy(() => import("./pages/Signup"));
@@ -26,6 +28,7 @@ const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Storefront = lazy(() => import("./pages/Storefront"));
 const CartPage = lazy(() => import("./pages/Cart"));
+const OrderHistory = lazy(() => import("./pages/OrderHistory"));
 const ForShops = lazy(() => import("./pages/ForShops"));
 const RegisterShop = lazy(() => import("./pages/RegisterShop"));
 import MobileBottomNav from "./components/MobileBottomNav";
@@ -90,6 +93,7 @@ const App = () => {
 
                       {/* Auth-required routes */}
                       <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
+                      <Route path="/orders" element={<ProtectedRoute><OrderHistory /></ProtectedRoute>} />
                       <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
                       <Route path="/order-success" element={<ProtectedRoute><OrderSuccess /></ProtectedRoute>} />
                       <Route path="/register-shop" element={<ProtectedRoute><RegisterShop /></ProtectedRoute>} />
@@ -97,6 +101,8 @@ const App = () => {
                       {/* Role-based dashboards */}
                       <Route path="/dashboard" element={<ProtectedRoute requiredRole="customer"><CustomerDashboard /></ProtectedRoute>} />
                       <Route path="/shop" element={<ProtectedRoute requiredRole="shop_owner"><ShopDashboard /></ProtectedRoute>} />
+                      <Route path="/sourcing" element={<ProtectedRoute requiredRole="shop_owner"><SourcingPortal /></ProtectedRoute>} />
+                      <Route path="/supplier" element={<ProtectedRoute requiredRole={["manufacturer", "distributor"]}><SupplierDashboard /></ProtectedRoute>} />
                       <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
 
                       <Route path="*" element={<NotFound />} />

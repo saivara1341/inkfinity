@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Printer, Menu, X, ShoppingCart, User, LogOut, MapPin, Settings, ChevronDown } from "lucide-react";
+import { Printer, Menu, X, ShoppingCart, User, LogOut, MapPin, Settings, ChevronDown, Package } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -70,7 +70,7 @@ const Navbar = () => {
   const avatarInitial = displayName.charAt(0).toUpperCase();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border hidden md:block">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
         <Link to="/" className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-lg bg-gradient-coral flex items-center justify-center">
@@ -151,6 +151,14 @@ const Navbar = () => {
                     {getDashboardLabel()}
                   </Link>
                   <Link
+                    to="/orders"
+                    onClick={() => setProfileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
+                  >
+                    <Package className="w-4 h-4 text-muted-foreground" />
+                    My Orders
+                  </Link>
+                  <Link
                     to="/dashboard?tab=profile"
                     onClick={() => setProfileOpen(false)}
                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
@@ -225,25 +233,6 @@ const Navbar = () => {
         </div>
       )}
 
-      {/* Persistent Mobile Bottom Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t border-border flex items-center justify-around h-16 px-6 pb-safe">
-        <Link to="/" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-accent transition-colors">
-          <Printer className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Home</span>
-        </Link>
-        <Link to="/catalog" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-accent transition-colors">
-          <ShoppingCart className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Catalog</span>
-        </Link>
-        <Link to="/store?view=shops" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-accent transition-colors">
-          <MapPin className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Shops</span>
-        </Link>
-        <Link to={getDashboardPath()} className="flex flex-col items-center gap-1 text-muted-foreground hover:text-accent transition-colors">
-          <User className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Account</span>
-        </Link>
-      </div>
     </nav>
   );
 };

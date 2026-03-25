@@ -63,23 +63,6 @@ const FeaturesSection = () => {
           </p>
         </motion.div>
 
-        {/* Professional Press Illustration Anchor */}
-        <motion.div 
-           initial={{ opacity: 0, scale: 0.95 }}
-           whileInView={{ opacity: 1, scale: 1 }}
-           viewport={{ once: true }}
-           className="mb-20 flex justify-center px-4"
-        >
-          <div className="relative max-w-4xl w-full group">
-            <div className="absolute inset-x-10 -bottom-4 h-8 bg-black/5 blur-3xl rounded-full" />
-            <img 
-               src={pressProfessional} 
-               alt="Professional Printing Workflow" 
-               className="w-full h-auto object-contain mix-blend-multiply opacity-90 group-hover:opacity-100 transition-opacity duration-700"
-            />
-          </div>
-        </motion.div>
-
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
           {features.map((feature, i) => (
             <motion.div

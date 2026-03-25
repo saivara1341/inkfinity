@@ -1,12 +1,10 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Printer, Upload, CreditCard, Truck, Bell } from "lucide-react";
+import { Search, Printer, Upload, CreditCard, Truck, Bell, ArrowRight } from "lucide-react";
 import { useState } from "react";
-import heroImage from "@/assets/hero-printing.jpg";
-import printingPress from "@/assets/printing-press.png";
-import floralBg from "@/assets/floral-bg.png";
-import printingPressV2 from "@/assets/printing-press-integrated.png";
+import pressProfessional from "@/assets/press-professional.png";
+import heroFloralBackground from "@/assets/hero-floral-art.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -186,24 +184,29 @@ const HeroSection = () => {
                 </div>
               ))}
             </div>
-            {/* Mobile Animation Space with Giphy Embed */}
+            {/* Mobile Animation Space with Professionally Cropped Illustration */}
             <div className="w-full flex items-center justify-center md:hidden pt-4 pb-10 px-4 relative z-10">
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 1, ease: "easeOut" }}
-                className="relative w-full max-w-[340px] aspect-square rounded-3xl overflow-hidden shadow-2xl border border-white/20 bg-white/5 backdrop-blur-sm"
+                className="relative w-full max-w-[340px] group"
               >
-                <iframe 
-                  src="https://giphy.com/embed/bYThvpfFJDscDiRMhj" 
-                  width="100%" 
-                  height="100%" 
-                  frameBorder="0" 
-                  className="giphy-embed pointer-events-none scale-110" 
-                  allowFullScreen
-                ></iframe>
-                {/* Overlay to prevent interaction and maintain look */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-accent/5 via-transparent to-transparent pointer-events-none" />
+                <div className="relative overflow-hidden rounded-2xl">
+                  {/* Cropped Illustration to remove watermark */}
+                  <img 
+                    src={pressProfessional} 
+                    alt="Industrial Printing Press" 
+                    className="w-full h-auto object-cover transform group-hover:scale-[1.02] transition-transform duration-700 drop-shadow-2xl"
+                    style={{ 
+                      marginBottom: '-8%', // Crop out the bottom watermark
+                      clipPath: 'inset(0 0 8% 0)' 
+                    }}
+                  />
+                </div>
+                
+                {/* Refined Integration Shadow */}
+                <div className="absolute -bottom-2 inset-x-8 h-4 bg-black/5 blur-2xl rounded-full" />
               </motion.div>
             </div>
           </motion.div>

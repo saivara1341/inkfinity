@@ -5,10 +5,12 @@ import { ArrowRight, Upload, Truck, CreditCard, Search } from "lucide-react";
 import { useState } from "react";
 import heroImage from "@/assets/hero-printing.jpg";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const HeroSection = () => {
   const navigate = useNavigate();
   const { signInWithGoogle } = useAuth();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearch = () => {
@@ -88,7 +90,10 @@ const HeroSection = () => {
                 variant="outline" 
                 size="lg" 
                 className="w-full max-w-lg h-14 gap-3 text-base border-2 hover:bg-secondary/50 transition-all font-medium"
-                onClick={signInWithGoogle}
+                onClick={async () => {
+                  const { error } = await signInWithGoogle();
+                  if (error) toast({ title: "Google Auth failed", description: error.message, variant: "destructive" });
+                }}
               >
                 <svg className="w-6 h-6" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

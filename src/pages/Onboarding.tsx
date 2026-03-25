@@ -56,9 +56,9 @@ const Onboarding = () => {
       
       // Redirect based on role
       if (selectedRole === "shop_owner") {
-        navigate("/shop");
+        navigate("/register-shop");
       } else if (selectedRole === "manufacturer" || selectedRole === "distributor") {
-        navigate("/supplier");
+        navigate("/register-supplier");
       } else {
         navigate("/catalog");
       }

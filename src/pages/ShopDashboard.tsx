@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingCart, BarChart3, Settings,
-  ChevronDown, Printer, Bell, LogOut, Package, Sparkles, Megaphone, FileWarning, ShoppingBag, X
+  ChevronDown, Printer, Bell, LogOut, Package, Sparkles, Megaphone, FileWarning, ShoppingBag, X,
+  ArrowRight, Store
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -139,47 +140,77 @@ const ShopDashboard = () => {
         </header>
 
         <div className="p-6">
-          {activeTab === "overview" && (
-            <ShopOverview orders={orders} onViewOrders={() => setActiveTab("orders")} />
-          )}
-          {activeTab === "products" && <ShopProducts shop={shop} />}
-          {activeTab === "orders" && (
-            <ShopOrders 
-              orders={orders} 
-              onUpdateStatus={updateOrderStatus} 
-            />
-          )}
-          {activeTab === "ai-hub" && <ShopAIHub />}
-          {activeTab === "marketing" && <ShopMarketing />}
-          {activeTab === "analytics" && <ShopAnalytics orders={orders} />}
-          {activeTab === "settings" && (
-            <ShopSettings shop={shop} onSave={updateShopProfile} />
-          )}
-          {activeTab === "sourcing" && (
-            <div className="bg-card rounded-xl border border-border p-8 text-center space-y-6 shadow-card">
-              <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto">
-                <ShoppingBag className="w-8 h-8 text-accent" />
+          {!shop ? (
+            <div className="bg-card rounded-[2.5rem] border border-border p-12 text-center space-y-8 animate-in fade-in zoom-in duration-500 shadow-xl max-w-2xl mx-auto mt-12">
+              <div className="w-24 h-24 rounded-[2rem] bg-gradient-coral flex items-center justify-center mx-auto shadow-glow">
+                <Store className="w-12 h-12 text-accent-foreground" />
               </div>
-              <div className="space-y-2">
-                <h2 className="text-2xl font-display font-bold text-foreground">B2B Material Sourcing</h2>
-                <p className="text-muted-foreground max-w-sm mx-auto">Connect directly with manufacturers and distributors for bulk paper, ink, and supplies at wholesale rates.</p>
+              <div className="space-y-3">
+                <h2 className="text-4xl font-display font-bold text-foreground italic">Register your shop first</h2>
+                <p className="text-muted-foreground text-lg leading-relaxed">
+                  Register your shop first to manage products and reach 500+ local customers.
+                </p>
               </div>
-              <Button variant="coral" size="lg" onClick={() => navigate("/sourcing")}>
-                Go to Sourcing Portal
-              </Button>
+              <div className="pt-4">
+                <Button 
+                  variant="coral" 
+                  size="lg" 
+                  className="h-16 px-10 rounded-2xl text-xl font-bold shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]"
+                  onClick={() => navigate("/register-shop")}
+                >
+                  Register Your Shop Now <ArrowRight className="ml-2 w-6 h-6" />
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
+                <Sparkles className="w-4 h-4 text-accent" />
+                Takes less than 2 minutes to get online
+              </p>
             </div>
-          )}
-          {activeTab === "support" && (
-            <div className="bg-card rounded-xl border border-border p-8 text-center space-y-4 shadow-card">
-              <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto">
-                <FileWarning className="w-8 h-8 text-accent" />
-              </div>
-              <h2 className="text-xl font-display font-bold text-foreground">Merchant Support Command</h2>
-              <p className="text-muted-foreground max-w-sm mx-auto">Report technical issues, payment delays, or platform suggestions directly to the admin team.</p>
-              <Button variant="coral" onClick={() => toast.info("Report modal coming soon! For now, use the order report buttons.")}>
-                Report an Issue
-              </Button>
-            </div>
+          ) : (
+            <>
+              {activeTab === "overview" && (
+                <ShopOverview orders={orders} onViewOrders={() => setActiveTab("orders")} />
+              )}
+              {activeTab === "products" && <ShopProducts shop={shop} />}
+              {activeTab === "orders" && (
+                <ShopOrders 
+                  orders={orders} 
+                  onUpdateStatus={updateOrderStatus} 
+                />
+              )}
+              {activeTab === "ai-hub" && <ShopAIHub />}
+              {activeTab === "marketing" && <ShopMarketing />}
+              {activeTab === "analytics" && <ShopAnalytics orders={orders} />}
+              {activeTab === "settings" && (
+                <ShopSettings shop={shop} onSave={updateShopProfile} />
+              )}
+              {activeTab === "sourcing" && (
+                <div className="bg-card rounded-xl border border-border p-8 text-center space-y-6 shadow-card">
+                  <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto">
+                    <ShoppingBag className="w-8 h-8 text-accent" />
+                  </div>
+                  <div className="space-y-2">
+                    <h2 className="text-2xl font-display font-bold text-foreground">B2B Material Sourcing</h2>
+                    <p className="text-muted-foreground max-w-sm mx-auto">Connect directly with manufacturers and distributors for bulk paper, ink, and supplies at wholesale rates.</p>
+                  </div>
+                  <Button variant="coral" size="lg" onClick={() => navigate("/sourcing")}>
+                    Go to Sourcing Portal
+                  </Button>
+                </div>
+              )}
+              {activeTab === "support" && (
+                <div className="bg-card rounded-xl border border-border p-8 text-center space-y-4 shadow-card">
+                  <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto">
+                    <FileWarning className="w-8 h-8 text-accent" />
+                  </div>
+                  <h2 className="text-xl font-display font-bold text-foreground">Merchant Support Command</h2>
+                  <p className="text-muted-foreground max-w-sm mx-auto">Report technical issues, payment delays, or platform suggestions directly to the admin team.</p>
+                  <Button variant="coral" onClick={() => toast.info("Report modal coming soon! For now, use the order report buttons.")}>
+                    Report an Issue
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </main>

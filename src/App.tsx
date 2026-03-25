@@ -31,6 +31,7 @@ const CartPage = lazy(() => import("./pages/Cart"));
 const OrderHistory = lazy(() => import("./pages/OrderHistory"));
 const ForShops = lazy(() => import("./pages/ForShops"));
 const RegisterShop = lazy(() => import("./pages/RegisterShop"));
+const RegisterSupplier = lazy(() => import("./pages/RegisterSupplier"));
 import MobileBottomNav from "./components/MobileBottomNav";
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
@@ -97,6 +98,7 @@ const App = () => {
                       <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
                       <Route path="/order-success" element={<ProtectedRoute><OrderSuccess /></ProtectedRoute>} />
                       <Route path="/register-shop" element={<ProtectedRoute><RegisterShop /></ProtectedRoute>} />
+                      <Route path="/register-supplier" element={<ProtectedRoute><RegisterSupplier /></ProtectedRoute>} />
 
                       {/* Role-based dashboards */}
                       <Route path="/dashboard" element={<ProtectedRoute requiredRole="customer"><CustomerDashboard /></ProtectedRoute>} />

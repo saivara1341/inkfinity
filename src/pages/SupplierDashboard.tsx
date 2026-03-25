@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { 
   Package, 
   Settings, 
@@ -7,12 +8,19 @@ import {
   ShoppingCart, 
   Truck, 
   Boxes,
-  Printer as PrinterIcon
+  Printer as PrinterIcon,
+  Factory,
+  ArrowRight
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const SupplierDashboard = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const isRegistered = user?.user_metadata?.registration_complete;
+
   const stats = [
     { title: "Total Inquiries", value: "24", icon: Users, color: "text-blue-500" },
     { title: "Active Listings", value: "12", icon: Package, color: "text-coral" },
@@ -25,6 +33,38 @@ const SupplierDashboard = () => {
     { title: "Printing Machinery", icon: PrinterIcon, count: "3 Machines", desc: "Offset, Digital, Large format" },
     { title: "Spare Parts", icon: Settings, count: "4 Listings", desc: "Rollers, ink systems, belts" },
   ];
+
+  if (!isRegistered) {
+    return (
+      <div className="p-8 max-w-7xl mx-auto flex flex-col items-center justify-center min-h-[80vh]">
+        <div className="bg-card rounded-[3rem] border border-border p-12 text-center space-y-8 animate-in fade-in zoom-in duration-500 shadow-xl max-w-2xl w-full">
+          <div className="w-24 h-24 rounded-[2rem] bg-accent/10 flex items-center justify-center mx-auto">
+            <Factory className="w-12 h-12 text-accent" />
+          </div>
+          <div className="space-y-3">
+            <h2 className="text-4xl font-display font-bold text-foreground italic">Register your business first</h2>
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              Register your business first to showcase your machinery, paper, and raw materials to 500+ print shops.
+            </p>
+          </div>
+          <div className="pt-4">
+            <Button 
+              variant="coral" 
+              size="lg" 
+              className="h-16 px-10 rounded-2xl text-xl font-bold shadow-lg hover:shadow-xl transition-all"
+              onClick={() => navigate("/register-supplier")}
+            >
+              Finish Registration <ArrowRight className="ml-2 w-6 h-6" />
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
+            <TrendingUp className="w-4 h-4 text-green-500" />
+            Join India's fastest growing B2B printing network
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">

@@ -45,6 +45,10 @@ const Signup = () => {
 
   const handleRoleSelect = (selectedRole: "customer" | "shop" | "manufacturer") => {
     setRole(selectedRole);
+    setFormData(prev => ({
+      ...prev,
+      accountType: selectedRole === "customer" ? "personal" : "business"
+    }));
     setStage("form");
   };
 
@@ -228,7 +232,15 @@ const Signup = () => {
                         placeholder="Your Password (Min. 8 characters)" 
                         value={formData.password} 
                         onChange={handleChange}
-                        onKeyDown={(e) => handleKeyDown(e, personalBtnRef)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === "ArrowDown") {
+                            if (role === "customer") {
+                              personalBtnRef.current?.focus();
+                            } else {
+                              handleSignup();
+                            }
+                          }
+                        }}
                         className="w-full px-5 py-4 pr-12 rounded-2xl border-2 border-border/60 bg-card/50 backdrop-blur-sm text-foreground focus:outline-none focus:border-accent transition-all shadow-sm" 
                       />
                       <button 
@@ -241,30 +253,35 @@ const Signup = () => {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="text-sm font-bold text-foreground/80 mb-3 block uppercase tracking-wider">Account Type</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        type="button"
-                        ref={personalBtnRef}
-                        onClick={() => setFormData({ ...formData, accountType: "personal" })}
-                        className={`px-4 py-3 rounded-2xl border-2 font-bold text-sm transition-all ${
-                          formData.accountType === "personal" ? "border-accent bg-accent/5 text-accent" : "border-border text-muted-foreground hover:border-accent/40"
-                        }`}
-                      >
-                        Personal
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, accountType: "business" })}
-                        className={`px-4 py-3 rounded-2xl border-2 font-bold text-sm transition-all ${
-                          formData.accountType === "business" ? "border-accent bg-accent/5 text-accent" : "border-border text-muted-foreground hover:border-accent/40"
-                        }`}
-                      >
-                        Business
-                      </button>
+                  {role === "customer" && (
+                    <div>
+                      <label className="text-sm font-bold text-foreground/80 mb-3 block uppercase tracking-wider">Account Type</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          ref={personalBtnRef}
+                          onClick={() => setFormData({ ...formData, accountType: "personal" })}
+                          onKeyDown={(e) => handleKeyDown(e, businessBtnRef)}
+                          className={`px-4 py-3 rounded-2xl border-2 font-bold text-sm transition-all ${
+                            formData.accountType === "personal" ? "border-accent bg-accent/5 text-accent" : "border-border text-muted-foreground hover:border-accent/40"
+                          }`}
+                        >
+                          Personal
+                        </button>
+                        <button
+                          type="button"
+                          ref={businessBtnRef}
+                          onClick={() => setFormData({ ...formData, accountType: "business" })}
+                          onKeyDown={(e) => e.key === "Enter" && handleSignup()}
+                          className={`px-4 py-3 rounded-2xl border-2 font-bold text-sm transition-all ${
+                            formData.accountType === "business" ? "border-accent bg-accent/5 text-accent" : "border-border text-muted-foreground hover:border-accent/40"
+                          }`}
+                        >
+                          Business
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 <div className="flex justify-center mt-6">

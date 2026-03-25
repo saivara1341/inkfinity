@@ -51,12 +51,14 @@ const Navbar = () => {
   const getDashboardPath = () => {
     if (role === "admin") return "/admin";
     if (role === "shop_owner") return "/shop";
+    if (role === "manufacturer" || role === "distributor") return "/supplier";
     return "/dashboard";
   };
 
   const getDashboardLabel = () => {
     if (role === "admin") return "Admin";
     if (role === "shop_owner") return "My Shop";
+    if (role === "manufacturer" || role === "distributor") return "Supplier Portal";
     return "Dashboard";
   };
 

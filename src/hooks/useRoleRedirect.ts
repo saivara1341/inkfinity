@@ -10,5 +10,6 @@ export const getRoleBasedPath = async (userId: string): Promise<string> => {
 
   if (data?.role === "admin") return "/admin";
   if (data?.role === "shop_owner") return "/shop";
+  if (data?.role === "manufacturer") return "/supplier";
   return "/dashboard";
 };

@@ -14,7 +14,7 @@ const Signup = () => {
   const { signUp, signInWithGoogle } = useAuth();
   const { toast } = useToast();
   const [stage, setStage] = useState<"selection" | "form">("selection");
-  const [role, setRole] = useState<"customer" | "shop">("customer");
+  const [role, setRole] = useState<"customer" | "shop" | "manufacturer">("customer");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
@@ -43,7 +43,7 @@ const Signup = () => {
     }
   };
 
-  const handleRoleSelect = (selectedRole: "customer" | "shop") => {
+  const handleRoleSelect = (selectedRole: "customer" | "shop" | "manufacturer") => {
     setRole(selectedRole);
     setStage("form");
   };
@@ -62,7 +62,7 @@ const Signup = () => {
     const { error } = await signUp(formData.email, formData.password, {
       full_name: formData.name,
       customer_type: formData.accountType,
-      user_role: role === "shop" ? "shop_owner" : "customer"
+      user_role: role === "shop" ? "shop_owner" : role === "manufacturer" ? "manufacturer" : "customer"
     });
 
     if (error) {
@@ -72,7 +72,7 @@ const Signup = () => {
     }
 
     toast({ title: "Account created!", description: "Welcome to PrintFlow!" });
-    navigate(role === "shop" ? "/shop" : "/dashboard");
+    navigate(role === "shop" ? "/shop" : role === "manufacturer" ? "/supplier" : "/dashboard");
     setLoading(false);
   };
 
@@ -129,6 +129,21 @@ const Signup = () => {
                       </div>
                     </div>
                   </button>
+
+                  <button
+                    onClick={() => handleRoleSelect("manufacturer")}
+                    className="p-6 rounded-[2rem] border-2 border-border hover:border-accent hover:bg-accent/5 text-left transition-all duration-300 group shadow-sm hover:shadow-md"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center group-hover:bg-accent/10 transition-colors">
+                        <Printer className="w-7 h-7 text-muted-foreground group-hover:text-accent transition-colors rotate-90" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-xl text-foreground mb-1">Manufacturer/Supplier</p>
+                        <p className="text-sm text-muted-foreground">Sell paper, printers & machinery</p>
+                      </div>
+                    </div>
+                  </button>
                 </div>
 
                 <div className="flex items-center gap-4 my-8">
@@ -173,7 +188,7 @@ const Signup = () => {
                 </button>
 
                 <h1 className="font-display text-4xl font-bold text-foreground mb-8 leading-tight">
-                  {role === "customer" ? "Register as Customer" : "Register as Shop Owner"}
+                  {role === "customer" ? "Register as Customer" : role === "shop" ? "Register as Shop Owner" : "Register as Manufacturer"}
                 </h1>
 
                 <div className="space-y-5 mb-8">
@@ -284,13 +299,19 @@ const Signup = () => {
             alt="PrintFlow Experience" 
             className="w-full max-w-[340px] h-auto mb-10 mx-auto drop-shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-[3rem]" 
           />
-          <h2 className="font-display text-4xl font-bold text-accent-foreground mb-6 leading-tight">
-            {role === "customer" ? "Print everything. Delivered fast." : "Grow your printing business online"}
+          <h2 className="font-display text-4xl font-bold text-accent-foreground mb-6 leading-tight text-center">
+            {role === "customer" 
+              ? "Print everything. Delivered fast." 
+              : role === "shop" 
+                ? "Grow your printing business online" 
+                : "Reach 500+ Print Shops in India"}
           </h2>
           <div className="space-y-4 text-left">
             {(role === "customer"
               ? [["500+ Verified Shops", "Quality checked print partners"], ["UPI & Easy Payments", "Pay via GPay, PhonePe, Paytm"], ["Fast Delivery", "Rapido, Porter & local couriers"]]
-              : [["Get Online Orders", "Beyond walk-in & WhatsApp"], ["Automate Operations", "Order & file management"], ["Zero Setup Fees", "Flexible commission"]]
+              : role === "shop"
+                ? [["Get Online Orders", "Beyond walk-in & WhatsApp"], ["Automate Operations", "Order & file management"], ["Zero Setup Fees", "Flexible commission"]]
+                : [["Sell Bulk Paper", "Reach 500+ printing shops"], ["Printer Spare Parts", "24/7 support & parts marketplace"], ["Big Machine Sales", "Showcase heavy machinery & AMC"]]
             ).map(([title, desc], idx) => (
               <motion.div 
                 key={title} 

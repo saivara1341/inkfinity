@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Search, Printer, Upload, CreditCard, Truck, Bell } from "lucide-react";
 import { useState } from "react";
 import heroImage from "@/assets/hero-printing.jpg";
+import printingPress from "@/assets/printing-press.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -176,26 +177,28 @@ const HeroSection = () => {
               ))}
             </div>
 
-            {/* Mobile Animation Space */}
-            <div className="h-24 flex items-center justify-center md:hidden pt-8">
-              <div className="relative w-48 h-12 bg-secondary/20 rounded-xl overflow-hidden border border-border/50">
-                <motion.div 
-                  animate={{ x: [-100, 100] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-accent/30 to-transparent"
+            {/* Mobile Animation Space with New Illustration */}
+            <div className="w-full flex items-center justify-center md:hidden pt-4 pb-10">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="relative w-full max-w-[320px] aspect-[16/9] rounded-2xl overflow-hidden shadow-2xl border border-border/50 bg-secondary/5"
+              >
+                <img 
+                  src={printingPress} 
+                  alt="Industrial Printing Press" 
+                  className="w-full h-full object-cover opacity-90"
                 />
-                <div className="absolute inset-0 flex items-center justify-center gap-2">
-                  <Printer className="w-4 h-4 text-accent animate-bounce" />
-                  <span className="text-[10px] font-bold text-accent/60 tracking-widest uppercase">Printing in Progress...</span>
-                </div>
-                {/* Paper Animation */}
+                <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
+                
+                {/* Subtle Glow Effect */}
                 <motion.div 
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: [-10, -50], opacity: [0, 1, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
-                  className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-20 bg-card rounded shadow-sm border border-border/50 z-[-1]"
+                  animate={{ opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  className="absolute inset-0 bg-accent/5"
                 />
-              </div>
+              </motion.div>
             </div>
           </motion.div>
 

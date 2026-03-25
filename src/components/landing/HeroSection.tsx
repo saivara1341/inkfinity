@@ -8,6 +8,7 @@ import bgSalmonWaves from "@/assets/bg-salmon-waves.png";
 import bgGradientSoft from "@/assets/bg-gradient-soft.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import heroImage from "@/assets/hero-printing.jpg";
 
 const HeroSection = () => {
   const navigate = useNavigate();

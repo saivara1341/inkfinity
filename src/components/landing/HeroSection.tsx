@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
-import { Upload, Truck, CreditCard, Search, Printer } from "lucide-react";
+import { Search, Printer, Upload, CreditCard, Truck, Bell } from "lucide-react";
 import { useState } from "react";
 import heroImage from "@/assets/hero-printing.jpg";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,13 +23,48 @@ const HeroSection = () => {
   return (
     <section className="relative min-h-[95vh] flex flex-col pt-6 md:pt-32 pb-12 overflow-hidden bg-background">
       {/* Mobile Branding Header */}
-      <div className="container mx-auto px-4 flex justify-between items-center mb-2 md:hidden">
+      <div className="container mx-auto px-4 flex justify-between items-center mb-4 md:hidden">
         <Link to="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-coral flex items-center justify-center shadow-lg">
             <Printer className="w-4.5 h-4.5 text-accent-foreground" />
           </div>
-          <span className="font-display text-lg font-bold text-foreground italic">PrintFlow</span>
+          <span className="font-display text-xl font-bold tracking-tight text-foreground">PrintFlow</span>
         </Link>
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" className="rounded-full">
+            <Bell className="w-5 h-5" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Mobile-Only Top Search Bar */}
+      <div className="px-4 mb-6 md:hidden">
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative group"
+        >
+          <div className="absolute -inset-1 bg-gradient-to-r from-accent/20 to-coral/20 rounded-full blur opacity-0 group-focus-within:opacity-100 transition duration-500" />
+          <div className="relative flex items-center">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              placeholder="What do you want to print today?"
+              className="w-full pl-5 pr-28 py-3.5 rounded-full border-2 border-border/50 bg-card/60 backdrop-blur-md text-foreground focus:outline-none focus:border-accent/40 focus:ring-0 shadow-lg transition-all text-sm placeholder:text-muted-foreground/60"
+            />
+            <div className="absolute right-1 top-1 bottom-1">
+              <Button 
+                variant="coral" 
+                className="h-full rounded-full px-6 shadow-sm animate-pulse-shimmer bg-[length:200%_100%] text-xs font-bold"
+                onClick={handleSearch}
+              >
+                Search
+              </Button>
+            </div>
+          </div>
+        </motion.div>
       </div>
       {/* Premium Background Elements */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(var(--accent-rgb),0.08),transparent_40%),radial-gradient(circle_at_70%_80%,rgba(var(--coral-rgb),0.08),transparent_40%)]" />
@@ -94,18 +129,17 @@ const HeroSection = () => {
                 hidden: { opacity: 0, y: 20 },
                 visible: { opacity: 1, y: 0 }
               }}
-              className="relative max-w-lg mx-auto lg:mx-0 mb-6 group"
+              className="relative max-w-lg mx-auto lg:mx-0 mb-6 group hidden md:block"
             >
               <div className="absolute -inset-1 bg-gradient-to-r from-accent/20 to-coral/20 rounded-full blur opacity-0 group-focus-within:opacity-100 transition duration-500" />
               <div className="relative flex items-center">
-                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 transition-colors group-focus-within:text-accent z-10" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   placeholder="What do you want to print today?"
-                  className="w-full pl-13 pr-32 py-4 rounded-full border-2 border-border/50 bg-card/60 backdrop-blur-md text-foreground focus:outline-none focus:border-accent/40 focus:ring-0 shadow-lg transition-all text-sm sm:text-base placeholder:text-muted-foreground/60"
+                  className="w-full pl-6 pr-32 py-4 rounded-full border-2 border-border/50 bg-card/60 backdrop-blur-md text-foreground focus:outline-none focus:border-accent/40 focus:ring-0 shadow-lg transition-all text-sm sm:text-base placeholder:text-muted-foreground/60"
                 />
                 <div className="absolute right-1.5 top-1.5 bottom-1.5">
                   <Button 
@@ -136,15 +170,15 @@ const HeroSection = () => {
 
 
             {/* Trust Badges / Features for Mobile */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-6 border-t border-border/50">
+            <div className="flex flex-row justify-between items-center gap-2 pt-6 border-t border-border/50 sm:grid sm:grid-cols-3 sm:gap-6">
               {[
-                { icon: Upload, text: "Instant Preview" },
-                { icon: CreditCard, text: "Secure UPI" },
-                { icon: Truck, text: "Fast Delivery" }
+                { icon: Upload, text: "Preview" },
+                { icon: CreditCard, text: "UPI" },
+                { icon: Truck, text: "Fast" }
               ].map((item, index) => (
-                <div key={index} className="flex items-center justify-center lg:justify-start gap-3 text-sm text-foreground/80 font-medium">
-                  <div className="p-2 rounded-lg bg-accent/10">
-                    <item.icon className="w-4 h-4 text-accent" />
+                <div key={index} className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-1.5 sm:gap-3 text-xs sm:text-sm text-foreground/80 font-medium whitespace-nowrap">
+                  <div className="p-1.5 sm:p-2 rounded-lg bg-accent/10">
+                    <item.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
                   </div>
                   <span>{item.text}</span>
                 </div>

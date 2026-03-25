@@ -61,15 +61,6 @@ const Index = () => {
 
       {/* Mobile Floating Action Button */}
       <div className="fixed bottom-20 right-4 z-50 md:hidden flex flex-col items-end gap-2">
-        {isScrolled && (
-          <motion.span 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] pr-2"
-          >
-            a product of siddhi dynamics
-          </motion.span>
-        )}
         <Link 
           to="/catalog"
           className={`flex items-center gap-2 bg-accent text-accent-foreground rounded-2xl font-bold shadow-elevated hover:scale-105 active:scale-95 transition-all duration-500 overflow-hidden ${

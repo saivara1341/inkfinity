@@ -4,6 +4,7 @@ import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import AnimatedButton from "@/components/ui/AnimatedButton";
 import {
   Search, Package, CheckCircle2, Clock, Printer,
   Truck, MapPin, Phone, MessageCircle, AlertCircle, RefreshCw, HelpCircle, ChevronRight
@@ -140,9 +141,15 @@ const OrderTracking = () => {
                     className="w-full pl-12 pr-4 py-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
-                <Button variant="coral" size="lg" onClick={() => handleTrack()} disabled={loading}>
+                <AnimatedButton 
+                  onClick={() => handleTrack()} 
+                  disabled={loading}
+                  width={140}
+                  height={50}
+                  className="shrink-0"
+                >
                   {loading ? "..." : "Track"}
-                </Button>
+                </AnimatedButton>
               </div>
             </motion.div>
 

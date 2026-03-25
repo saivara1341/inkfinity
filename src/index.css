@@ -177,4 +177,20 @@
   ::-webkit-scrollbar-thumb {
     @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/30 transition-colors;
   }
+
+  /* Hide standard browser password reveal and clear buttons to avoid duplicates */
+  input::-ms-reveal,
+  input::-ms-clear {
+    display: none;
+  }
+
+  /* Button N° 045 Animation Logic */
+  .btn-045-hl {
+    stroke-dasharray: 150 480;
+    stroke-dashoffset: 150;
+    transition: 1s ease-in-out;
+  }
+  .group:hover .btn-045-hl {
+    stroke-dashoffset: -480;
+  }
 }

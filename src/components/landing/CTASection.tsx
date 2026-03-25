@@ -2,8 +2,11 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight, Store } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import AnimatedButton from "@/components/ui/AnimatedButton";
 
 const CTASection = () => {
+  const navigate = useNavigate();
   return (
     <section className="py-24">
       <div className="container mx-auto px-4">
@@ -18,11 +21,15 @@ const CTASection = () => {
             <p className="opacity-90 mb-6 leading-relaxed">
               Upload your design and get premium prints delivered from local shops near you.
             </p>
-            <Button variant="ink" size="lg" asChild>
-              <Link to="/catalog">
-                Browse Products <ArrowRight className="w-4 h-4 ml-1" />
-              </Link>
-            </Button>
+            <AnimatedButton 
+              onClick={() => navigate("/catalog")}
+              variant="accent"
+              width={200}
+              height={50}
+              textColor="text-black group-hover:text-black"
+            >
+              Browse Products
+            </AnimatedButton>
           </motion.div>
 
           <motion.div
@@ -39,11 +46,15 @@ const CTASection = () => {
             <p className="opacity-80 mb-6 leading-relaxed">
               Join PrintFlow and get orders from thousands of customers. Manage everything from one dashboard.
             </p>
-            <Button variant="coral" size="lg" asChild>
-              <Link to="/for-shops">
-                Register Your Shop <ArrowRight className="w-4 h-4 ml-1" />
-              </Link>
-            </Button>
+            <AnimatedButton 
+              onClick={() => navigate("/for-shops")}
+              variant="coral"
+              width={220}
+              height={50}
+              textColor="text-white group-hover:text-white"
+            >
+              Register Shop
+            </AnimatedButton>
           </motion.div>
         </div>
       </div>

@@ -36,7 +36,7 @@ const features = [
 
 const FeaturesSection = () => {
   return (
-    <section className="py-24 bg-secondary/30">
+    <section className="py-24 bg-secondary/20">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -44,15 +44,15 @@ const FeaturesSection = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Everything you need to print
+          <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-4">
+            Everything you need <span className="text-gradient">to print</span>
           </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
             From design upload to doorstep delivery — we handle the entire printing workflow.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
           {features.map((feature, i) => (
             <motion.div
               key={feature.title}
@@ -60,13 +60,15 @@ const FeaturesSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="bg-card rounded-xl p-6 border border-border shadow-card hover:shadow-elevated transition-shadow group"
+              className="bg-card rounded-2xl p-5 md:p-8 border border-border/50 shadow-sm hover:shadow-elevated transition-all group"
             >
-              <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
-                <feature.icon className="w-6 h-6 text-accent" />
+              <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl bg-accent/10 flex items-center justify-center mb-4 md:mb-6 group-hover:bg-accent/20 transition-all group-hover:scale-110">
+                <feature.icon className="w-5 h-5 md:w-7 md:h-7 text-accent" />
               </div>
-              <h3 className="font-display text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
+              <h3 className="font-display text-sm md:text-xl font-bold text-foreground mb-2 md:mb-3">{feature.title}</h3>
+              <p className="text-xs md:text-base text-muted-foreground leading-relaxed md:leading-loose opacity-80 group-hover:opacity-100 transition-opacity">
+                {feature.description}
+              </p>
             </motion.div>
           ))}
         </div>

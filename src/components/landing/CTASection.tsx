@@ -15,20 +15,24 @@ const CTASection = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-gradient-coral rounded-2xl p-10 text-accent-foreground"
+            className="bg-accent rounded-[2rem] p-10 text-white shadow-lg"
           >
-            <h3 className="font-display text-3xl font-bold mb-3">Ready to print?</h3>
-            <p className="opacity-90 mb-6 leading-relaxed">
+            <h3 className="font-display text-4xl font-bold mb-4">Ready to print?</h3>
+            <p className="opacity-90 mb-8 text-lg leading-relaxed max-w-sm">
               Upload your design and get premium prints delivered from local shops near you.
             </p>
             <AnimatedButton 
               onClick={() => navigate("/catalog")}
-              variant="accent"
-              width={200}
-              height={50}
-              textColor="text-black group-hover:text-black"
+              variant="dark"
+              solid={true}
+              width={220}
+              height={56}
+              className="rounded-xl overflow-hidden shadow-md"
+              textColor="text-white group-hover:text-white"
             >
-              Browse Products
+              <div className="flex items-center gap-2">
+                Browse Products <ArrowRight className="w-4 h-4" />
+              </div>
             </AnimatedButton>
           </motion.div>
 
@@ -37,23 +41,27 @@ const CTASection = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="bg-gradient-ink rounded-2xl p-10 text-primary-foreground"
+            className="bg-[#1a1f2c] rounded-[2rem] p-10 text-white shadow-lg"
           >
-            <div className="flex items-center gap-2 mb-3">
-              <Store className="w-6 h-6" />
-              <h3 className="font-display text-3xl font-bold">Own a print shop?</h3>
+            <div className="flex items-center gap-2 mb-4">
+              <Store className="w-8 h-8 text-accent" />
+              <h3 className="font-display text-4xl font-bold">Own a print shop?</h3>
             </div>
-            <p className="opacity-80 mb-6 leading-relaxed">
+            <p className="opacity-80 mb-8 text-lg leading-relaxed max-w-sm">
               Join PrintFlow and get orders from thousands of customers. Manage everything from one dashboard.
             </p>
             <AnimatedButton 
               onClick={() => navigate("/for-shops")}
               variant="coral"
-              width={220}
-              height={50}
+              solid={true}
+              width={260}
+              height={56}
+              className="rounded-xl overflow-hidden shadow-md"
               textColor="text-white group-hover:text-white"
             >
-              Register Shop
+              <div className="flex items-center gap-2">
+                Register Your Shop <ArrowRight className="w-4 h-4" />
+              </div>
             </AnimatedButton>
           </motion.div>
         </div>

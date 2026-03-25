@@ -57,7 +57,18 @@ const RegisterShop = () => {
   const districts = (form.country && form.state) ? (locationsData as any)[form.country][form.state] || [] : [];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    // Numeric only validation for phone and pincode
+    if (name === "phone" || name === "pincode") {
+      const numericValue = value.replace(/[^0-9]/g, "");
+      if (name === "phone" && numericValue.length > 10) return;
+      if (name === "pincode" && numericValue.length > 6) return;
+      setForm({ ...form, [name]: numericValue });
+      return;
+    }
+
+    setForm({ ...form, [name]: value });
   };
 
   const toggleService = (service: string) => {
@@ -80,6 +91,23 @@ const RegisterShop = () => {
     if (!user) {
       toast.error("Please log in first");
       navigate("/login");
+      return;
+    }
+
+    // Strict validation
+    if (form.phone.length !== 10 || !/^[6-9]\d{9}$/.test(form.phone)) {
+      toast.error("Please enter a valid 10-digit Indian mobile number");
+      return;
+    }
+
+    if (form.pincode.length !== 6) {
+      toast.error("Please enter a valid 6-digit pincode");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      toast.error("Please enter a valid email address");
       return;
     }
 

@@ -57,6 +57,13 @@ const Signup = () => {
       toast({ title: "Please fill all fields", variant: "destructive" });
       return;
     }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast({ title: "Invalid email", description: "Please enter a valid email address.", variant: "destructive" });
+      return;
+    }
+
     if (formData.password.length < 8) {
       toast({ title: "Password too short", description: "Minimum 8 characters required.", variant: "destructive" });
       return;

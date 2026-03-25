@@ -96,24 +96,26 @@ const HeroSection = () => {
               }}
               className="relative max-w-lg mx-auto lg:mx-0 mb-6 group"
             >
-              <div className="absolute -inset-1 bg-gradient-to-r from-accent/20 to-coral/20 rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition duration-500" />
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 transition-colors group-focus-within:text-accent" />
+              <div className="absolute -inset-1 bg-gradient-to-r from-accent/20 to-coral/20 rounded-full blur opacity-0 group-focus-within:opacity-100 transition duration-500" />
+              <div className="relative flex items-center">
+                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 transition-colors group-focus-within:text-accent z-10" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   placeholder="What do you want to print today?"
-                  className="w-full pl-12 pr-4 py-4.5 rounded-2xl border-2 border-border/50 bg-card/50 backdrop-blur-sm text-foreground focus:outline-none focus:border-accent/40 focus:ring-0 shadow-lg transition-all"
+                  className="w-full pl-13 pr-32 py-4 rounded-full border-2 border-border/50 bg-card/60 backdrop-blur-md text-foreground focus:outline-none focus:border-accent/40 focus:ring-0 shadow-lg transition-all text-sm sm:text-base placeholder:text-muted-foreground/60"
                 />
-                <Button 
-                  variant="coral" 
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl h-10 px-5 shadow-elevated animate-pulse-shimmer bg-[length:200%_100%]"
-                  onClick={handleSearch}
-                >
-                  Search
-                </Button>
+                <div className="absolute right-1.5 top-1.5 bottom-1.5">
+                  <Button 
+                    variant="coral" 
+                    className="h-full rounded-full px-8 shadow-elevated animate-pulse-shimmer bg-[length:200%_100%] transition-transform active:scale-95 font-bold"
+                    onClick={handleSearch}
+                  >
+                    Search
+                  </Button>
+                </div>
               </div>
             </motion.div>
 

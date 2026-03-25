@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
 import { ContactRound, FileText, GalleryVerticalEnd, RectangleHorizontal, Sticker, IdCard, Paintbrush, ChevronRight } from "lucide-react";
 import { type LucideIcon } from "lucide-react";
 
@@ -14,6 +15,41 @@ const products: { name: string; description: string; Icon: LucideIcon; slug: str
 ];
 
 const ProductShowcase = () => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isInteracting, setIsInteracting] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const startAutoSwipe = () => {
+      timerRef.current = setInterval(() => {
+        if (scrollRef.current && !isInteracting) {
+          const container = scrollRef.current;
+          const scrollAmount = 300; // Average card width
+          const maxScroll = container.scrollWidth - container.clientWidth;
+          
+          if (container.scrollLeft + scrollAmount >= maxScroll) {
+            container.scrollTo({ left: 0, behavior: "smooth" });
+          } else {
+            container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+          }
+        }
+      }, 7000);
+    };
+
+    startAutoSwipe();
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [isInteracting]);
+
+  const handleInteraction = () => {
+    setIsInteracting(true);
+    if (timerRef.current) clearInterval(timerRef.current);
+    
+    // Resume auto-swipe after 15 seconds of inactivity
+    setTimeout(() => setIsInteracting(false), 15000);
+  };
   return (
     <section className="py-24 overflow-hidden">
       <div className="container mx-auto px-4">
@@ -40,7 +76,12 @@ const ProductShowcase = () => {
         </motion.div>
 
         {/* Mobile Horizontal Scroll / Desktop Grid */}
-        <div className="flex overflow-x-auto pb-8 -mx-4 px-4 gap-6 snap-x snap-mandatory hide-scrollbar md:grid md:grid-cols-3 lg:grid-cols-4 md:overflow-visible md:pb-0 md:mx-0 md:px-0">
+        <div 
+          ref={scrollRef}
+          onScroll={handleInteraction}
+          onTouchStart={handleInteraction}
+          className="flex overflow-x-auto pb-8 -mx-4 px-4 gap-6 snap-x snap-mandatory hide-scrollbar md:grid md:grid-cols-3 lg:grid-cols-4 md:overflow-visible md:pb-0 md:mx-0 md:px-0 scroll-smooth"
+        >
           {products.map((product, i) => (
             <motion.div
               key={product.slug}

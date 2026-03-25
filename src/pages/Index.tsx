@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { motion, AnimatePresence } from "framer-motion";
 import HeroSection from "@/components/landing/HeroSection";
 import FeaturesSection from "@/components/landing/FeaturesSection";
 import ProductShowcase from "@/components/landing/ProductShowcase";
@@ -9,6 +10,7 @@ import CTASection from "@/components/landing/CTASection";
 import { Link } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
 import SEO from "@/components/SEO";
+import { useState, useEffect } from "react";
 
 const Index = () => {
   const landingSchema = {
@@ -22,6 +24,16 @@ const Index = () => {
       "query-input": "required name=search_term_string"
     }
   };
+  
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 100);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
@@ -48,13 +60,35 @@ const Index = () => {
       </main>
 
       {/* Mobile Floating Action Button */}
-      <div className="fixed bottom-20 right-4 z-50 md:hidden animate-in fade-in slide-in-from-bottom-10 duration-700">
+      <div className="fixed bottom-20 right-4 z-50 md:hidden flex flex-col items-end gap-2">
+        {isScrolled && (
+          <motion.span 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] pr-2"
+          >
+            a product of siddhi dynamics
+          </motion.span>
+        )}
         <Link 
           to="/catalog"
-          className="flex items-center gap-2 bg-accent text-accent-foreground px-6 py-4 rounded-2xl font-bold shadow-elevated hover:scale-105 active:scale-95 transition-all"
+          className={`flex items-center gap-2 bg-accent text-accent-foreground rounded-2xl font-bold shadow-elevated hover:scale-105 active:scale-95 transition-all duration-500 overflow-hidden ${
+            isScrolled ? "w-14 h-14 justify-center rounded-full" : "px-6 py-4"
+          }`}
         >
-          <ShoppingCart className="w-5 h-5" />
-          <span>Order Now</span>
+          <ShoppingCart className="w-5 h-5 shrink-0" />
+          <AnimatePresence>
+            {!isScrolled && (
+              <motion.span 
+                initial={{ opacity: 0, width: 0 }} 
+                animate={{ opacity: 1, width: "auto" }} 
+                exit={{ opacity: 0, width: 0 }}
+                className="whitespace-nowrap"
+              >
+                Order Now
+              </motion.span>
+            )}
+          </AnimatePresence>
         </Link>
       </div>
 

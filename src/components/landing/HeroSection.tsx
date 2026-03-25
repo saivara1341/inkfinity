@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Upload, Truck, CreditCard, Search, Printer } from "lucide-react";
 import { useState } from "react";
 import heroImage from "@/assets/hero-printing.jpg";
@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   const { signInWithGoogle } = useAuth();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,9 +21,9 @@ const HeroSection = () => {
     }
   };
   return (
-    <section className="relative min-h-[95vh] flex flex-col pt-32 pb-12 overflow-hidden bg-background">
+    <section className="relative min-h-[95vh] flex flex-col pt-20 md:pt-32 pb-12 overflow-hidden bg-background">
       {/* Mobile Branding Header */}
-      <div className="container mx-auto px-4 flex justify-between items-center mb-12 md:hidden">
+      <div className="container mx-auto px-4 flex justify-between items-center mb-6 md:hidden">
         <Link to="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-coral flex items-center justify-center shadow-lg">
             <Printer className="w-4.5 h-4.5 text-accent-foreground" />

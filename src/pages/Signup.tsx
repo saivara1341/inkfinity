@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,14 @@ const Signup = () => {
   const [role, setRole] = useState<"customer" | "shop">("customer");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  
+  // Refs for keyboard navigation
+  const nameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const personalBtnRef = useRef<HTMLButtonElement>(null);
+  const submitBtnRef = useRef<HTMLButtonElement>(null);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -26,6 +34,13 @@ const Signup = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, nextRef: React.RefObject<HTMLElement>) => {
+    if (e.key === "Enter" || e.key === "ArrowDown") {
+      e.preventDefault();
+      nextRef.current?.focus();
+    }
   };
 
   const handleRoleSelect = (selectedRole: "customer" | "shop") => {
@@ -167,9 +182,11 @@ const Signup = () => {
                     <input 
                       type="text" 
                       name="name" 
+                      ref={nameRef}
                       placeholder="Your Full Name" 
                       value={formData.name} 
                       onChange={handleChange}
+                      onKeyDown={(e) => handleKeyDown(e, emailRef)}
                       className="w-full px-5 py-4 rounded-2xl border-2 border-border/60 bg-card/50 backdrop-blur-sm text-foreground focus:outline-none focus:border-accent transition-all shadow-sm" 
                     />
                   </div>
@@ -178,9 +195,11 @@ const Signup = () => {
                     <input 
                       type="email" 
                       name="email" 
+                      ref={emailRef}
                       placeholder="Your Email" 
                       value={formData.email} 
                       onChange={handleChange}
+                      onKeyDown={(e) => handleKeyDown(e, passwordRef)}
                       className="w-full px-5 py-4 rounded-2xl border-2 border-border/60 bg-card/50 backdrop-blur-sm text-foreground focus:outline-none focus:border-accent transition-all shadow-sm" 
                     />
                   </div>
@@ -190,9 +209,11 @@ const Signup = () => {
                       <input 
                         type={showPassword ? "text" : "password"} 
                         name="password" 
+                        ref={passwordRef}
                         placeholder="Your Password (Min. 8 characters)" 
                         value={formData.password} 
                         onChange={handleChange}
+                        onKeyDown={(e) => handleKeyDown(e, personalBtnRef)}
                         className="w-full px-5 py-4 pr-12 rounded-2xl border-2 border-border/60 bg-card/50 backdrop-blur-sm text-foreground focus:outline-none focus:border-accent transition-all shadow-sm" 
                       />
                       <button 
@@ -210,6 +231,7 @@ const Signup = () => {
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
+                        ref={personalBtnRef}
                         onClick={() => setFormData({ ...formData, accountType: "personal" })}
                         className={`px-4 py-3 rounded-2xl border-2 font-bold text-sm transition-all ${
                           formData.accountType === "personal" ? "border-accent bg-accent/5 text-accent" : "border-border text-muted-foreground hover:border-accent/40"

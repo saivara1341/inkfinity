@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,9 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
 
   const handleEmailLogin = async () => {
     if (!email || !password) {
@@ -55,9 +58,11 @@ const Login = () => {
               <label className="text-sm font-medium text-foreground mb-1.5 block">Email</label>
               <input
                 type="email"
+                ref={emailRef}
                 placeholder="Your Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === "ArrowDown") && passwordRef.current?.focus()}
                 className="w-full px-4 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
@@ -66,6 +71,7 @@ const Login = () => {
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
+                  ref={passwordRef}
                   placeholder="Your Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

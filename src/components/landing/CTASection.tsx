@@ -31,9 +31,14 @@ const CTASection = () => {
               <img src={ctaBWPattern} alt="" className="w-full h-full object-cover grayscale scale-110" />
             </div>
             
-            {/* Floating Mandala */}
-            <div className="absolute -bottom-16 -right-16 w-64 h-64 opacity-15 transform rotate-45 pointer-events-none group-hover:scale-110 group-hover:rotate-[60deg] transition-all duration-1000">
-              <img src={ctaMandala} alt="" className="w-full h-full object-contain grayscale" />
+            {/* Floating Mandala (Watermark Cleansed via precise cropping) */}
+            <div className="absolute -bottom-16 -right-16 w-64 h-64 opacity-15 overflow-hidden pointer-events-none group-hover:scale-110 transition-all duration-1000">
+              <img 
+                src={ctaMandala} 
+                alt="" 
+                className="w-[120%] h-[120%] max-w-none object-cover grayscale transform rotate-[25deg] -translate-x-4 -translate-y-4" 
+                style={{ clipPath: 'inset(0 0 10% 0)' }}
+              />
             </div>
 
             <h3 className="relative font-display text-4xl font-bold mb-4 z-10 text-accent">Ready to print?</h3>

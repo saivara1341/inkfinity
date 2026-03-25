@@ -5,6 +5,8 @@ import { Search, Printer, Upload, CreditCard, Truck, Bell } from "lucide-react";
 import { useState } from "react";
 import heroImage from "@/assets/hero-printing.jpg";
 import printingPress from "@/assets/printing-press.png";
+import floralBg from "@/assets/floral-bg.png";
+import printingPressV2 from "@/assets/printing-press-integrated.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -23,6 +25,14 @@ const HeroSection = () => {
   };
   return (
     <section className="relative min-h-[95vh] flex flex-col pt-6 md:pt-32 pb-12 overflow-hidden bg-background">
+      {/* Floral Art Background Layer */}
+      <div className="absolute inset-0 opacity-[0.07] pointer-events-none mix-blend-multiply md:opacity-[0.04]">
+        <img 
+          src={floralBg} 
+          alt="" 
+          className="w-full h-full object-cover object-center scale-110"
+        />
+      </div>
       {/* Mobile Branding Header */}
       <div className="container mx-auto px-4 flex justify-between items-center mb-4 md:hidden">
         <Link to="/" className="flex items-center gap-2">
@@ -161,7 +171,7 @@ const HeroSection = () => {
 
 
             {/* Trust Badges / Features for Mobile */}
-            <div className="flex flex-row justify-between items-center gap-2 pt-6 border-t border-border/50 sm:grid sm:grid-cols-4 sm:gap-6">
+            <div className="flex flex-row justify-between items-center gap-2 pt-6 border-t border-border/50 sm:grid sm:grid-cols-4 sm:gap-6 relative z-10">
               {[
                 { icon: Upload, text: "Preview" },
                 { icon: CreditCard, text: "UPI" },
@@ -177,27 +187,35 @@ const HeroSection = () => {
               ))}
             </div>
 
-            {/* Mobile Animation Space with New Illustration */}
-            <div className="w-full flex items-center justify-center md:hidden pt-4 pb-10">
+            {/* Mobile Animation Space with Better Integrated Illustration */}
+            <div className="w-full flex items-center justify-center md:hidden pt-4 pb-10 px-4 relative z-10">
               <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-                className="relative w-full max-w-[320px] aspect-[16/9] rounded-2xl overflow-hidden shadow-2xl border border-border/50 bg-secondary/5"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1, ease: "easeOut" }}
+                className="relative w-full max-w-[340px] group"
               >
-                <img 
-                  src={printingPress} 
-                  alt="Industrial Printing Press" 
-                  className="w-full h-full object-cover opacity-90"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
+                {/* Organic Shadow/Glow Background */}
+                <div className="absolute inset-4 bg-accent/20 rounded-full blur-3xl opacity-40 group-hover:opacity-60 transition duration-1000" />
                 
-                {/* Subtle Glow Effect */}
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-white/20 bg-white/5 backdrop-blur-sm p-1">
+                  <img 
+                    src={printingPressV2} 
+                    alt="Industrial Printing Press" 
+                    className="w-full h-auto object-contain transform group-hover:scale-[1.02] transition-transform duration-700"
+                  />
+                  {/* Subtle Scanline/Glass Reflection */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-white/5 pointer-events-none" />
+                </div>
+
+                {/* Integration Float Elements */}
                 <motion.div 
-                  animate={{ opacity: [0.3, 0.6, 0.3] }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                  className="absolute inset-0 bg-accent/5"
-                />
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute -top-4 -right-2 bg-accent/90 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-lg tracking-tighter uppercase"
+                >
+                  HD Print Ready
+                </motion.div>
               </motion.div>
             </div>
           </motion.div>

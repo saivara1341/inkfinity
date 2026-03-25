@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import { CreditCard, Image, Layers, Truck, Upload, Zap } from "lucide-react";
 import pressProfessional from "@/assets/press-professional.png";
-import showcaseFloral1 from "@/assets/showcase-floral-1.png";
-import showcaseFloral2 from "@/assets/showcase-floral-2.jpg";
+import showcaseFloral1 from "@/assets/bg-swirl-seamless.png";
+import showcaseFloral2 from "@/assets/bg-gradient-soft.png";
 
 const features = [
   {

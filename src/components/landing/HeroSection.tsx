@@ -4,7 +4,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { Search, Printer, Upload, CreditCard, Truck, Bell, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import pressProfessional from "@/assets/press-professional.png";
-import heroFloralBackground from "@/assets/hero-floral-art.png";
+import bgSalmonWaves from "@/assets/bg-salmon-waves.png";
+import bgGradientSoft from "@/assets/bg-gradient-soft.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -22,14 +23,13 @@ const HeroSection = () => {
     }
   };
   return (
-    <section className="relative min-h-[95vh] flex flex-col pt-6 md:pt-32 pb-12 overflow-hidden bg-background">
-      {/* Floral Art Background Layer */}
-      <div className="absolute inset-0 opacity-[0.07] pointer-events-none mix-blend-multiply md:opacity-[0.04]">
-        <img 
-          src={floralBg} 
-          alt="" 
-          className="w-full h-full object-cover object-center scale-110"
-        />
+    <section className="relative min-h-[90vh] flex flex-col items-center justify-start pt-20 md:pt-32 overflow-hidden bg-[#FFFDF5]">
+      {/* Dynamic Background Motifs */}
+      <div className="absolute top-0 right-0 w-full h-full opacity-[0.03] pointer-events-none">
+        <img src={bgSalmonWaves} alt="" className="w-full h-full object-cover mix-blend-multiply" />
+      </div>
+      <div className="absolute -bottom-48 -left-24 w-[600px] h-[600px] opacity-[0.05] pointer-events-none blur-3xl">
+        <img src={bgGradientSoft} alt="" className="w-full h-full object-cover rounded-full" />
       </div>
       {/* Mobile Branding Header */}
       <div className="container mx-auto px-4 flex justify-between items-center mb-4 md:hidden">

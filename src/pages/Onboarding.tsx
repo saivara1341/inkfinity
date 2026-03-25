@@ -8,6 +8,8 @@ import { User, Store, ArrowRight, Loader2, Factory, Truck } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import SEO from "@/components/SEO";
+import bgSwirlSeamless from "@/assets/bg-swirl-seamless.png";
+import bgBlueFloral from "@/assets/bg-blue-floral.png";
 
 const Onboarding = () => {
   const { user, loading: authLoading } = useAuth();
@@ -71,7 +73,22 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-[#FFFDF5] flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      {/* Global Background Pattern */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-[0.03] z-0"
+        style={{ 
+          backgroundImage: `url(${bgSwirlSeamless})`,
+          backgroundSize: '400px 400px',
+          backgroundRepeat: 'repeat'
+        }}
+      />
+      
+      {/* Artistic Flourish */}
+      <div className="absolute -bottom-24 -right-24 w-[600px] h-[600px] opacity-[0.03] pointer-events-none rotate-45">
+        <img src={bgBlueFloral} alt="" className="w-full h-full object-contain" />
+      </div>
+
       <SEO 
         title="Complete Your Profile" 
         description="Choose your role to get started with PrintFlow."
@@ -80,7 +97,7 @@ const Onboarding = () => {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-4xl w-full space-y-8 text-center"
+        className="max-w-4xl w-full space-y-8 text-center relative z-10"
       >
         <div className="space-y-2">
           <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">

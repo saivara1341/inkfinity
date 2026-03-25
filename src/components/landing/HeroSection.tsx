@@ -186,7 +186,6 @@ const HeroSection = () => {
                 </div>
               ))}
             </div>
-
             {/* Mobile Animation Space with Better Integrated Illustration */}
             <div className="w-full flex items-center justify-center md:hidden pt-4 pb-10 px-4 relative z-10">
               <motion.div 
@@ -195,27 +194,13 @@ const HeroSection = () => {
                 transition={{ duration: 1, ease: "easeOut" }}
                 className="relative w-full max-w-[340px] group"
               >
-                {/* Organic Shadow/Glow Background */}
-                <div className="absolute inset-4 bg-accent/20 rounded-full blur-3xl opacity-40 group-hover:opacity-60 transition duration-1000" />
-                
-                <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-white/20 bg-white/5 backdrop-blur-sm p-1">
+                <div className="relative overflow-visible">
                   <img 
                     src={printingPressV2} 
                     alt="Industrial Printing Press" 
-                    className="w-full h-auto object-contain transform group-hover:scale-[1.02] transition-transform duration-700"
+                    className="w-full h-auto object-contain transform group-hover:scale-[1.02] transition-transform duration-700 drop-shadow-2xl"
                   />
-                  {/* Subtle Scanline/Glass Reflection */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-white/5 pointer-events-none" />
                 </div>
-
-                {/* Integration Float Elements */}
-                <motion.div 
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -top-4 -right-2 bg-accent/90 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-lg tracking-tighter uppercase"
-                >
-                  HD Print Ready
-                </motion.div>
               </motion.div>
             </div>
           </motion.div>

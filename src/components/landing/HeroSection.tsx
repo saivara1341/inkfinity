@@ -186,7 +186,7 @@ const HeroSection = () => {
                 </div>
               ))}
             </div>
-            {/* Mobile Animation Space with Better Integrated Illustration */}
+            {/* Mobile Animation Space with 'Living' Illustration (GIF-like) */}
             <div className="w-full flex items-center justify-center md:hidden pt-4 pb-10 px-4 relative z-10">
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -194,13 +194,51 @@ const HeroSection = () => {
                 transition={{ duration: 1, ease: "easeOut" }}
                 className="relative w-full max-w-[340px] group"
               >
-                <div className="relative overflow-visible">
+                {/* Paper Exit Animation (Slides out from behind press) */}
+                <motion.div 
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: [20, 100], opacity: [0, 1, 0], scale: [0.9, 1.1] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  className="absolute bottom-10 left-1/2 -translate-x-1/2 w-32 h-40 bg-white/80 rounded-sm shadow-lg border border-black/5 z-0"
+                >
+                   {/* Fake Print Content */}
+                   <div className="p-2 space-y-1">
+                     <div className="h-1 w-full bg-accent/20 rounded" />
+                     <div className="h-1 w-3/4 bg-accent/10 rounded" />
+                     <div className="h-4 w-full bg-accent/5 rounded mt-4" />
+                   </div>
+                </motion.div>
+
+                {/* The Press (Animated Vibration) */}
+                <motion.div 
+                  animate={{ 
+                    y: [0, -1, 1, 0],
+                    x: [0, 0.5, -0.5, 0]
+                  }}
+                  transition={{ duration: 0.3, repeat: Infinity, ease: "easeInOut" }}
+                  className="relative z-10 overflow-visible"
+                >
                   <img 
                     src={printingPressV2} 
                     alt="Industrial Printing Press" 
                     className="w-full h-auto object-contain transform group-hover:scale-[1.02] transition-transform duration-700 drop-shadow-2xl"
                   />
-                </div>
+                  
+                  {/* Monitor Glows */}
+                  <motion.div 
+                    animate={{ opacity: [0.3, 0.8, 0.3] }}
+                    transition={{ duration: 4, repeat: Infinity }}
+                    className="absolute top-[20%] right-[15%] w-[30%] h-[20%] bg-accent/20 blur-xl rounded-full"
+                  />
+                  <motion.div 
+                    animate={{ opacity: [0.2, 0.6, 0.2] }}
+                    transition={{ duration: 3, repeat: Infinity, delay: 1 }}
+                    className="absolute top-[15%] right-[40%] w-[15%] h-[15%] bg-accent/10 blur-lg rounded-full"
+                  />
+                </motion.div>
+
+                {/* Floor Shadow Refinement */}
+                <div className="absolute -bottom-2 inset-x-10 h-4 bg-black/10 blur-xl rounded-full" />
               </motion.div>
             </div>
           </motion.div>

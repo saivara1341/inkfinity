@@ -27,7 +27,7 @@ const ShopShowcase = () => {
       <div className="py-20 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="h-8 w-64 bg-muted rounded animate-pulse mb-10" />
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-6 overflow-x-auto md:overflow-visible pb-8 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory hide-scrollbar">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="bg-card h-64 rounded-2xl border border-border animate-pulse" />
             ))}
@@ -66,7 +66,7 @@ const ShopShowcase = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="group bg-card rounded-2xl border border-border overflow-hidden hover:shadow-elevated transition-all duration-300 hover-lift"
+              className="min-w-[280px] sm:min-w-[320px] md:min-w-0 snap-center group bg-card rounded-2xl border border-border overflow-hidden hover:shadow-elevated transition-all duration-300 hover-lift relative"
             >
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">

@@ -60,9 +60,11 @@ const FeaturesSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="bg-card rounded-2xl p-5 md:p-8 border border-border/50 shadow-sm hover:shadow-elevated transition-all group"
+              whileHover={{ y: -8 }}
+              className="bg-card rounded-2xl p-5 md:p-8 border border-border/50 shadow-sm hover:shadow-elevated transition-all duration-300 group overflow-hidden relative"
             >
-              <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl bg-accent/10 flex items-center justify-center mb-4 md:mb-6 group-hover:bg-accent/20 transition-all group-hover:scale-110">
+              <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl bg-accent/10 flex items-center justify-center mb-4 md:mb-6 group-hover:bg-accent/20 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-sm">
                 <feature.icon className="w-5 h-5 md:w-7 md:h-7 text-accent" />
               </div>
               <h3 className="font-display text-sm md:text-xl font-bold text-foreground mb-2 md:mb-3">{feature.title}</h3>

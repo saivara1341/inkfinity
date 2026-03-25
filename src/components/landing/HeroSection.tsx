@@ -41,34 +41,61 @@ const HeroSection = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.15,
+                  delayChildren: 0.2
+                }
+              }
+            }}
             className="text-center lg:text-left"
           >
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
+              variants={{
+                hidden: { opacity: 0, scale: 0.8, y: 20 },
+                visible: { opacity: 1, scale: 1, y: 0 }
+              }}
               className="inline-flex items-center gap-2 bg-accent/10 text-accent rounded-full px-4 py-2 text-sm font-semibold mb-8 shadow-sm border border-accent/20"
             >
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
               Serving 500+ Print Shops in India
             </motion.div>
 
-            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight text-foreground mb-6">
+            <motion.h1 
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: { opacity: 1, y: 0 }
+              }}
+              className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight text-foreground mb-6"
+            >
               Print everything.{" "}
-              <span className="bg-gradient-to-r from-accent to-coral bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-accent to-coral bg-clip-text text-transparent italic">
                 Delivered fast.
               </span>
-            </h1>
+            </motion.h1>
 
-            <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto lg:mx-0 mb-10 leading-relaxed opacity-90">
+            <motion.p 
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 }
+              }}
+              className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto lg:mx-0 mb-10 leading-relaxed opacity-90"
+            >
               Transform your digital designs into professional physical prints. Visiting cards, posters, banners — all from local experts near you.
-            </p>
+            </motion.p>
 
-            {/* Premium Mobile Search Bar */}
-            <div className="relative max-w-lg mx-auto lg:mx-0 mb-6 group">
+            <motion.div 
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 }
+              }}
+              className="relative max-w-lg mx-auto lg:mx-0 mb-6 group"
+            >
               <div className="absolute -inset-1 bg-gradient-to-r from-accent/20 to-coral/20 rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition duration-500" />
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 transition-colors group-focus-within:text-accent" />
@@ -82,13 +109,13 @@ const HeroSection = () => {
                 />
                 <Button 
                   variant="coral" 
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl h-10 px-5 shadow-elevated"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl h-10 px-5 shadow-elevated animate-pulse-shimmer bg-[length:200%_100%]"
                   onClick={handleSearch}
                 >
                   Search
                 </Button>
               </div>
-            </div>
+            </motion.div>
 
             <div className="flex flex-wrap justify-center lg:justify-start items-center gap-4 mb-10 text-xs font-medium text-muted-foreground/80">
               <span className="uppercase tracking-wider opacity-60">Popular:</span>
@@ -141,7 +168,11 @@ const HeroSection = () => {
               </div>
 
               {/* Float Widget */}
-              <div className="absolute -bottom-8 -left-8 bg-card/90 backdrop-blur-md rounded-2xl shadow-elevated p-5 border border-border/50 animate-float max-w-[200px]">
+              <motion.div 
+                animate={{ y: [0, -15, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -bottom-8 -left-8 bg-card/90 backdrop-blur-md rounded-2xl shadow-elevated p-5 border border-border/50 max-w-[200px]"
+              >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-success/20 flex items-center justify-center shrink-0">
                     <span className="text-success text-2xl font-bold">✓</span>
@@ -151,19 +182,23 @@ const HeroSection = () => {
                     <p className="text-xs text-muted-foreground/80">Premium Business Cards dispatched</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Another Float Widget */}
-              <div className="absolute -top-6 -right-6 bg-card/90 backdrop-blur-md rounded-2xl shadow-elevated p-4 border border-border/50 animate-float" style={{ animationDelay: "1.5s" }}>
+              <motion.div 
+                animate={{ y: [0, 15, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="absolute -top-6 -right-6 bg-card/90 backdrop-blur-md rounded-2xl shadow-elevated p-4 border border-border/50"
+              >
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-3">
                     {[1, 2, 3].map(i => (
-                      <div key={i} className="w-8 h-8 rounded-full border-2 border-card bg-accent/20 flex items-center justify-center text-[10px] font-bold">U{i}</div>
+                      <div key={i} className="w-8 h-8 rounded-full border-2 border-card bg-accent/20 flex items-center justify-center text-[10px] font-bold shadow-sm">U{i}</div>
                     ))}
                   </div>
                   <span className="text-xs font-semibold text-foreground/80">4.9/5 Rating</span>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </motion.div>
         </div>

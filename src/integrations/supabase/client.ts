@@ -18,6 +18,9 @@ if (SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY) {
   } catch (error) {
     console.error("Supabase init error:", error);
   }
+} else {
+  if (!SUPABASE_URL) console.error("VITE_SUPABASE_URL is missing");
+  if (!SUPABASE_PUBLISHABLE_KEY) console.error("VITE_SUPABASE_PUBLISHABLE_KEY/ANON_KEY is missing");
 }
 
 // Proxy to prevent crashes when env vars are missing or slow to load

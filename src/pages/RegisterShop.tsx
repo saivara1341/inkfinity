@@ -48,6 +48,8 @@ const RegisterShop = () => {
     latitude: null as number | null,
     longitude: null as number | null,
   });
+  const [customService, setCustomService] = useState("");
+  const [showCustomInput, setShowCustomInput] = useState(false);
   const { location, requestLocation, loading: locationLoading } = useLocation();
   const [stateSearch, setStateSearch] = useState("");
   const [districtSearch, setDistrictSearch] = useState("");
@@ -363,7 +365,71 @@ const RegisterShop = () => {
                     {service}
                   </button>
                 ))}
+                
+                {/* Custom services already added */}
+                {form.services.filter(s => !SERVICES.includes(s)).map(service => (
+                  <button
+                    key={service}
+                    onClick={() => toggleService(service)}
+                    className="px-4 py-2 rounded-full text-sm font-medium bg-accent text-accent-foreground transition-all"
+                  >
+                    <Check className="w-3 h-3 inline mr-1" />
+                    {service}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => setShowCustomInput(true)}
+                  className="px-4 py-2 rounded-full text-sm font-medium border-2 border-dashed border-border text-muted-foreground hover:border-accent hover:text-accent transition-all"
+                >
+                  + Add Others
+                </button>
               </div>
+
+              {showCustomInput && (
+                <div className="flex gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <input
+                    autoFocus
+                    placeholder="Type your service..."
+                    value={customService}
+                    onChange={(e) => setCustomService(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        if (customService.trim()) {
+                          toggleService(customService.trim());
+                          setCustomService("");
+                          setShowCustomInput(false);
+                        }
+                      }
+                    }}
+                    className="flex-1 h-10 px-4 rounded-xl border border-input bg-background focus:ring-2 focus:ring-ring outline-none text-sm"
+                  />
+                  <Button 
+                    size="sm" 
+                    variant="coral"
+                    onClick={() => {
+                      if (customService.trim()) {
+                        toggleService(customService.trim());
+                        setCustomService("");
+                        setShowCustomInput(false);
+                      }
+                    }}
+                  >
+                    Add
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    onClick={() => {
+                      setShowCustomInput(false);
+                      setCustomService("");
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
               <p className="text-xs text-muted-foreground">{form.services.length} services selected</p>
               <div className="flex gap-3">
                 <Button variant="outline" size="lg" onClick={() => setStep(2)}>

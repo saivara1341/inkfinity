@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { 
   Sparkles, Plus, Image as ImageIcon, History, 
-  Download, ExternalLink, Zap, Info, Filter, Edit3, Maximize2, Loader2, X
+  Download, ExternalLink, Zap, Info, Filter, Edit3, Maximize2, Loader2, X, TrendingUp, DollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -22,7 +22,6 @@ const RESIZE_PRESETS = [
 
 const ShopAIHub = () => {
   const { toast } = useToast();
-  const [tokens, setTokens] = useState(850);
   const [showAdobe, setShowAdobe] = useState(false);
   const [selectedDesign, setSelectedDesign] = useState<any>(null);
   const [showResize, setShowResize] = useState(false);
@@ -48,15 +47,14 @@ const ShopAIHub = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-2xl font-display font-bold text-foreground">Merchant AI Design Hub</h2>
-          <p className="text-muted-foreground">Manage AI-generated designs and customer fulfillment.</p>
+          <p className="text-muted-foreground">Professional design & automation tools for your shop.</p>
         </div>
         <div className="flex items-center gap-4">
-          <div className="text-right">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Available AI Tokens</p>
-            <p className="text-lg font-bold text-accent">{tokens} <span className="text-xs font-normal text-muted-foreground">/ 1000</span></p>
-          </div>
-          <Button variant="outline" size="sm" className="gap-2 border-accent/20 hover:bg-accent/5">
-            <Zap className="w-4 h-4 text-accent fill-accent" /> Top Up
+          <Badge variant="outline" className="px-3 py-1 bg-accent/5 border-accent/20 text-accent gap-1">
+            <Sparkles className="w-3 h-3" /> AI Engine Active
+          </Badge>
+          <Button variant="outline" size="sm" className="gap-2">
+            <TrendingUp className="w-4 h-4" /> View Full Analytics
           </Button>
         </div>
       </div>
@@ -65,9 +63,9 @@ const ShopAIHub = () => {
         <Card className="lg:col-span-2 shadow-sm border-border/60 overflow-hidden">
           <CardHeader className="bg-secondary/20 border-b border-border/40">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-accent" /> Adobe-Powered Design Hub
+              <Sparkles className="w-5 h-5 text-accent" /> AI Creative Workshop
             </CardTitle>
-            <CardDescription>Generate with AI or switch to Adobe Express for custom edits.</CardDescription>
+            <CardDescription>Generate print-ready assets or refine them in Adobe Express.</CardDescription>
           </CardHeader>
           <CardContent className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -87,7 +85,7 @@ const ShopAIHub = () => {
             </div>
             <div className="flex flex-wrap gap-3">
               <Button variant="coral" className="flex-1 min-w-[140px] gap-2 shadow-lg shadow-coral/20">
-                <Plus className="w-4 h-4" /> Create AI Pack
+                <Plus className="w-4 h-4" /> Generate New Design
               </Button>
               <Button 
                 variant="outline" 
@@ -102,25 +100,36 @@ const ShopAIHub = () => {
 
         <Card className="shadow-sm border-border/60">
           <CardHeader>
-            <CardTitle className="text-lg">AI Health/Usage</CardTitle>
-            <CardDescription>Tokens reset in 12 days.</CardDescription>
+            <CardTitle className="text-lg">AI Performance</CardTitle>
+            <CardDescription>Usage and conversion stats.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Consumption</span>
-                <span className="font-medium">850 Tokens</span>
+                <span className="text-muted-foreground">Order Conversion</span>
+                <span className="font-medium text-success">85% Successful</span>
               </div>
-              <Progress value={85} className="h-2" />
+              <Progress value={85} className="h-2 bg-secondary" />
             </div>
-            <div className="pt-4 border-t border-border grid grid-cols-2 gap-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold">124</p>
-                <p className="text-[10px] text-muted-foreground uppercase font-semibold">Total Designs</p>
+            <div className="pt-4 border-t border-border space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Total AI Designs</p>
+                  <p className="text-2xl font-bold">124</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Designs Sold</p>
+                  <p className="text-2xl font-bold text-accent">₹6.2k</p>
+                </div>
               </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-success">42</p>
-                <p className="text-[10px] text-muted-foreground uppercase font-semibold">Adobe Edits</p>
+              <div className="p-3 bg-secondary/30 rounded-xl border border-border/50 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center border border-border">
+                    <DollarSign className="w-5 h-5 text-success" />
+                </div>
+                <div>
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold">Avg. Revenue / Design</p>
+                    <p className="text-sm font-bold">₹50.00</p>
+                </div>
               </div>
             </div>
           </CardContent>

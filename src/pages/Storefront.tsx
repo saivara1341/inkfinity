@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Search, Star, Clock, ShoppingCart, MapPin, Store, ChevronRight, SlidersHorizontal, X
+  Search, Star, Clock, ShoppingCart, MapPin, Store, ChevronRight, SlidersHorizontal, X,
+  Instagram, Facebook, Twitter
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +13,7 @@ import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ShareControl from "@/components/ShareControl";
+import WishlistButton from "@/components/WishlistButton";
 
 interface Product {
   id: string;
@@ -172,6 +174,16 @@ const Storefront = () => {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MapPin className="w-3.5 h-3.5" /> {activeShop.city}
                     {activeShop.is_verified && <span className="text-xs px-1.5 py-0.5 rounded bg-success/20 text-success">✓ Verified</span>}
+                    {/* Social Icons for Shop */}
+                    <div className="flex items-center gap-2 ml-2 pl-2 border-l border-border">
+                      {activeShop.services?.filter(s => s.startsWith("social:")).map(s => {
+                        const [,, handle] = s.split(":");
+                        if (s.includes("instagram")) return <a key={s} href={`https://instagram.com/${handle}`} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-accent transition-colors"><Instagram className="w-3.5 h-3.5" /></a>;
+                        if (s.includes("facebook")) return <a key={s} href={`https://facebook.com/${handle}`} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-accent transition-colors"><Facebook className="w-3.5 h-3.5" /></a>;
+                        if (s.includes("twitter")) return <a key={s} href={`https://twitter.com/${handle}`} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-accent transition-colors"><Twitter className="w-3.5 h-3.5" /></a>;
+                        return null;
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -354,6 +366,11 @@ const Storefront = () => {
                           variant="secondary"
                           size="sm"
                           showLabel={false}
+                        />
+                        <WishlistButton 
+                          productId={product.id}
+                          variant="secondary"
+                          size="sm"
                         />
                       </div>
                     </div>

@@ -1,7 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Loader2, QrCode, Upload, X, Info, Sparkles, ShieldCheck, Clock, ArrowRight, Store } from "lucide-react";
+import { 
+  Loader2, QrCode, Upload, X, Info, Sparkles, Clock, ArrowRight, Store,
+  Building2, Globe, MapPin, Phone, Mail, FileText, Smartphone,
+  Instagram, Facebook, Twitter, ShieldCheck, ShieldAlert, ShieldQuestion,
+  UserCheck, Briefcase, Landmark, Check
+} from "lucide-react";
 import { toast } from "sonner";
 import { Database } from "@/integrations/supabase/types";
 import { Badge } from "@/components/ui/badge";
@@ -16,34 +21,70 @@ interface Props {
 export const ShopSettings = ({ shop, onSave }: Props) => {
   const [form, setForm] = useState({
     name: shop?.name || "",
+    description: shop?.description || "",
     phone: shop?.phone || "",
     email: shop?.email || "",
     address: shop?.address || "",
     city: shop?.city || "",
     state: shop?.state || "",
     pincode: shop?.pincode || "",
-    description: shop?.description || "",
-    upi_id: (shop as any)?.upi_id || "",
-    bank_name: (shop as any)?.bank_name || "",
-    bank_account_number: (shop as any)?.bank_account_number || "",
-    ifsc_code: (shop as any)?.ifsc_code || "",
-    accepts_razorpay: (shop as any)?.accepts_razorpay || false,
-    use_custom_razorpay: (shop as any)?.use_custom_razorpay || false,
-    razorpay_key_id: (shop as any)?.razorpay_key_id || "",
-    razorpay_key_secret: (shop as any)?.razorpay_key_secret || "",
+    upi_id: shop?.upi_id || "",
+    bank_name: shop?.bank_name || "",
+    bank_account_number: shop?.bank_account_number || "",
+    ifsc_code: shop?.ifsc_code || "",
+    instagram_handle: "",
+    facebook_handle: "",
+    twitter_handle: "",
+    accepts_razorpay: shop?.accepts_razorpay || false,
+    use_custom_razorpay: shop?.use_custom_razorpay || false,
+    razorpay_key_id: shop?.razorpay_key_id || "",
+    razorpay_key_secret: shop?.razorpay_key_secret || "",
     whatsapp_number: (shop as any)?.whatsapp_number || "",
     qr_code_url: (shop as any)?.qr_code_url || "",
-    is_verified: (shop as any)?.is_verified || false,
+    is_verified: shop?.is_verified || false,
   });
+
+  // Extract social handles from services array if they exist
+  useEffect(() => {
+    if (shop?.services) {
+      const insta = shop.services.find(s => s.startsWith("social:instagram:"))?.split(":")[2] || "";
+      const fb = shop.services.find(s => s.startsWith("social:facebook:"))?.split(":")[2] || "";
+      const tw = shop.services.find(s => s.startsWith("social:twitter:"))?.split(":")[2] || "";
+      setForm(prev => ({
+        ...prev,
+        instagram_handle: insta,
+        facebook_handle: fb,
+        twitter_handle: tw,
+      }));
+    }
+  }, [shop?.services]);
 
   const [uploadingQr, setUploadingQr] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeView, setActiveView] = useState<"menu" | "profile" | "payments" | "verification">("menu");
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type, checked } = e.target as HTMLInputElement;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
-      await onSave(form as any);
+      // Prepare services with social handles
+      const otherServices = (shop?.services || []).filter(s => !s.startsWith("social:"));
+      const updatedServices = [...otherServices];
+      if (form.instagram_handle) updatedServices.push(`social:instagram:${form.instagram_handle}`);
+      if (form.facebook_handle) updatedServices.push(`social:facebook:${form.facebook_handle}`);
+      if (form.twitter_handle) updatedServices.push(`social:twitter:${form.twitter_handle}`);
+
+      await onSave({
+        ...form,
+        services: updatedServices,
+      } as any);
       toast.success("Settings updated!");
     } catch (error) {
       toast.error("Failed to save changes");
@@ -83,8 +124,9 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
             <label className="text-sm font-medium text-muted-foreground mb-1.5 block">{f.label}</label>
             <input
               type="text"
+              name={f.key}
               value={(form as any)[f.key]}
-              onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))}
+              onChange={handleChange}
               className="w-full px-4 py-2.5 rounded-xl border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/40 transition-all"
             />
           </div>
@@ -93,13 +135,61 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
       <div>
         <label className="text-sm font-medium text-muted-foreground mb-1.5 block">Description</label>
         <textarea
+          name="description"
           value={form.description}
-          onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+          onChange={handleChange}
           rows={4}
           className="w-full px-4 py-2.5 rounded-xl border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/40 resize-none transition-all"
           placeholder="Tell customers about your shop's specialties..."
         />
       </div>
+
+      <div className="p-4 rounded-xl border border-border bg-secondary/30 space-y-3">
+        <h4 className="text-sm font-bold text-foreground">Social Media Links</h4>
+        <p className="text-xs text-muted-foreground">Connect your social profiles to your shop.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block">Instagram</label>
+            <div className="relative">
+              <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input 
+                name="instagram_handle" 
+                value={form.instagram_handle} 
+                onChange={handleChange} 
+                placeholder="@username"
+                className="w-full pl-10 pr-4 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring" 
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block">Facebook</label>
+            <div className="relative">
+              <Facebook className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input 
+                name="facebook_handle" 
+                value={form.facebook_handle} 
+                onChange={handleChange} 
+                placeholder="username"
+                className="w-full pl-10 pr-4 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring" 
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block">Twitter / X</label>
+            <div className="relative">
+              <Twitter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input 
+                name="twitter_handle" 
+                value={form.twitter_handle} 
+                onChange={handleChange} 
+                placeholder="@username"
+                className="w-full pl-10 pr-4 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring" 
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="pt-4 border-t border-border">
         <Button variant="coral" size="lg" className="w-full md:w-auto shadow-lg shadow-coral/20" onClick={handleSave} disabled={saving}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "Save Profile Changes"}
@@ -127,6 +217,7 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
           <div className="pt-1">
             <input 
               type="checkbox" 
+              name="accepts_razorpay"
               checked={form.accepts_razorpay} 
               onChange={(e) => setForm((prev) => ({ ...prev, accepts_razorpay: e.target.checked }))}
               className="w-5 h-5 rounded-lg border-input text-accent focus:ring-accent shrink-0 cursor-pointer" 
@@ -407,3 +498,5 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
     </motion.div>
   );
 };
+
+export default ShopSettings;

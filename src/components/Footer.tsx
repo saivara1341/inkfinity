@@ -3,8 +3,10 @@ import { Printer } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="bg-primary text-primary-foreground py-16">
+    <footer className="bg-primary text-primary-foreground pt-8 pb-16 md:py-16">
       <div className="container mx-auto px-4">
+        {/* ... existing grid ... */}
+        {/* ... (Keep lines 8-49 as they are, just changing the wrapping footer tag and the bottom section) ... */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div>
             <div className="flex items-center gap-2 mb-4">
@@ -48,11 +50,14 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-primary-foreground/10 mt-12 pt-8 text-center text-sm space-y-2">
-          <div className="opacity-70 font-medium tracking-wide">
-            A product of <a href="https://siddhidynamics.in" target="_blank" rel="noopener noreferrer" className="text-secondary hover:text-accent transition-colors">Siddhi Dynamics LLP</a>
+        <div className="border-t border-primary-foreground/10 mt-12 pt-8 text-center text-sm">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2">
+            <div className="opacity-70 font-medium tracking-wide">
+              A product of <a href="https://siddhidynamics.in" target="_blank" rel="noopener noreferrer" className="text-secondary hover:text-accent transition-colors font-semibold">Siddhi Dynamics LLP</a>
+            </div>
+            <span className="hidden md:inline opacity-30">|</span>
+            <div className="opacity-40">© 2026 PrintFlow. All rights reserved.</div>
           </div>
-          <div className="opacity-40">© 2026 PrintFlow. All rights reserved.</div>
         </div>
       </div>
     </footer>

@@ -1,0 +1,527 @@
+commit b8e66874c45e9afbb5e6ffdb9867f23959a10982
+Author: saivara1341 <saivaraprasad51@gmail.com>
+Date:   Wed Mar 25 22:47:59 2026 +0530
+
+    Fix: Resolved undefined variable crash in HeroSection
+
+diff --git a/src/components/landing/HeroSection.tsx b/src/components/landing/HeroSection.tsx
+index ebb9ea8..a0496c6 100644
+--- a/src/components/landing/HeroSection.tsx
++++ b/src/components/landing/HeroSection.tsx
+@@ -8,6 +8,7 @@ import bgSalmonWaves from "@/assets/bg-salmon-waves.png";
+ import bgGradientSoft from "@/assets/bg-gradient-soft.png";
+ import { useAuth } from "@/contexts/AuthContext";
+ import { useToast } from "@/hooks/use-toast";
++import heroImage from "@/assets/hero-printing.jpg";
+ 
+ const HeroSection = () => {
+   const navigate = useNavigate();
+
+commit 7d44d6306227e486ab3db78106f2b8883a72d900
+Author: saivara1341 <saivaraprasad51@gmail.com>
+Date:   Wed Mar 25 22:43:42 2026 +0530
+
+    UI: Applied global visual branding across landing and onboarding
+
+diff --git a/src/components/landing/FeaturesSection.tsx b/src/components/landing/FeaturesSection.tsx
+index 03dcc65..040ff7c 100644
+--- a/src/components/landing/FeaturesSection.tsx
++++ b/src/components/landing/FeaturesSection.tsx
+@@ -1,8 +1,8 @@
+ import { motion } from "framer-motion";
+ import { CreditCard, Image, Layers, Truck, Upload, Zap } from "lucide-react";
+ import pressProfessional from "@/assets/press-professional.png";
+-import showcaseFloral1 from "@/assets/showcase-floral-1.png";
+-import showcaseFloral2 from "@/assets/showcase-floral-2.jpg";
++import showcaseFloral1 from "@/assets/bg-swirl-seamless.png";
++import showcaseFloral2 from "@/assets/bg-gradient-soft.png";
+ 
+ const features = [
+   {
+diff --git a/src/components/landing/HeroSection.tsx b/src/components/landing/HeroSection.tsx
+index 5f06736..ebb9ea8 100644
+--- a/src/components/landing/HeroSection.tsx
++++ b/src/components/landing/HeroSection.tsx
+@@ -4,7 +4,8 @@ import { useNavigate, Link } from "react-router-dom";
+ import { Search, Printer, Upload, CreditCard, Truck, Bell, ArrowRight } from "lucide-react";
+ import { useState } from "react";
+ import pressProfessional from "@/assets/press-professional.png";
+-import heroFloralBackground from "@/assets/hero-floral-art.png";
++import bgSalmonWaves from "@/assets/bg-salmon-waves.png";
++import bgGradientSoft from "@/assets/bg-gradient-soft.png";
+ import { useAuth } from "@/contexts/AuthContext";
+ import { useToast } from "@/hooks/use-toast";
+ 
+@@ -22,14 +23,13 @@ const HeroSection = () => {
+     }
+   };
+   return (
+-    <section className="relative min-h-[95vh] flex flex-col pt-6 md:pt-32 pb-12 overflow-hidden bg-background">
+-      {/* Floral Art Background Layer */}
+-      <div className="absolute inset-0 opacity-[0.07] pointer-events-none mix-blend-multiply md:opacity-[0.04]">
+-        <img 
+-          src={floralBg} 
+-          alt="" 
+-          className="w-full h-full object-cover object-center scale-110"
+-        />
++    <section className="relative min-h-[90vh] flex flex-col items-center justify-start pt-20 md:pt-32 overflow-hidden bg-[#FFFDF5]">
++      {/* Dynamic Background Motifs */}
++      <div className="absolute top-0 right-0 w-full h-full opacity-[0.03] pointer-events-none">
++        <img src={bgSalmonWaves} alt="" className="w-full h-full object-cover mix-blend-multiply" />
++      </div>
++      <div className="absolute -bottom-48 -left-24 w-[600px] h-[600px] opacity-[0.05] pointer-events-none blur-3xl">
++        <img src={bgGradientSoft} alt="" className="w-full h-full object-cover rounded-full" />
+       </div>
+       {/* Mobile Branding Header */}
+       <div className="container mx-auto px-4 flex justify-between items-center mb-4 md:hidden">
+diff --git a/src/pages/Index.tsx b/src/pages/Index.tsx
+index 06924ed..9231173 100644
+--- a/src/pages/Index.tsx
++++ b/src/pages/Index.tsx
+@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
+ import { ShoppingCart } from "lucide-react";
+ import SEO from "@/components/SEO";
+ import { useState, useEffect } from "react";
++import bgSwirlSeamless from "@/assets/bg-swirl-seamless.png";
+ 
+ const Index = () => {
+   const landingSchema = {
+@@ -42,6 +43,16 @@ const Index = () => {
+         description="Professional printing services from local shops. Upload designs and get high-quality visiting cards, posters, and flyers delivered."
+         schema={landingSchema}
+       />
++      
++      {/* Global Background Pattern Layer */}
++      <div 
++        className="fixed inset-0 pointer-events-none opacity-[0.02] z-0"
++        style={{ 
++          backgroundImage: `url(${bgSwirlSeamless})`,
++          backgroundSize: '400px 400px',
++          backgroundRepeat: 'repeat'
++        }}
++      />
+       {/* Hide Top Navbar on mobile as it's redundant with Bottom Nav */}
+       <div className="hidden md:block">
+         <Navbar />
+diff --git a/src/pages/Onboarding.tsx b/src/pages/Onboarding.tsx
+index 961f882..db09188 100644
+--- a/src/pages/Onboarding.tsx
++++ b/src/pages/Onboarding.tsx
+@@ -8,6 +8,8 @@ import { User, Store, ArrowRight, Loader2, Factory, Truck } from "lucide-react";
+ import { motion } from "framer-motion";
+ import { toast } from "sonner";
+ import SEO from "@/components/SEO";
++import bgSwirlSeamless from "@/assets/bg-swirl-seamless.png";
++import bgBlueFloral from "@/assets/bg-blue-floral.png";
+ 
+ const Onboarding = () => {
+   const { user, loading: authLoading } = useAuth();
+@@ -71,7 +73,22 @@ const Onboarding = () => {
+   };
+ 
+   return (
+-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
++    <div className="min-h-screen bg-[#FFFDF5] flex flex-col items-center justify-center p-4 relative overflow-hidden">
++      {/* Global Background Pattern */}
++      <div 
++        className="absolute inset-0 pointer-events-none opacity-[0.03] z-0"
++        style={{ 
++          backgroundImage: `url(${bgSwirlSeamless})`,
++          backgroundSize: '400px 400px',
++          backgroundRepeat: 'repeat'
++        }}
++      />
++      
++      {/* Artistic Flourish */}
++      <div className="absolute -bottom-24 -right-24 w-[600px] h-[600px] opacity-[0.03] pointer-events-none rotate-45">
++        <img src={bgBlueFloral} alt="" className="w-full h-full object-contain" />
++      </div>
++
+       <SEO 
+         title="Complete Your Profile" 
+         description="Choose your role to get started with PrintFlow."
+@@ -80,7 +97,7 @@ const Onboarding = () => {
+       <motion.div 
+         initial={{ opacity: 0, y: 20 }}
+         animate={{ opacity: 1, y: 0 }}
+-        className="max-w-4xl w-full space-y-8 text-center"
++        className="max-w-4xl w-full space-y-8 text-center relative z-10"
+       >
+         <div className="space-y-2">
+           <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+
+commit 6ea3afad2190bc5120e2b94749633d1ac4f8d9f7
+Author: saivara1341 <saivaraprasad51@gmail.com>
+Date:   Wed Mar 25 22:38:19 2026 +0530
+
+    UI: Finalized hero with watermark-free professional illustration
+
+diff --git a/src/components/landing/FeaturesSection.tsx b/src/components/landing/FeaturesSection.tsx
+index 26e5888..03dcc65 100644
+--- a/src/components/landing/FeaturesSection.tsx
++++ b/src/components/landing/FeaturesSection.tsx
+@@ -63,23 +63,6 @@ const FeaturesSection = () => {
+           </p>
+         </motion.div>
+ 
+-        {/* Professional Press Illustration Anchor */}
+-        <motion.div 
+-           initial={{ opacity: 0, scale: 0.95 }}
+-           whileInView={{ opacity: 1, scale: 1 }}
+-           viewport={{ once: true }}
+-           className="mb-20 flex justify-center px-4"
+-        >
+-          <div className="relative max-w-4xl w-full group">
+-            <div className="absolute inset-x-10 -bottom-4 h-8 bg-black/5 blur-3xl rounded-full" />
+-            <img 
+-               src={pressProfessional} 
+-               alt="Professional Printing Workflow" 
+-               className="w-full h-auto object-contain mix-blend-multiply opacity-90 group-hover:opacity-100 transition-opacity duration-700"
+-            />
+-          </div>
+-        </motion.div>
+-
+         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
+           {features.map((feature, i) => (
+             <motion.div
+diff --git a/src/components/landing/HeroSection.tsx b/src/components/landing/HeroSection.tsx
+index 5406799..5f06736 100644
+--- a/src/components/landing/HeroSection.tsx
++++ b/src/components/landing/HeroSection.tsx
+@@ -1,12 +1,10 @@
+ import { motion } from "framer-motion";
+ import { Button } from "@/components/ui/button";
+ import { useNavigate, Link } from "react-router-dom";
+-import { Search, Printer, Upload, CreditCard, Truck, Bell } from "lucide-react";
++import { Search, Printer, Upload, CreditCard, Truck, Bell, ArrowRight } from "lucide-react";
+ import { useState } from "react";
+-import heroImage from "@/assets/hero-printing.jpg";
+-import printingPress from "@/assets/printing-press.png";
+-import floralBg from "@/assets/floral-bg.png";
+-import printingPressV2 from "@/assets/printing-press-integrated.png";
++import pressProfessional from "@/assets/press-professional.png";
++import heroFloralBackground from "@/assets/hero-floral-art.png";
+ import { useAuth } from "@/contexts/AuthContext";
+ import { useToast } from "@/hooks/use-toast";
+ 
+@@ -186,24 +184,29 @@ const HeroSection = () => {
+                 </div>
+               ))}
+             </div>
+-            {/* Mobile Animation Space with Giphy Embed */}
++            {/* Mobile Animation Space with Professionally Cropped Illustration */}
+             <div className="w-full flex items-center justify-center md:hidden pt-4 pb-10 px-4 relative z-10">
+               <motion.div 
+                 initial={{ opacity: 0, scale: 0.9 }}
+                 animate={{ opacity: 1, scale: 1 }}
+                 transition={{ duration: 1, ease: "easeOut" }}
+-                className="relative w-full max-w-[340px] aspect-square rounded-3xl overflow-hidden shadow-2xl border border-white/20 bg-white/5 backdrop-blur-sm"
++                className="relative w-full max-w-[340px] group"
+               >
+-                <iframe 
+-                  src="https://giphy.com/embed/bYThvpfFJDscDiRMhj" 
+-                  width="100%" 
+-                  height="100%" 
+-                  frameBorder="0" 
+-                  className="giphy-embed pointer-events-none scale-110" 
+-                  allowFullScreen
+-                ></iframe>
+-                {/* Overlay to prevent interaction and maintain look */}
+-                <div className="absolute inset-0 bg-gradient-to-tr from-accent/5 via-transparent to-transparent pointer-events-none" />
++                <div className="relative overflow-hidden rounded-2xl">
++                  {/* Cropped Illustration to remove watermark */}
++                  <img 
++                    src={pressProfessional} 
++                    alt="Industrial Printing Press" 
++                    className="w-full h-auto object-cover transform group-hover:scale-[1.02] transition-transform duration-700 drop-shadow-2xl"
++                    style={{ 
++                      marginBottom: '-8%', // Crop out the bottom watermark
++                      clipPath: 'inset(0 0 8% 0)' 
++                    }}
++                  />
++                </div>
++                
++                {/* Refined Integration Shadow */}
++                <div className="absolute -bottom-2 inset-x-8 h-4 bg-black/5 blur-2xl rounded-full" />
+               </motion.div>
+             </div>
+           </motion.div>
+
+commit 00c0a46962c4688a548f534201e28bd8fc4fb7c4
+Author: saivara1341 <saivaraprasad51@gmail.com>
+Date:   Wed Mar 25 22:28:35 2026 +0530
+
+    UI: Final visual refinements - Giphy hero, cream themed features, and watermark fixes
+
+diff --git a/src/assets/press-professional.png b/src/assets/press-professional.png
+new file mode 100644
+index 0000000..e57b88f
+Binary files /dev/null and b/src/assets/press-professional.png differ
+diff --git a/src/assets/showcase-floral-1.png b/src/assets/showcase-floral-1.png
+new file mode 100644
+index 0000000..4807bda
+Binary files /dev/null and b/src/assets/showcase-floral-1.png differ
+diff --git a/src/assets/showcase-floral-2.jpg b/src/assets/showcase-floral-2.jpg
+new file mode 100644
+index 0000000..a5fa54d
+Binary files /dev/null and b/src/assets/showcase-floral-2.jpg differ
+diff --git a/src/assets/workshop-isometric.png b/src/assets/workshop-isometric.png
+new file mode 100644
+index 0000000..24ac223
+Binary files /dev/null and b/src/assets/workshop-isometric.png differ
+diff --git a/src/components/landing/CTASection.tsx b/src/components/landing/CTASection.tsx
+index fe2e505..68edbbd 100644
+--- a/src/components/landing/CTASection.tsx
++++ b/src/components/landing/CTASection.tsx
+@@ -31,9 +31,14 @@ const CTASection = () => {
+               <img src={ctaBWPattern} alt="" className="w-full h-full object-cover grayscale scale-110" />
+             </div>
+             
+-            {/* Floating Mandala */}
+-            <div className="absolute -bottom-16 -right-16 w-64 h-64 opacity-15 transform rotate-45 pointer-events-none group-hover:scale-110 group-hover:rotate-[60deg] transition-all duration-1000">
+-              <img src={ctaMandala} alt="" className="w-full h-full object-contain grayscale" />
++            {/* Floating Mandala (Watermark Cleansed via precise cropping) */}
++            <div className="absolute -bottom-16 -right-16 w-64 h-64 opacity-15 overflow-hidden pointer-events-none group-hover:scale-110 transition-all duration-1000">
++              <img 
++                src={ctaMandala} 
++                alt="" 
++                className="w-[120%] h-[120%] max-w-none object-cover grayscale transform rotate-[25deg] -translate-x-4 -translate-y-4" 
++                style={{ clipPath: 'inset(0 0 10% 0)' }}
++              />
+             </div>
+ 
+             <h3 className="relative font-display text-4xl font-bold mb-4 z-10 text-accent">Ready to print?</h3>
+diff --git a/src/components/landing/FeaturesSection.tsx b/src/components/landing/FeaturesSection.tsx
+index 483c0e9..26e5888 100644
+--- a/src/components/landing/FeaturesSection.tsx
++++ b/src/components/landing/FeaturesSection.tsx
+@@ -1,5 +1,8 @@
+ import { motion } from "framer-motion";
+ import { CreditCard, Image, Layers, Truck, Upload, Zap } from "lucide-react";
++import pressProfessional from "@/assets/press-professional.png";
++import showcaseFloral1 from "@/assets/showcase-floral-1.png";
++import showcaseFloral2 from "@/assets/showcase-floral-2.jpg";
+ 
+ const features = [
+   {
+@@ -36,22 +39,47 @@ const features = [
+ 
+ const FeaturesSection = () => {
+   return (
+-    <section className="py-24 bg-secondary/20">
+-      <div className="container mx-auto px-4">
++    <section className="py-24 bg-[#FFFDF5] relative overflow-hidden">
++      {/* Decorative Background Elements */}
++      <div className="absolute -top-24 -left-24 w-96 h-96 opacity-[0.05] pointer-events-none mix-blend-multiply rotate-12">
++        <img src={showcaseFloral1} alt="" className="w-full h-full object-contain" />
++      </div>
++      <div className="absolute -bottom-24 -right-24 w-[500px] h-[500px] opacity-[0.03] pointer-events-none mix-blend-multiply -rotate-6">
++        <img src={showcaseFloral2} alt="" className="w-full h-full object-cover" />
++      </div>
++
++      <div className="container mx-auto px-4 relative z-10">
+         <motion.div
+           initial={{ opacity: 0, y: 20 }}
+           whileInView={{ opacity: 1, y: 0 }}
+           viewport={{ once: true }}
+           className="text-center mb-16"
+         >
+-          <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-4">
+-            Everything you need <span className="text-gradient">to print</span>
++          <h2 className="font-display text-3xl md:text-5xl font-bold text-[#1a1f2c] mb-4">
++            Everything you need <span className="text-accent">to print</span>
+           </h2>
+-          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
++          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto font-medium opacity-80">
+             From design upload to doorstep delivery — we handle the entire printing workflow.
+           </p>
+         </motion.div>
+ 
++        {/* Professional Press Illustration Anchor */}
++        <motion.div 
++           initial={{ opacity: 0, scale: 0.95 }}
++           whileInView={{ opacity: 1, scale: 1 }}
++           viewport={{ once: true }}
++           className="mb-20 flex justify-center px-4"
++        >
++          <div className="relative max-w-4xl w-full group">
++            <div className="absolute inset-x-10 -bottom-4 h-8 bg-black/5 blur-3xl rounded-full" />
++            <img 
++               src={pressProfessional} 
++               alt="Professional Printing Workflow" 
++               className="w-full h-auto object-contain mix-blend-multiply opacity-90 group-hover:opacity-100 transition-opacity duration-700"
++            />
++          </div>
++        </motion.div>
++
+         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
+           {features.map((feature, i) => (
+             <motion.div
+@@ -61,14 +89,14 @@ const FeaturesSection = () => {
+               viewport={{ once: true }}
+               transition={{ delay: i * 0.1 }}
+               whileHover={{ y: -8 }}
+-              className="bg-card rounded-2xl p-5 md:p-8 border border-border/50 shadow-sm hover:shadow-elevated transition-all duration-300 group overflow-hidden relative"
++              className="bg-white/40 backdrop-blur-sm rounded-2xl p-5 md:p-8 border border-black/5 shadow-xl hover:shadow-2xl transition-all duration-300 group overflow-hidden relative"
+             >
+               <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+               <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl bg-accent/10 flex items-center justify-center mb-4 md:mb-6 group-hover:bg-accent/20 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-sm">
+                 <feature.icon className="w-5 h-5 md:w-7 md:h-7 text-accent" />
+               </div>
+-              <h3 className="font-display text-sm md:text-xl font-bold text-foreground mb-2 md:mb-3">{feature.title}</h3>
+-              <p className="text-xs md:text-base text-muted-foreground leading-relaxed md:leading-loose opacity-80 group-hover:opacity-100 transition-opacity">
++              <h3 className="font-display text-sm md:text-xl font-bold text-[#1a1f2c] mb-2 md:mb-3">{feature.title}</h3>
++              <p className="text-xs md:text-base text-muted-foreground leading-relaxed md:leading-loose opacity-70 group-hover:opacity-100 transition-opacity font-medium">
+                 {feature.description}
+               </p>
+             </motion.div>
+diff --git a/src/components/landing/HeroSection.tsx b/src/components/landing/HeroSection.tsx
+index 3a6e3f9..5406799 100644
+--- a/src/components/landing/HeroSection.tsx
++++ b/src/components/landing/HeroSection.tsx
+@@ -186,59 +186,24 @@ const HeroSection = () => {
+                 </div>
+               ))}
+             </div>
+-            {/* Mobile Animation Space with 'Living' Illustration (GIF-like) */}
++            {/* Mobile Animation Space with Giphy Embed */}
+             <div className="w-full flex items-center justify-center md:hidden pt-4 pb-10 px-4 relative z-10">
+               <motion.div 
+                 initial={{ opacity: 0, scale: 0.9 }}
+                 animate={{ opacity: 1, scale: 1 }}
+                 transition={{ duration: 1, ease: "easeOut" }}
+-                className="relative w-full max-w-[340px] group"
++                className="relative w-full max-w-[340px] aspect-square rounded-3xl overflow-hidden shadow-2xl border border-white/20 bg-white/5 backdrop-blur-sm"
+               >
+-                {/* Paper Exit Animation (Slides out from behind press) */}
+-                <motion.div 
+-                  initial={{ y: 20, opacity: 0 }}
+-                  animate={{ y: [20, 100], opacity: [0, 1, 0], scale: [0.9, 1.1] }}
+-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+-                  className="absolute bottom-10 left-1/2 -translate-x-1/2 w-32 h-40 bg-white/80 rounded-sm shadow-lg border border-black/5 z-0"
+-                >
+-                   {/* Fake Print Content */}
+-                   <div className="p-2 space-y-1">
+-                     <div className="h-1 w-full bg-accent/20 rounded" />
+-                     <div className="h-1 w-3/4 bg-accent/10 rounded" />
+-                     <div className="h-4 w-full bg-accent/5 rounded mt-4" />
+-                   </div>
+-                </motion.div>
+-
+-                {/* The Press (Animated Vibration) */}
+-                <motion.div 
+-                  animate={{ 
+-                    y: [0, -1, 1, 0],
+-                    x: [0, 0.5, -0.5, 0]
+-                  }}
+-                  transition={{ duration: 0.3, repeat: Infinity, ease: "easeInOut" }}
+-                  className="relative z-10 overflow-visible"
+-                >
+-                  <img 
+-                    src={printingPressV2} 
+-                    alt="Industrial Printing Press" 
+-                    className="w-full h-auto object-contain transform group-hover:scale-[1.02] transition-transform duration-700 drop-shadow-2xl"
+-                  />
+-                  
+-                  {/* Monitor Glows */}
+-                  <motion.div 
+-                    animate={{ opacity: [0.3, 0.8, 0.3] }}
+-                    transition={{ duration: 4, repeat: Infinity }}
+-                    className="absolute top-[20%] right-[15%] w-[30%] h-[20%] bg-accent/20 blur-xl rounded-full"
+-                  />
+-                  <motion.div 
+-                    animate={{ opacity: [0.2, 0.6, 0.2] }}
+-                    transition={{ duration: 3, repeat: Infinity, delay: 1 }}
+-                    className="absolute top-[15%] right-[40%] w-[15%] h-[15%] bg-accent/10 blur-lg rounded-full"
+-                  />
+-                </motion.div>
+-
+-                {/* Floor Shadow Refinement */}
+-                <div className="absolute -bottom-2 inset-x-10 h-4 bg-black/10 blur-xl rounded-full" />
++                <iframe 
++                  src="https://giphy.com/embed/bYThvpfFJDscDiRMhj" 
++                  width="100%" 
++                  height="100%" 
++                  frameBorder="0" 
++                  className="giphy-embed pointer-events-none scale-110" 
++                  allowFullScreen
++                ></iframe>
++                {/* Overlay to prevent interaction and maintain look */}
++                <div className="absolute inset-0 bg-gradient-to-tr from-accent/5 via-transparent to-transparent pointer-events-none" />
+               </motion.div>
+             </div>
+           </motion.div>
+
+commit 579deb90a7ef9bc3aa551b3c2cef430ff96ea965
+Author: saivara1341 <saivaraprasad51@gmail.com>
+Date:   Wed Mar 25 22:08:18 2026 +0530
+
+    UI: Animated the industrial illustration with life-like printing effects
+
+diff --git a/src/components/landing/HeroSection.tsx b/src/components/landing/HeroSection.tsx
+index 74edb3c..3a6e3f9 100644
+--- a/src/components/landing/HeroSection.tsx
++++ b/src/components/landing/HeroSection.tsx
+@@ -186,7 +186,7 @@ const HeroSection = () => {
+                 </div>
+               ))}
+             </div>
+-            {/* Mobile Animation Space with Better Integrated Illustration */}
++            {/* Mobile Animation Space with 'Living' Illustration (GIF-like) */}
+             <div className="w-full flex items-center justify-center md:hidden pt-4 pb-10 px-4 relative z-10">
+               <motion.div 
+                 initial={{ opacity: 0, scale: 0.9 }}
+@@ -194,13 +194,51 @@ const HeroSection = () => {
+                 transition={{ duration: 1, ease: "easeOut" }}
+                 className="relative w-full max-w-[340px] group"
+               >
+-                <div className="relative overflow-visible">
++                {/* Paper Exit Animation (Slides out from behind press) */}
++                <motion.div 
++                  initial={{ y: 20, opacity: 0 }}
++                  animate={{ y: [20, 100], opacity: [0, 1, 0], scale: [0.9, 1.1] }}
++                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
++                  className="absolute bottom-10 left-1/2 -translate-x-1/2 w-32 h-40 bg-white/80 rounded-sm shadow-lg border border-black/5 z-0"
++                >
++                   {/* Fake Print Content */}
++                   <div className="p-2 space-y-1">
++                     <div className="h-1 w-full bg-accent/20 rounded" />
++                     <div className="h-1 w-3/4 bg-accent/10 rounded" />
++                     <div className="h-4 w-full bg-accent/5 rounded mt-4" />
++                   </div>
++                </motion.div>
++
++                {/* The Press (Animated Vibration) */}
++                <motion.div 
++                  animate={{ 
++                    y: [0, -1, 1, 0],
++                    x: [0, 0.5, -0.5, 0]
++                  }}
++                  transition={{ duration: 0.3, repeat: Infinity, ease: "easeInOut" }}
++                  className="relative z-10 overflow-visible"
++                >
+                   <img 
+                     src={printingPressV2} 
+                     alt="Industrial Printing Press" 
+                     className="w-full h-auto object-contain transform group-hover:scale-[1.02] transition-transform duration-700 drop-shadow-2xl"
+                   />
+-                </div>
++                  
++                  {/* Monitor Glows */}
++                  <motion.div 
++                    animate={{ opacity: [0.3, 0.8, 0.3] }}
++                    transition={{ duration: 4, repeat: Infinity }}
++                    className="absolute top-[20%] right-[15%] w-[30%] h-[20%] bg-accent/20 blur-xl rounded-full"
++                  />
++                  <motion.div 
++                    animate={{ opacity: [0.2, 0.6, 0.2] }}
++                    transition={{ duration: 3, repeat: Infinity, delay: 1 }}
++                    className="absolute top-[15%] right-[40%] w-[15%] h-[15%] bg-accent/10 blur-lg rounded-full"
++                  />
++                </motion.div>
++
++                {/* Floor Shadow Refinement */}
++                <div className="absolute -bottom-2 inset-x-10 h-4 bg-black/10 blur-xl rounded-full" />
+               </motion.div>
+             </div>
+           </motion.div>

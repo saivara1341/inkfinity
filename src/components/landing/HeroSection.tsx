@@ -23,7 +23,7 @@ const HeroSection = () => {
     }
   };
   return (
-    <section className="relative min-h-[90vh] flex flex-col items-center justify-start pt-20 md:pt-32 overflow-hidden bg-[#FFFDF5]">
+    <section className="relative min-h-[90vh] flex flex-col items-center justify-start pt-6 md:pt-32 overflow-hidden bg-[#FFFDF5]">
       {/* Mobile Branding Header */}
       <div className="container mx-auto px-4 flex justify-between items-center mb-4 md:hidden">
         <Link to="/" className="flex items-center gap-2">

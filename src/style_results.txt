@@ -1,0 +1,11 @@
+components\landing\CTASection.tsx:                style={{ clipPath: 'inset(0 0 10% 0)' }}
+components\landing\HeroSection.tsx:      <div className="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] bg-coral/10 rounded-full blur-[80px] animate-pulse-slow pointer-events-none md:hidden" style={{ animationDelay: "2s" }} />
+components\landing\HeroSection.tsx:                    style={{ 
+components\ui\AnimatedButton.tsx:    <div className={cn("relative inline-flex items-center justify-center group cursor-pointer overflow-hidden", className)} style={{ width, height }}>
+components\ui\chart.tsx:                style={{
+components\ui\progress.tsx:      style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+pages\AdminDashboard.tsx:                            <Tooltip contentStyle={{ backgroundColor: "#1a1a1a", border: "1px solid #333", borderRadius: "8px" }} />
+pages\AdminDashboard.tsx:                            <Tooltip contentStyle={{ backgroundColor: "#1a1a1a", border: "1px solid #333", borderRadius: "8px" }} />
+pages\Index.tsx:        style={{ 
+pages\Onboarding.tsx:        style={{ 
+pages\Signup.tsx:        <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-black/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: "2s" }} />

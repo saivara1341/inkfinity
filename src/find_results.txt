@@ -1,0 +1,31 @@
+components\AIDesignGenerator.tsx:                <img src={img} alt={`Design ${i + 1}`} className="w-full h-full object-cover bg-white" />
+components\landing\CTASection.tsx:        <img src={ctaPattern2} alt="" className="w-full h-full object-cover" />
+components\landing\CTASection.tsx:              <img src={ctaBWPattern} alt="" className="w-full h-full object-cover grayscale scale-110" />
+components\landing\CTASection.tsx:                src={ctaMandala} 
+components\landing\CTASection.tsx:              <img src={ctaPattern2} alt="" className="w-full h-full object-cover scale-150 rotate-90" />
+components\landing\CTASection.tsx:              <img src={ctaAccentFlower} alt="" className="w-full h-full object-contain" />
+components\landing\FeaturesSection.tsx:        <img src={showcaseFloral1} alt="" className="w-full h-full object-contain" />
+components\landing\FeaturesSection.tsx:        <img src={showcaseFloral2} alt="" className="w-full h-full object-cover" />
+components\landing\HeroSection.tsx:        <img src={bgSalmonWaves} alt="" className="w-full h-full object-cover mix-blend-multiply" />
+components\landing\HeroSection.tsx:        <img src={bgGradientSoft} alt="" className="w-full h-full object-cover rounded-full" />
+components\landing\HeroSection.tsx:                    src={pressProfessional} 
+components\landing\HeroSection.tsx:                  src={heroImage} 
+components\landing\ShopShowcase.tsx:                      <img src={shop.logo_url} alt={shop.name} className="w-10 h-10 object-contain" />
+components\Navbar.tsx:                    <img src={profile.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+components\OrderMessages.tsx:                        src={msg.attachment_url} 
+components\OrderMessages.tsx:                  <img src={attachmentPreview} className="w-10 h-10 rounded object-cover" />
+components\shop\ShopAIHub.tsx:                    src={design.img} 
+components\shop\ShopOrders.tsx:                                src={(order as any).design_file_url} 
+components\shop\ShopProducts.tsx:                      src={form.imageFile ? URL.createObjectURL(form.imageFile) : form.imagePreview}
+components\shop\ShopSettings.tsx:                      <img src={form.qr_code_url} alt="QR Code" className="w-full h-full object-contain" />
+pages\AdminDashboard.tsx:                              <img src={profileForm.qr_code_url} alt="QR Code" className="w-full h-full object-cover" />
+pages\Checkout.tsx:                            <img src={item.design_file_url || (item.specifications as any)?.frontDesign} alt="Front Design" className="w-full h-full object-cover" />
+pages\Checkout.tsx:                              <img src={(item.specifications as any).backDesign} alt="Back Design" className="w-full h-full object-cover" />
+pages\CustomerDashboard.tsx:              <img src={avatarUrl} alt="Avatar" className="w-20 h-20 rounded-full object-cover border-2 border-border" />
+pages\Onboarding.tsx:        <img src={bgBlueFloral} alt="" className="w-full h-full object-contain" />
+pages\OrderHistory.tsx:                            <img src={order.design_file_url} className="w-full h-full object-cover" alt="Order Design" />
+pages\ProductCustomize.tsx:                              <img src={frontPreview} alt="Front Preview" className="max-w-full max-h-full object-contain" />
+pages\ProductCustomize.tsx:                                <img src={backPreview} alt="Back Preview" className="max-w-full max-h-full object-contain" />
+pages\Signup.tsx:            src={signupIllustration} 
+pages\SourcingPortal.tsx:                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+pages\Storefront.tsx:                        <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />

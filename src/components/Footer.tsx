@@ -5,8 +5,6 @@ const Footer = () => {
   return (
     <footer className="bg-primary text-primary-foreground pt-8 pb-16 md:py-16">
       <div className="container mx-auto px-4">
-        {/* ... existing grid ... */}
-        {/* ... (Keep lines 8-49 as they are, just changing the wrapping footer tag and the bottom section) ... */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div>
             <div className="flex items-center gap-2 mb-4">

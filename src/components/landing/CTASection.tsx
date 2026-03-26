@@ -19,14 +19,14 @@ const CTASection = () => {
             <p className="relative opacity-90 mb-10 text-xl leading-relaxed max-w-sm z-10 font-medium">
               Upload your design and get premium prints delivered from local shops near you.
             </p>
-            <div className="relative z-10 pl-4"> {/* Added padding to move button inward */}
+            <div className="relative z-10 pl-8 pb-4"> {/* Increased padding to move button inward */}
               <AnimatedButton 
                 onClick={() => navigate("/catalog")}
                 variant="dark"
                 solid={true}
-                width={220}
-                height={56}
-                className="rounded-2xl overflow-hidden shadow-lg border-none"
+                width={240}
+                height={64}
+                className="rounded-2xl overflow-hidden shadow-lg border-none scale-110 origin-left"
                 textColor="text-white group-hover:text-white"
               >
                 <div className="flex items-center gap-2 text-lg">

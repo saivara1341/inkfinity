@@ -89,7 +89,7 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen bg-background flex overflow-hidden">
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-12 relative">
+      <div className="flex-1 flex items-start md:items-center justify-center px-6 pt-8 pb-12 sm:p-12 relative">
         <div className="w-full max-w-md z-10">
           <Link to="/" className="flex items-center gap-2 mb-10 group">
             <div className="w-10 h-10 rounded-xl bg-gradient-coral flex items-center justify-center shadow-glow group-hover:scale-110 transition-transform">

@@ -13,16 +13,16 @@ const CTASection = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="group relative bg-[#FF6B6B]/5 rounded-[2.5rem] p-12 text-[#1a1f2c] shadow-xl overflow-hidden border border-[#FF6B6B]/10"
+            className="group relative bg-[#f47e62] rounded-[2.5rem] p-12 text-white shadow-xl overflow-hidden"
           >
-            <h3 className="relative font-display text-4xl font-bold mb-4 z-10 text-accent">Ready to print?</h3>
-            <p className="relative opacity-80 mb-10 text-xl leading-relaxed max-w-sm z-10 font-medium">
+            <h3 className="relative font-display text-4xl font-bold mb-4 z-10 text-white">Ready to print?</h3>
+            <p className="relative opacity-90 mb-10 text-xl leading-relaxed max-w-sm z-10 font-medium">
               Upload your design and get premium prints delivered from local shops near you.
             </p>
-            <div className="relative z-10">
+            <div className="relative z-10 pl-4"> {/* Added padding to move button inward */}
               <AnimatedButton 
                 onClick={() => navigate("/catalog")}
-                variant="coral"
+                variant="dark"
                 solid={true}
                 width={220}
                 height={56}
@@ -41,19 +41,19 @@ const CTASection = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="group relative bg-black/5 rounded-[2.5rem] p-12 text-[#1a1f2c] shadow-xl overflow-hidden border border-black/5"
+            className="group relative bg-[#2c333f] rounded-[2.5rem] p-12 text-white shadow-xl overflow-hidden"
           >
-            <div className="relative flex items-center gap-3 mb-6 z-10 overflow-hidden">
-              <Store className="w-10 h-10 text-[#FF6B6B] flex-shrink-0" />
-              <h3 className="font-display text-3xl sm:text-4xl font-bold whitespace-nowrap">Own a print shop?</h3>
+            <div className="relative flex items-center gap-3 mb-6 z-10">
+              <Store className="w-10 h-10 text-[#f47e62] flex-shrink-0" />
+              <h3 className="font-display text-3xl sm:text-4xl font-bold whitespace-nowrap text-white">Own a print shop?</h3>
             </div>
-            <p className="relative opacity-70 mb-10 text-xl leading-relaxed max-w-sm z-10 font-medium">
+            <p className="relative opacity-80 mb-10 text-xl leading-relaxed max-w-sm z-10 font-medium">
               Join PrintFlow and get orders from thousands of customers. Manage everything from one dashboard.
             </p>
             <div className="relative z-10">
               <AnimatedButton 
                 onClick={() => navigate("/for-shops")}
-                variant="dark"
+                variant="coral"
                 solid={true}
                 width={260}
                 height={56}

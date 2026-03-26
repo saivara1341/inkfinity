@@ -23,6 +23,7 @@ const Signup = () => {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const personalBtnRef = useRef<HTMLButtonElement>(null);
+  const businessBtnRef = useRef<HTMLButtonElement>(null);
   const submitBtnRef = useRef<HTMLButtonElement>(null);
 
   const [formData, setFormData] = useState({

@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { FileText, Download, IndianRupee, Share2 } from "lucide-react";
+import { FileText, Download, IndianRupee, Share2, Send } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface QuotationItem {
   name: string;
@@ -15,10 +18,14 @@ interface QuotationGeneratorProps {
   customerName?: string;
   gstRate?: number;
   deliveryCharge?: number;
+  shopId?: string;
+  supplierId?: string;
 }
 
-const QuotationGenerator = ({ items, customerName, gstRate = 18, deliveryCharge = 0 }: QuotationGeneratorProps) => {
+const QuotationGenerator = ({ items, customerName, gstRate = 18, deliveryCharge = 0, shopId, supplierId }: QuotationGeneratorProps) => {
+  const { user } = useAuth();
   const [showQuotation, setShowQuotation] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const subtotal = items.reduce((sum, item) => sum + item.total, 0);
   const gstAmount = (subtotal * gstRate) / 100;
@@ -79,6 +86,43 @@ ${customerName ? `<p><strong>To:</strong> ${customerName}</p>` : ""}
     const win = window.open(url, "_blank");
     if (win) {
       win.onload = () => win.print();
+    }
+  };
+
+  const submitQuoteRequest = async () => {
+    if (!user) {
+      toast.error("Please login to request a quote");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const item = items[0]; // For now handle single item quote submission
+      const { error } = await supabase
+        .from("quotes")
+        .insert({
+          customer_id: user.id,
+          shop_id: shopId,
+          supplier_id: supplierId,
+          product_name: item.name,
+          quantity: item.quantity,
+          specifications: {
+            details: item.specifications,
+            subtotal,
+            gstAmount,
+            deliveryCharge,
+            grandTotal
+          },
+          status: 'requested'
+        });
+
+      if (error) throw error;
+      toast.success("Quote request submitted successfully!");
+      setShowQuotation(false);
+    } catch (err: any) {
+      toast.error("Failed to submit request: " + err.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -147,8 +191,11 @@ ${customerName ? `<p><strong>To:</strong> ${customerName}</p>` : ""}
         <Button variant="coral" className="flex-1 gap-2" onClick={generatePDF}>
           <Download className="w-4 h-4" /> Download PDF
         </Button>
-        <Button variant="outline" className="gap-2">
-          <Share2 className="w-4 h-4" /> Share
+        <Button variant="outline" className="gap-2" onClick={submitQuoteRequest} disabled={isSubmitting}>
+          <Send className="w-4 h-4" /> {isSubmitting ? "Submitting..." : "Submit Inquiry"}
+        </Button>
+        <Button variant="outline" className="gap-2 p-2">
+          <Share2 className="w-4 h-4" />
         </Button>
       </div>
     </div>

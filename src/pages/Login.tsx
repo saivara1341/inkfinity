@@ -41,7 +41,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-background flex">
-      <div className="flex-1 flex items-start md:items-center justify-center px-6 pt-0 pb-12 sm:py-12">
+      <div className="flex-1 flex items-start md:items-center justify-center px-6 pt-12 md:pt-0 pb-12 sm:py-12">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
           <Link to="/" className="flex items-center gap-2 mb-8">
             <div className="w-10 h-10 rounded-lg bg-gradient-coral flex items-center justify-center">

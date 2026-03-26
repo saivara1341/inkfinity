@@ -26,7 +26,7 @@ const HeroSection = () => {
     <section className="relative min-h-[90vh] flex flex-col items-center justify-start pt-6 md:pt-32 overflow-hidden bg-[#FFFDF5]">
 
       {/* Mobile-Only Top Search Bar */}
-      <div className="px-4 mb-10 md:hidden pt-4">
+      <div className="px-4 mb-2 md:hidden pt-36 w-full">
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -40,12 +40,12 @@ const HeroSection = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               placeholder="What do you want to print today?"
-              className="w-full pl-5 pr-28 py-3.5 rounded-full border-2 border-border/50 bg-card/60 backdrop-blur-md text-foreground focus:outline-none focus:border-accent/40 focus:ring-0 shadow-lg transition-all text-sm placeholder:text-muted-foreground/60"
+              className="w-full pl-4 pr-16 py-4 rounded-full border-2 border-border/50 bg-card/60 backdrop-blur-md text-foreground focus:outline-none focus:border-accent/40 focus:ring-0 shadow-lg transition-all text-xs placeholder:text-[10px] sm:placeholder:text-sm placeholder:text-muted-foreground/90"
             />
             <div className="absolute right-1 top-1 bottom-1">
               <Button 
                 variant="coral" 
-                className="h-full rounded-full px-6 shadow-sm animate-pulse-shimmer bg-[length:200%_100%] text-xs font-bold"
+                className="h-full rounded-full px-5 shadow-sm animate-pulse-shimmer bg-[length:200%_100%] text-xs font-bold"
                 onClick={handleSearch}
               >
                 Search

@@ -85,10 +85,11 @@ const ProductCustomize = () => {
             sizes: (data.specifications as any)?.sizes || [],
             papers: (data.specifications as any)?.papers || [],
             finishes: (data.specifications as any)?.finishes || [],
-            quantityTiers: (data.specifications as any)?.quantityTiers || [],
+            quantityTiers: data.volume_pricing || (data.specifications as any)?.quantityTiers || [],
             printingMethods: (data.specifications as any)?.printingMethods || [],
             turnaroundDays: data.turnaround_days,
             minQty: data.min_quantity,
+            stock_quantity: data.stock_quantity,
           };
           setDbProduct(mapped);
         }
@@ -385,19 +386,31 @@ const ProductCustomize = () => {
 
   // Price calculation
   const calculatePrice = () => {
-    const tier = product.quantityTiers.find(t => quantity >= t.min && quantity <= t.max) || product.quantityTiers[0];
-    let basePrice = tier.pricePerUnit;
+    // 1. Base Price from Dynamic Tiers (Database)
+    let basePricePerUnit = parseFloat(product.startingPrice?.replace("₹", "") || "0");
+    let discountPercent = 0;
+
+    if (product.quantityTiers && product.quantityTiers.length > 0) {
+      // Find the best tier for the current quantity
+      // Format: [{"min_qty": 100, "price": 4.5}] or [{"min": 100, "pricePerUnit": 4.5}]
+      const tier = [...product.quantityTiers]
+        .sort((a: any, b: any) => (b.min_qty || b.min) - (a.min_qty || a.min))
+        .find((t: any) => quantity >= (t.min_qty || t.min));
+      
+      if (tier) {
+        basePricePerUnit = tier.price || tier.pricePerUnit;
+      }
+    } else {
+      // Fallback to legacy hardcoded B2B Discount Ladder
+      if (quantity >= 5000) discountPercent = 0.25;
+      else if (quantity >= 2000) discountPercent = 0.15;
+      else if (quantity >= 1000) discountPercent = 0.10;
+      
+      basePricePerUnit = basePricePerUnit * (1 - discountPercent);
+    }
     
-    // B2B Bulk Discount Ladder
-    let bulkDiscount = 0;
-    if (quantity >= 5000) bulkDiscount = 0.25; // 25% off for very large orders
-    else if (quantity >= 2000) bulkDiscount = 0.15; // 15% off
-    else if (quantity >= 1000) bulkDiscount = 0.10; // 10% off
-    
-    basePrice = basePrice * (1 - bulkDiscount);
-    
-    const paperPrice = basePrice * selectedPaper.priceMultiplier;
-    const finishPrice = paperPrice + selectedFinish.priceAdd;
+    const paperPrice = basePricePerUnit * (selectedPaper.priceMultiplier || 1);
+    const finishPrice = paperPrice + (selectedFinish.priceAdd || 0);
     const sidesMultiplier = printSides === "double" ? 1.4 : 1;
     
     // Apply Shop specific price multiplier
@@ -410,7 +423,7 @@ const ProductCustomize = () => {
     return { 
       perUnit: unitPrice.toFixed(2), 
       total: totalPrice.toFixed(0),
-      discount: (bulkDiscount * 100).toFixed(0),
+      discount: (discountPercent * 100).toFixed(0),
       shopMultiplier
     };
   };
@@ -692,6 +705,15 @@ const ProductCustomize = () => {
                   />
                   <span className="text-sm text-muted-foreground">Min: {product.minQty || 1}</span>
                 </div>
+                {product.stock_quantity !== undefined && product.stock_quantity < quantity && (
+                  <div className="mt-4 p-3 bg-warning/10 border border-warning/20 rounded-lg flex items-center gap-3">
+                    <AlertTriangle className="w-5 h-5 text-warning" />
+                    <div className="text-xs text-warning">
+                      <p className="font-bold uppercase">Stock Limited</p>
+                      <p>Only {product.stock_quantity} units in stock. Delivery might be delayed for restock.</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Design Upload Section */}
@@ -1039,6 +1061,9 @@ const ProductCustomize = () => {
 
                 <div className="mt-4">
                   <QuotationGenerator
+                    shopId={selectedShopId}
+                    supplierId={(dbProduct as any)?.supplier_id || null}
+                    customerName={user?.user_metadata?.full_name || user?.email}
                     items={[{
                       name: product.name,
                       specifications: `${selectedSize.label} - ${selectedPaper.label} - ${selectedFinish.label} - ${printSides}-sided`,

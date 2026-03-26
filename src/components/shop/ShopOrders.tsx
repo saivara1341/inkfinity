@@ -14,12 +14,13 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { PrintSheetGenerator } from "./PrintSheetGenerator";
 
 type Order = Database["public"]["Tables"]["orders"]["Row"];
+type OrderStatus = Database["public"]["Enums"]["order_status"];
 
 const ORDER_STATUSES = ["pending", "confirmed", "designing", "printing", "quality_check", "shipped", "delivered", "cancelled"] as const;
 
 interface Props {
   orders: Order[];
-  onUpdateStatus: (orderId: string, status: string) => Promise<any>;
+  onUpdateStatus: (orderId: string, status: OrderStatus) => Promise<any>;
   onUpdatePayment?: (orderId: string, status: string) => Promise<any>;
   onUpdateTracking?: (orderId: string, trackingInfo: any) => Promise<any>;
 }
@@ -30,7 +31,7 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
   const [searchQuery, setSearchQuery] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [bulkStatus, setBulkStatus] = useState<string>("");
+  const [bulkStatus, setBulkStatus] = useState<OrderStatus | "">("");
   const [messagingOrderId, setMessagingOrderId] = useState<string | null>(null);
   const [printingOrder, setPrintingOrder] = useState<Order | null>(null);
 
@@ -47,7 +48,7 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
     return statusMatch && verticalMatch && searchMatch;
   });
 
-  const handleStatusChange = async (orderId: string, newStatus: string) => {
+  const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
     setUpdatingId(orderId);
     try {
       await onUpdateStatus(orderId, newStatus);
@@ -86,7 +87,7 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
   const handleBulkUpdate = async () => {
     if (!bulkStatus || selectedIds.length === 0) return;
     setUpdatingId("bulk");
-    const promises = selectedIds.map(id => onUpdateStatus(id, bulkStatus));
+    const promises = selectedIds.map(id => onUpdateStatus(id, bulkStatus as OrderStatus));
     const results = await Promise.all(promises);
     setUpdatingId(null);
     setSelectedIds([]);

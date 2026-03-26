@@ -5,6 +5,7 @@ import { Database } from "@/integrations/supabase/types";
 
 type Order = Database["public"]["Tables"]["orders"]["Row"];
 type Shop = Database["public"]["Tables"]["shops"]["Row"];
+type OrderStatus = Database["public"]["Enums"]["order_status"];
 
 export const useShopData = () => {
   const { user } = useAuth();
@@ -44,7 +45,7 @@ export const useShopData = () => {
 
   // Mutation to update order status
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: string }) => {
+    mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: OrderStatus }) => {
       const { error } = await supabase
         .from("orders")
         .update({ status: newStatus as any })
@@ -75,7 +76,7 @@ export const useShopData = () => {
     shop,
     orders,
     loading: shopLoading || ordersLoading,
-    updateOrderStatus: async (id: string, status: string) => {
+    updateOrderStatus: async (id: string, status: OrderStatus) => {
       try {
         await updateStatusMutation.mutateAsync({ orderId: id, newStatus: status });
         return { error: null };

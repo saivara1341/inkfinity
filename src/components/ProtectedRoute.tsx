@@ -38,19 +38,22 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
           return;
         }
 
-        // TRY to fetch role from user_roles (may fail if RLS recursion persists)
-        const { data, error } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .maybeSingle();
-
-        let userRole = data?.role as string;
+        // PRIORITIZE: User metadata (Fastest and avoids RLS recursion bugs)
+        let userRole = user.user_metadata?.user_role;
         
-        // FALLBACK: Use user metadata if DB query fails or returns nothing
-        if (!userRole || error) {
-          if (error) console.warn("Note: user_roles query failed (likely RLS recursion). Using metadata fallback.");
-          userRole = user.user_metadata?.user_role;
+        // FALLBACK: Check DB if metadata is empty
+        if (!userRole) {
+          const { data, error } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", user.id)
+            .maybeSingle();
+
+          if (data) {
+            userRole = data.role as string;
+          } else if (error) {
+            console.warn("DB Role check failed:", error.message);
+          }
         }
 
         if (mounted) {

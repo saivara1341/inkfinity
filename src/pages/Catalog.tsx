@@ -123,16 +123,26 @@ const Catalog = () => {
   const { shops, loading: isLoading, isError } = useShopSelection(activeCategory, location);
 
   const { data: allProducts = [], isLoading: loadingProducts } = useQuery({
-    queryKey: ["catalog-products"],
+    queryKey: ["catalog-products", activeCategory, search],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("is_active", true);
+      let dbProducts = [];
       
-      if (error) throw error;
+      if (search.length >= 2) {
+        const { data, error } = await supabase.rpc("search_products", {
+          query: search,
+          category_filter: activeCategory === "all" ? null : activeCategory
+        });
+        if (error) throw error;
+        dbProducts = data || [];
+      } else {
+        const query = supabase.from("products").select("*").eq("is_active", true);
+        if (activeCategory !== "all") query.eq("category", activeCategory);
+        const { data, error } = await query;
+        if (error) throw error;
+        dbProducts = data || [];
+      }
       
-      const dbProducts = (data || []).map(p => ({
+      const mappedDb = dbProducts.map(p => ({
         id: p.id,
         name: p.name,
         description: p.description,
@@ -148,19 +158,18 @@ const Catalog = () => {
       }));
 
       const staticProducts = getAllSubcategories();
-      return [...dbProducts, ...staticProducts.filter(sp => !dbProducts.find(dp => dp.name === sp.name))];
+      const filteredStatic = staticProducts.filter(p => {
+        const matchCat = activeCategory === "all" || p.categoryId === activeCategory;
+        const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) || 
+                            p.description.toLowerCase().includes(search.toLowerCase());
+        return matchCat && matchSearch;
+      });
+
+      return [...mappedDb, ...filteredStatic.filter(sp => !mappedDb.find(dp => dp.name === sp.name))];
     }
   });
 
-
-
-  const filtered = allProducts.filter((p) => {
-    const matchCat = activeCategory === "all" || p.categoryId === activeCategory;
-    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || 
-                        p.description.toLowerCase().includes(search.toLowerCase()) ||
-                        p.categoryName.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchSearch;
-  });
+  const filtered = allProducts;
 
   const activeCount = activeCategory === "all" ? allProducts.length : filtered.length;
 

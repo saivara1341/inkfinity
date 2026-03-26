@@ -3,8 +3,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { 
-  Factory, MapPin, Phone, Mail, FileText, 
-  ChevronRight, Check, ArrowLeft, Truck, Boxes, Printer
+  ChevronRight, Check, ArrowLeft, Truck, Boxes, Printer, Warehouse, 
+  Instagram, Globe, Facebook, Twitter, Link as LinkIcon, PackageCheck,
+  MapPin, Phone, Mail, FileText
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,7 +16,7 @@ import Footer from "@/components/Footer";
 const CATEGORIES = [
   "Paper & Cardstock", "Inks & Toners", "Printing Machinery",
   "Spare Parts", "Packaging Materials", "GSM Sheets",
-  "Specialty Media", "Adhesives", "Binding Supplies"
+  "Specialty Media", "Adhesives", "Binding Supplies", "Other"
 ];
 
 const RegisterSupplier = () => {
@@ -34,6 +35,9 @@ const RegisterSupplier = () => {
     pincode: "",
     categories: [] as string[],
     website: "",
+    instagram: "",
+    facebook: "",
+    twitter: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -88,17 +92,35 @@ const RegisterSupplier = () => {
     setLoading(true);
 
     try {
-      // Create supplier profile (this table might need to be created or expanded)
-      // For now, we'll use user_metadata and a placeholder RPC if it exists
-      // or just insert into a potential suppliers table
-      const { error } = await supabase
+      // Create supplier record in the new table
+      const { error: supplierError } = await supabase
+        .from("suppliers")
+        .upsert({
+          owner_id: user.id,
+          business_name: form.businessName,
+          company_name: form.businessName,
+          description: form.description,
+          phone: form.phone,
+          email: form.email,
+          address: form.address,
+          city: form.city,
+          state: form.state,
+          pincode: form.pincode,
+          categories: form.categories,
+          website_url: form.website,
+          instagram_url: form.instagram,
+          facebook_url: form.facebook,
+          twitter_url: form.twitter,
+        });
+
+      if (supplierError) throw supplierError;
+
+      // Update user roles
+      await supabase
         .from("user_roles")
-        .update({ role: "manufacturer" })
-        .eq("user_id", user.id);
+        .upsert({ user_id: user.id, role: "supplier" });
 
-      if (error) throw error;
-
-      // Update user metadata with business info
+      // Update user metadata
       await supabase.auth.updateUser({
         data: { 
           business_name: form.businessName,
@@ -123,7 +145,7 @@ const RegisterSupplier = () => {
         <div className="max-w-3xl mx-auto">
           <header className="text-center mb-12">
             <div className="w-[80px] h-[80px] rounded-[2rem] bg-accent/10 flex items-center justify-center mx-auto mb-6">
-              <Factory className="w-10 h-10 text-accent" />
+              <PackageCheck className="w-10 h-10 text-accent" />
             </div>
             <h1 className="font-display text-4xl font-bold mb-3 italic">Supplier Registration</h1>
             <p className="text-muted-foreground">Join the PrintFlow supply chain ecosystem</p>
@@ -156,6 +178,32 @@ const RegisterSupplier = () => {
                       <label className="text-sm font-medium mb-1.5 block">Business Email *</label>
                       <input name="email" value={form.email} onChange={handleChange} placeholder="Email address" type="email"
                         className="w-full h-12 px-4 rounded-xl border border-input bg-background focus:ring-2 focus:ring-ring outline-none" />
+                    </div>
+                  </div>
+                  
+                  <div className="pt-4 border-t border-border mt-4">
+                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">Digital Presence</h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="relative">
+                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input name="website" value={form.website} onChange={handleChange} placeholder="Website URL" 
+                          className="w-full h-12 pl-10 pr-4 rounded-xl border border-input bg-background outline-none focus:ring-2 focus:ring-ring transition-all" />
+                      </div>
+                      <div className="relative">
+                        <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input name="instagram" value={form.instagram} onChange={handleChange} placeholder="Instagram URL/Handle" 
+                          className="w-full h-12 pl-10 pr-4 rounded-xl border border-input bg-background outline-none focus:ring-2 focus:ring-ring transition-all" />
+                      </div>
+                      <div className="relative">
+                        <Facebook className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input name="facebook" value={form.facebook} onChange={handleChange} placeholder="Facebook URL" 
+                          className="w-full h-12 pl-10 pr-4 rounded-xl border border-input bg-background outline-none focus:ring-2 focus:ring-ring transition-all" />
+                      </div>
+                      <div className="relative">
+                        <Twitter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input name="twitter" value={form.twitter} onChange={handleChange} placeholder="Twitter / X URL" 
+                          className="w-full h-12 pl-10 pr-4 rounded-xl border border-input bg-background outline-none focus:ring-2 focus:ring-ring transition-all" />
+                      </div>
                     </div>
                   </div>
                 </div>

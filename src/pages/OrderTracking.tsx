@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { type Database, type Tables } from "@/integrations/supabase/types";
+import { logisticsService, type TrackingDetails } from "@/services/logisticsService";
 
 type Order = Database["public"]["Tables"]["orders"]["Row"];
 
@@ -31,6 +32,7 @@ const OrderTracking = () => {
   const [trackingId, setTrackingId] = useState(searchParams.get("order") || "");
   const [order, setOrder] = useState<Order | null>(null);
   const [shop, setShop] = useState<Tables<"shops"> | null>(null);
+  const [trackingDetails, setTrackingDetails] = useState<TrackingDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const specs = order?.specifications as any || {};
@@ -59,6 +61,13 @@ const OrderTracking = () => {
       setShop(shopData);
     } else {
       setShop(null);
+    }
+
+    if (orderData?.tracking_number) {
+      const details = await logisticsService.getTrackingDetails(orderData.tracking_number, orderData.courier_partner || "Delhivery");
+      setTrackingDetails(details);
+    } else {
+      setTrackingDetails(null);
     }
 
     setLoading(false);
@@ -304,6 +313,36 @@ const OrderTracking = () => {
                           </Button>
                         )}
                       </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Detailed Carrier Logistics (Only if shipped) */}
+                {trackingDetails && (
+                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="bg-card rounded-xl border border-border p-6 shadow-card mb-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="font-display font-semibold text-foreground flex items-center gap-2">
+                        <Truck className="w-5 h-5 text-accent" /> Logistics Update ({trackingDetails.carrier})
+                      </h3>
+                      <p className="text-xs text-muted-foreground">Est. Delivery: {new Date(trackingDetails.estimated_delivery).toLocaleDateString()}</p>
+                    </div>
+                    
+                    <div className="relative pl-6 space-y-6 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-border">
+                      {trackingDetails.events.map((event, idx) => (
+                        <div key={idx} className="relative">
+                          <div className={`absolute -left-[19px] top-1.5 w-3 h-3 rounded-full border-2 border-background ${idx === 0 ? "bg-accent scale-125 ring-4 ring-accent/20" : "bg-border"}`} />
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className={`text-sm font-bold ${idx === 0 ? "text-accent" : "text-foreground"}`}>{event.status}</p>
+                              <p className="text-xs text-muted-foreground">{event.location}</p>
+                              <p className="text-xs text-muted-foreground mt-1 leading-relaxed max-w-sm">{event.description}</p>
+                            </div>
+                            <span className="text-[10px] text-muted-foreground uppercase font-medium bg-secondary/50 px-2 py-1 rounded">
+                              {new Date(event.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </motion.div>
                 )}

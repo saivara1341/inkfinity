@@ -33,6 +33,7 @@ const SourcingPortal = () => {
           *,
           suppliers (
             company_name,
+            business_name,
             supplier_type,
             verified
           )
@@ -165,7 +166,7 @@ const SourcingPortal = () => {
                     <h3 className="font-bold text-foreground line-clamp-1">{product.name}</h3>
                     <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
                       {product.suppliers?.supplier_type === 'manufacturer' ? <Factory className="w-3 h-3" /> : <Truck className="w-3 h-3" />}
-                      <span className="truncate">{product.suppliers?.company_name}</span>
+                      <span className="truncate">{product.suppliers?.company_name || product.suppliers?.business_name}</span>
                       {product.suppliers?.verified && <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center"><Star className="w-2 h-2 text-white fill-white" /></div>}
                     </div>
                   </div>

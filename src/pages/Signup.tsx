@@ -71,10 +71,16 @@ const Signup = () => {
     }
 
     setLoading(true);
+    const roleMapping = {
+      shop: "shop_owner",
+      manufacturer: "supplier",
+      customer: "customer"
+    };
+
     const { error } = await signUp(formData.email, formData.password, {
       full_name: formData.name,
       customer_type: formData.accountType,
-      user_role: role === "shop" ? "shop_owner" : role === "manufacturer" ? "manufacturer" : "customer"
+      user_role: roleMapping[role]
     });
 
     if (error) {
@@ -84,13 +90,15 @@ const Signup = () => {
     }
 
     toast({ title: "Account created!", description: "Welcome to PrintFlow!" });
-    navigate(role === "shop" ? "/shop" : role === "manufacturer" ? "/supplier" : "/dashboard");
+    const redirectPath = role === "shop" ? "/shop" : role === "manufacturer" ? "/supplier" : "/dashboard";
+    console.log("Signup success, redirecting to:", redirectPath);
+    navigate(redirectPath);
     setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-background flex overflow-hidden">
-      <div className="flex-1 flex items-start md:items-center justify-center px-6 pt-0 pb-12 sm:p-12 relative">
+      <div className="flex-1 flex items-start md:items-center justify-center px-6 pt-12 md:pt-0 pb-12 sm:p-12 relative">
         <div className="w-full max-w-md z-10">
           <Link to="/" className="flex items-center gap-2 mb-10 group">
             <div className="w-10 h-10 rounded-xl bg-gradient-coral flex items-center justify-center shadow-glow group-hover:scale-110 transition-transform">
@@ -111,8 +119,9 @@ const Signup = () => {
                 <h1 className="font-display text-4xl font-bold text-foreground mb-3 leading-tight">Create your account</h1>
                 <p className="text-muted-foreground text-lg mb-10 leading-relaxed">Join India's largest print ordering network</p>
 
-                <div className="grid gap-4 mb-8">
+                <div className="grid gap-4 mb-8 relative z-20">
                   <button
+                    type="button"
                     onClick={() => handleRoleSelect("customer")}
                     className="p-6 rounded-[2rem] border-2 border-border hover:border-accent hover:bg-accent/5 text-left transition-all duration-300 group shadow-sm hover:shadow-md"
                   >
@@ -128,6 +137,7 @@ const Signup = () => {
                   </button>
 
                   <button
+                    type="button"
                     onClick={() => handleRoleSelect("shop")}
                     className="p-6 rounded-[2rem] border-2 border-border hover:border-accent hover:bg-accent/5 text-left transition-all duration-300 group shadow-sm hover:shadow-md"
                   >
@@ -143,6 +153,7 @@ const Signup = () => {
                   </button>
 
                   <button
+                    type="button"
                     onClick={() => handleRoleSelect("manufacturer")}
                     className="p-6 rounded-[2rem] border-2 border-border hover:border-accent hover:bg-accent/5 text-left transition-all duration-300 group shadow-sm hover:shadow-md"
                   >

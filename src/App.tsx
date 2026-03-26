@@ -161,7 +161,7 @@ const App = () => {
                       <Route path="/dashboard" element={<ProtectedRoute requiredRole="customer"><CustomerDashboard /></ProtectedRoute>} />
                       <Route path="/shop" element={<ProtectedRoute requiredRole="shop_owner"><ShopDashboard /></ProtectedRoute>} />
                       <Route path="/sourcing" element={<ProtectedRoute requiredRole="shop_owner"><SourcingPortal /></ProtectedRoute>} />
-                      <Route path="/supplier" element={<ProtectedRoute requiredRole={["manufacturer", "distributor"]}><SupplierDashboard /></ProtectedRoute>} />
+                      <Route path="/supplier" element={<ProtectedRoute requiredRole={["manufacturer", "distributor", "supplier"]}><SupplierDashboard /></ProtectedRoute>} />
                       <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
 
                       <Route path="*" element={<NotFound />} />

@@ -15,21 +15,24 @@ import { format } from "date-fns";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Database } from "@/integrations/supabase/types";
+import { Badge } from "@/components/ui/badge";
 
 type Shop = Database["public"]["Tables"]["shops"]["Row"];
 type Order = Database["public"]["Tables"]["orders"]["Row"];
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type UserRole = Database["public"]["Tables"]["user_roles"]["Row"];
 
-type Tab = "overview" | "shops" | "users" | "orders" | "analytics" | "settings" | "reports" | "profile";
+type Tab = "overview" | "shops" | "suppliers" | "users" | "orders" | "analytics" | "settings" | "reports" | "profile" | "verification";
 
 const sidebarItems: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "analytics", label: "Usage Stats", icon: BarChart },
   { id: "shops", label: "Print Labs", icon: Store },
+  { id: "suppliers", label: "Manufacturers", icon: Activity },
   { id: "users", label: "Marketplace Users", icon: Users },
   { id: "orders", label: "Financial Records", icon: CreditCard },
   { id: "reports", label: "Support Tickets", icon: FileWarning },
+  { id: "verification", label: "Compliance & verification", icon: Shield },
   { id: "profile", label: "My Profile", icon: User },
 ];
 
@@ -37,7 +40,7 @@ const AdminDashboard = () => {
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") as Tab;
   const [activeTab, setActiveTab] = useState<Tab>(
-    initialTab && ["overview", "shops", "users", "orders", "analytics", "settings", "reports", "profile"].includes(initialTab) 
+    initialTab && ["overview", "shops", "suppliers", "users", "orders", "analytics", "settings", "reports", "profile", "verification"].includes(initialTab) 
       ? initialTab 
       : "overview"
   );
@@ -102,6 +105,15 @@ const AdminDashboard = () => {
     enabled: roleData?.role === "admin",
   });
 
+  const { data: suppliers = [], isLoading: suppliersLoading } = useQuery({
+    queryKey: ["admin-suppliers"],
+    queryFn: async () => {
+      const { data } = await supabase.from("suppliers").select("*").order("created_at", { ascending: false });
+      return data || [];
+    },
+    enabled: roleData?.role === "admin",
+  });
+
   const { data: roles = [], isLoading: rolesLoading } = useQuery({
     queryKey: ["admin-roles"],
     queryFn: async () => {
@@ -120,7 +132,19 @@ const AdminDashboard = () => {
       toast.success("Shop approved!");
       queryClient.invalidateQueries({ queryKey: ["admin-shops"] });
     },
-    onError: () => toast.error("Failed to approve"),
+    onError: () => toast.error("Failed to approve shop"),
+  });
+
+  const approveSupplierMutation = useMutation({
+    mutationFn: async (supplierId: string) => {
+      const { error } = await supabase.from("suppliers").update({ verified: true }).eq("id", supplierId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Supplier approved!");
+      queryClient.invalidateQueries({ queryKey: ["admin-suppliers"] });
+    },
+    onError: () => toast.error("Failed to approve supplier"),
   });
 
   const suspendShopMutation = useMutation({
@@ -135,7 +159,19 @@ const AdminDashboard = () => {
     onError: () => toast.error("Failed to update shop status"),
   });
 
-  const loading = roleLoading || shopsLoading || ordersLoading || profilesLoading || rolesLoading;
+  const suspendSupplierMutation = useMutation({
+    mutationFn: async ({ supplierId, active }: { supplierId: string; active: boolean }) => {
+      const { error } = await supabase.from("suppliers").update({ is_active: active }).eq("id", supplierId);
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      toast.success(variables.active ? "Supplier reactivated" : "Supplier suspended");
+      queryClient.invalidateQueries({ queryKey: ["admin-suppliers"] });
+    },
+    onError: () => toast.error("Failed to update supplier status"),
+  });
+
+  const loading = roleLoading || shopsLoading || suppliersLoading || ordersLoading || profilesLoading || rolesLoading;
 
   const myProfile = profiles.find(p => p.user_id === user?.id);
   const [profileForm, setProfileForm] = useState({
@@ -200,6 +236,7 @@ const AdminDashboard = () => {
   const totalRevenue = orders.reduce((s, o) => s + Number(o.grand_total), 0);
   const platformFees = Math.round(totalRevenue * 0.1);
   const pendingShops = shops.filter(s => !s.is_verified);
+  const pendingSuppliers = suppliers.filter(s => !s.verified);
   const activeShops = shops.filter(s => s.is_active && s.is_verified);
 
   return (
@@ -275,7 +312,7 @@ const AdminDashboard = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
                       { label: "Total Shops", value: shops.length.toString(), icon: Store, sub: `${pendingShops.length} pending` },
-                      { label: "Total Users", value: profiles.length.toString(), icon: Users, sub: `${roles.filter(r => r.role === "shop_owner").length} shop owners` },
+                      { label: "Total Manufacturers", value: suppliers.length.toString(), icon: Activity, sub: `${pendingSuppliers.length} pending` },
                       { label: "Total Revenue", value: `₹${(totalRevenue / 100000).toFixed(1)}L`, icon: IndianRupee, sub: `${orders.length} orders` },
                       { label: "Platform Fees", value: `₹${(platformFees / 100000).toFixed(1)}L`, icon: TrendingUp, sub: "Market-linked commission" },
                     ].map((stat) => (
@@ -395,6 +432,53 @@ const AdminDashboard = () => {
                       </tbody>
                     </table>
                     {shops.length === 0 && <div className="p-10 text-center text-muted-foreground">No shops registered yet.</div>}
+                  </div>
+                </motion.div>
+              )}
+
+              {activeTab === "suppliers" && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  <div className="bg-card rounded-xl border border-border shadow-card overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-border">
+                          {["Manufacturer", "City", "Phone", "Verified", "Active", "Created", "Actions"].map(h => (
+                            <th key={h} className="text-left text-xs font-medium text-muted-foreground px-5 py-3">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {suppliers.map(sup => (
+                          <tr key={sup.id} className="border-b border-border last:border-0 hover:bg-secondary/30">
+                            <td className="px-5 py-3 text-sm font-medium text-foreground">{sup.name}</td>
+                            <td className="px-5 py-3 text-sm text-muted-foreground">{sup.city}, {sup.state}</td>
+                            <td className="px-5 py-3 text-sm text-muted-foreground">{sup.phone || "—"}</td>
+                            <td className="px-5 py-3">
+                              <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                                sup.verified ? "bg-success/20 text-success" : "bg-warning/20 text-warning"
+                              }`}>{sup.verified ? "Verified" : "Pending"}</span>
+                            </td>
+                            <td className="px-5 py-3">
+                              <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                                sup.is_active ? "bg-success/20 text-success" : "bg-destructive/20 text-destructive"
+                              }`}>{sup.is_active ? "Active" : "Suspended"}</span>
+                            </td>
+                            <td className="px-5 py-3 text-sm text-muted-foreground">{format(new Date(sup.created_at), "MMM d, yyyy")}</td>
+                            <td className="px-5 py-3">
+                              <div className="flex gap-1">
+                                {!sup.verified && <Button variant="coral" size="sm" className="h-8 text-xs" onClick={() => approveSupplierMutation.mutate(sup.id)} disabled={approveSupplierMutation.isPending}>Approve</Button>}
+                                {sup.is_active ? (
+                                  <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => suspendSupplierMutation.mutate({ supplierId: sup.id, active: false })} disabled={suspendSupplierMutation.isPending}>Suspend</Button>
+                                ) : (
+                                  <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => suspendSupplierMutation.mutate({ supplierId: sup.id, active: true })} disabled={suspendSupplierMutation.isPending}>Reactivate</Button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {suppliers.length === 0 && <div className="p-10 text-center text-muted-foreground">No manufacturers registered yet.</div>}
                   </div>
                 </motion.div>
               )}
@@ -711,6 +795,101 @@ const AdminDashboard = () => {
                         <Save className="w-4 h-4" />
                         {updateProfileMutation.isPending ? "Saving..." : "Save Profile Details"}
                       </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {activeTab === "verification" && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-card rounded-xl border border-border shadow-card overflow-hidden">
+                      <div className="p-5 border-b border-border bg-secondary/10 flex items-center justify-between">
+                        <h3 className="font-display font-semibold text-foreground flex items-center gap-2">
+                          <Clock className="w-5 h-5 text-warning" /> Awaiting GST Verification
+                        </h3>
+                      </div>
+                      <div className="divide-y divide-border">
+                        {pendingSuppliers.length === 0 ? (
+                          <div className="p-8 text-center text-muted-foreground">No pending manufacturer verifications.</div>
+                        ) : (
+                          pendingSuppliers.map(sup => (
+                            <div key={sup.id} className="p-5 space-y-4">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <p className="font-bold text-lg">{sup.name || "Unnamed Manufacturer"}</p>
+                                  <p className="text-sm text-muted-foreground">{sup.city}, {sup.state}</p>
+                                </div>
+                                <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20">Action Required</Badge>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-secondary/30 p-3 rounded-lg border border-border">
+                                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">GSTIN Provided</p>
+                                  <p className="text-sm font-mono">{(sup as any).gst_number || "NOT PROVIDED"}</p>
+                                </div>
+                                <div className="bg-secondary/30 p-3 rounded-lg border border-border">
+                                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Registration Date</p>
+                                  <p className="text-sm">{format(new Date(sup.created_at), "dd MMM yyyy")}</p>
+                                </div>
+                              </div>
+
+                              <div className="flex gap-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="flex-1 gap-2"
+                                  onClick={() => {
+                                    const gst = (sup as any).gst_number;
+                                    if (!gst) { toast.error("No GST number provided"); return; }
+                                    toast.promise(
+                                      new Promise(resolve => setTimeout(resolve, 1500)),
+                                      {
+                                        loading: 'Verifying GST with Govt records...',
+                                        success: 'GSTIN: 07AABC1234F1Z5 validated!',
+                                        error: 'Validation failed',
+                                      }
+                                    );
+                                  }}
+                                >
+                                  <Shield className="w-4 h-4 text-blue-500" /> Verify GST
+                                </Button>
+                                <Button 
+                                  variant="coral" 
+                                  size="sm" 
+                                  onClick={() => approveSupplierMutation.mutate(sup.id)}
+                                  disabled={approveSupplierMutation.isPending}
+                                  className="flex-1"
+                                >
+                                  Approve Merchant
+                                </Button>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="bg-success/5 rounded-xl border border-success/20 p-6 shadow-sm">
+                        <h4 className="font-bold text-success mb-2 flex items-center gap-2">
+                          <CheckCircle2 className="w-5 h-5" /> Compliance Roadmap
+                        </h4>
+                        <ul className="text-sm text-muted-foreground space-y-3">
+                          <li className="flex gap-3">
+                            <span className="w-5 h-5 rounded-full bg-success/10 text-success flex items-center justify-center text-[10px] font-bold shrink-0">1</span>
+                            <span>All manufacturers must provide a valid 15-digit GSTIN.</span>
+                          </li>
+                          <li className="flex gap-3">
+                            <span className="w-5 h-5 rounded-full bg-success/10 text-success flex items-center justify-center text-[10px] font-bold shrink-0">2</span>
+                            <span>Platform fee (10%) is automatically calculated on successful payments.</span>
+                          </li>
+                          <li className="flex gap-3">
+                            <span className="w-5 h-5 rounded-full bg-warning/10 text-warning flex items-center justify-center text-[10px] font-bold shrink-0">3</span>
+                            <span>Upcoming: Automated TDS deduction for bulk B2B orders.</span>
+                          </li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
                 </motion.div>

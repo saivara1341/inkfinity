@@ -1,3 +1,4 @@
+console.log("APP_STABILITY_CHECK: Index Page V2");
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,7 +12,6 @@ import { Link } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
 import SEO from "@/components/SEO";
 import { useState, useEffect } from "react";
-import bgSwirlSeamless from "@/assets/bg-swirl-seamless.png";
 
 const Index = () => {
   const landingSchema = {
@@ -42,16 +42,6 @@ const Index = () => {
         title="PrintFlow — India's Smartest Printing Platform"
         description="Professional printing services from local shops. Upload designs and get high-quality visiting cards, posters, and flyers delivered."
         schema={landingSchema}
-      />
-      
-      {/* Global Background Pattern Layer */}
-      <div 
-        className="fixed inset-0 pointer-events-none opacity-[0.02] z-0"
-        style={{ 
-          backgroundImage: `url(${bgSwirlSeamless})`,
-          backgroundSize: '400px 400px',
-          backgroundRepeat: 'repeat'
-        }}
       />
       {/* Hide Top Navbar on mobile as it's redundant with Bottom Nav */}
       <div className="hidden md:block">

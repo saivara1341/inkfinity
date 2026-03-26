@@ -1,3 +1,4 @@
+console.log("APP_STABILITY_CHECK: Onboarding V2");
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,8 +9,6 @@ import { User, Store, ArrowRight, Loader2, Factory, Truck } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import SEO from "@/components/SEO";
-import bgSwirlSeamless from "@/assets/bg-swirl-seamless.png";
-import bgBlueFloral from "@/assets/bg-blue-floral.png";
 
 const Onboarding = () => {
   const { user, loading: authLoading } = useAuth();
@@ -74,21 +73,7 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen bg-[#FFFDF5] flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      {/* Global Background Pattern */}
-      <div 
-        className="absolute inset-0 pointer-events-none opacity-[0.03] z-0"
-        style={{ 
-          backgroundImage: `url(${bgSwirlSeamless})`,
-          backgroundSize: '400px 400px',
-          backgroundRepeat: 'repeat'
-        }}
-      />
       
-      {/* Artistic Flourish */}
-      <div className="absolute -bottom-24 -right-24 w-[600px] h-[600px] opacity-[0.03] pointer-events-none rotate-45">
-        <img src={bgBlueFloral} alt="" className="w-full h-full object-contain" />
-      </div>
-
       <SEO 
         title="Complete Your Profile" 
         description="Choose your role to get started with PrintFlow."

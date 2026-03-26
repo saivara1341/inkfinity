@@ -1,8 +1,7 @@
+console.log("APP_STABILITY_CHECK: FeaturesSection V2");
 import { motion } from "framer-motion";
 import { CreditCard, Image, Layers, Truck, Upload, Zap } from "lucide-react";
 import pressProfessional from "@/assets/press-professional.png";
-import showcaseFloral1 from "@/assets/bg-swirl-seamless.png";
-import showcaseFloral2 from "@/assets/bg-gradient-soft.png";
 
 const features = [
   {
@@ -40,14 +39,6 @@ const features = [
 const FeaturesSection = () => {
   return (
     <section className="py-24 bg-[#FFFDF5] relative overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute -top-24 -left-24 w-96 h-96 opacity-[0.05] pointer-events-none mix-blend-multiply rotate-12">
-        <img src={showcaseFloral1} alt="" className="w-full h-full object-contain" />
-      </div>
-      <div className="absolute -bottom-24 -right-24 w-[500px] h-[500px] opacity-[0.03] pointer-events-none mix-blend-multiply -rotate-6">
-        <img src={showcaseFloral2} alt="" className="w-full h-full object-cover" />
-      </div>
-
       <div className="container mx-auto px-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

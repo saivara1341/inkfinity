@@ -24,20 +24,6 @@ const HeroSection = () => {
   };
   return (
     <section className="relative min-h-[90vh] flex flex-col items-center justify-start pt-6 md:pt-32 overflow-hidden bg-[#FFFDF5]">
-      {/* Mobile Branding Header */}
-      <div className="container mx-auto px-4 flex justify-between items-center mb-4 md:hidden">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-coral flex items-center justify-center shadow-lg">
-            <Printer className="w-4.5 h-4.5 text-accent-foreground" />
-          </div>
-          <span className="font-display text-xl font-bold tracking-tight text-foreground">PrintFlow</span>
-        </Link>
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <Bell className="w-5 h-5" />
-          </Button>
-        </div>
-      </div>
 
       {/* Mobile-Only Top Search Bar */}
       <div className="px-4 mb-10 md:hidden pt-4">

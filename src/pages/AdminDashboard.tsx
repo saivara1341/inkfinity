@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   LayoutDashboard, Store, Users, CreditCard, BarChart3, Settings,
   Shield, ChevronDown, CheckCircle2, XCircle, Clock, IndianRupee,
-  TrendingUp, AlertTriangle, Bell, Eye, LogOut, Activity, BarChart, FileWarning, HelpCircle, User, Camera, UploadCloud, Save
+  TrendingUp, AlertTriangle, Bell, Eye, LogOut, Activity, BarChart, FileWarning, HelpCircle, User, Camera, UploadCloud, Save, Menu, X
 } from "lucide-react";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart as ReBarChart, Bar } from "recharts";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,7 @@ const AdminDashboard = () => {
       : "overview"
   );
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -203,19 +204,27 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background flex">
-      <aside className={`${sidebarOpen ? "w-64" : "w-16"} bg-primary text-primary-foreground flex flex-col transition-all duration-300 shrink-0`}>
+      <aside className={`
+        ${sidebarOpen ? "w-64" : "w-16"} 
+        bg-primary text-primary-foreground flex flex-col transition-all duration-300 shrink-0
+        fixed md:relative z-50 h-full
+        ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+      `}>
         <div className="h-16 flex items-center px-4 border-b border-primary-foreground/10 gap-3">
           <Shield className="w-6 h-6 text-accent shrink-0" />
-          {sidebarOpen && <span className="font-display font-bold">PrintFlow Admin</span>}
+          {(sidebarOpen || mobileMenuOpen) && <span className="font-display font-bold">PrintFlow Admin</span>}
+          <button onClick={() => setMobileMenuOpen(false)} className="md:hidden ml-auto p-2 text-primary-foreground/70">
+            <X className="w-6 h-6" />
+          </button>
         </div>
         <nav className="flex-1 py-4 px-2 space-y-1">
           {sidebarItems.map((item) => (
-            <button key={item.id} onClick={() => setActiveTab(item.id)}
+            <button key={item.id} onClick={() => { setActiveTab(item.id); setMobileMenuOpen(false); }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === item.id ? "bg-primary-foreground/15 text-accent" : "text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"
               }`}>
               <item.icon className="w-5 h-5 shrink-0" />
-              {sidebarOpen && <span>{item.label}</span>}
+              {(sidebarOpen || mobileMenuOpen) && <span>{item.label}</span>}
             </button>
           ))}
         </nav>
@@ -223,18 +232,34 @@ const AdminDashboard = () => {
           <button onClick={async () => { await signOut(); navigate("/login"); }}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-primary-foreground/70 hover:bg-primary-foreground/10 transition-colors">
             <LogOut className="w-4 h-4 shrink-0" />
-            {sidebarOpen && <span>Log Out</span>}
+            {(sidebarOpen || mobileMenuOpen) && <span>Log Out</span>}
           </button>
           <button onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="w-full flex items-center justify-center py-2 text-primary-foreground/50 hover:text-primary-foreground transition-colors">
+            className="hidden md:flex w-full items-center justify-center py-2 text-primary-foreground/50 hover:text-primary-foreground transition-colors">
             <ChevronDown className={`w-4 h-4 transition-transform ${sidebarOpen ? "rotate-90" : "-rotate-90"}`} />
           </button>
         </div>
       </aside>
 
+      {/* Mobile Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden" 
+          onClick={() => setMobileMenuOpen(false)} 
+        />
+      )}
+
       <main className="flex-1 overflow-auto">
-        <header className="h-16 border-b border-border flex items-center justify-between px-6 bg-card">
-          <h1 className="font-display text-xl font-bold text-foreground capitalize">{activeTab}</h1>
+        <header className="h-16 border-b border-border flex items-center justify-between px-4 md:px-6 bg-card sticky top-0 z-20">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-transform"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            <h1 className="font-display text-lg md:text-xl font-bold text-foreground capitalize">{activeTab}</h1>
+          </div>
           <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center">
             <span className="text-sm font-bold text-primary-foreground">A</span>
           </div>

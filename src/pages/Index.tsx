@@ -44,9 +44,7 @@ const Index = () => {
         schema={landingSchema}
       />
       {/* Hide Top Navbar on mobile as it's redundant with Bottom Nav */}
-      <div className="hidden md:block">
-        <Navbar />
-      </div>
+      <Navbar />
       
       <main className="pb-16 md:pb-0">
         <HeroSection />

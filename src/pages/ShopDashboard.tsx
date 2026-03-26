@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingCart, BarChart3, Settings,
-  ChevronDown, Printer, Bell, LogOut, Package, Sparkles, Megaphone, FileWarning, ShoppingBag, X,
+  ChevronDown, Printer, Bell, LogOut, Package, Sparkles, Megaphone, FileWarning, ShoppingBag, X, Menu,
   ArrowRight, Store
 } from "lucide-react";
 import { toast } from "sonner";
@@ -58,8 +58,8 @@ const ShopDashboard = () => {
       {/* Sidebar - Shared logic for Desktop and Mobile */}
       <aside className={`
         ${sidebarOpen ? "translate-x-0 w-64" : "-translate-x-full md:translate-x-0 w-64 md:w-16"} 
-        fixed md:relative z-40 h-full bg-card border-r border-border flex flex-col transition-all duration-300 shrink-0
-        ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+        fixed md:relative z-50 h-full bg-card border-r border-border flex flex-col transition-all duration-300 shrink-0
+        ${mobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}
       `}>
         <div className="h-16 flex items-center px-4 border-b border-border gap-3">
           <div className="w-9 h-9 rounded-lg bg-gradient-coral flex items-center justify-center shrink-0">
@@ -123,9 +123,10 @@ const ShopDashboard = () => {
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden p-2 text-muted-foreground hover:text-foreground"
+              className="md:hidden p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-transform"
+              aria-label="Open menu"
             >
-              <LayoutDashboard className="w-5 h-5" />
+              <Menu className="w-6 h-6" />
             </button>
             <h1 className="font-display text-lg md:text-xl font-bold text-foreground capitalize">{activeTab}</h1>
           </div>

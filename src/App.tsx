@@ -14,6 +14,10 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 console.log("INDEX & AUTH IMPORTED");
 const Catalog = lazy(() => import("./pages/Catalog"));
 const ProductCustomize = lazy(() => import("./pages/ProductCustomize"));
@@ -62,6 +66,58 @@ const Loading = () => (
     </div>
   </div>
 );
+console.log("ONBOARDING_CHECKER LOADED");
+
+const OnboardingChecker = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [checking, setChecking] = useState(false);
+
+  useEffect(() => {
+    const checkRole = async () => {
+      if (loading || !user || checking) return;
+      
+      // Don't redirect if we're already on onboarding or login/signup/forgot-password/reset-password
+      const publicPaths = ["/login", "/signup", "/onboarding", "/forgot-password", "/reset-password"];
+      if (publicPaths.includes(location.pathname)) return;
+
+      setChecking(true);
+      try {
+        // QUICK CHECK: Metadata first (fastest)
+        const metadataRole = user.user_metadata?.user_role;
+        if (metadataRole) {
+          setChecking(false);
+          return;
+        }
+
+        // DB FALLBACK: Check user_roles table
+        const { data, error } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Error checking role in OnboardingChecker:", error);
+        }
+
+        if (!data?.role) {
+          console.log("No role found for user, redirecting to onboarding...");
+          navigate("/onboarding", { replace: true });
+        }
+      } catch (err) {
+        console.error("OnboardingChecker error:", err);
+      } finally {
+        setChecking(false);
+      }
+    };
+
+    checkRole();
+  }, [user, loading, location.pathname, navigate]);
+
+  return <>{children}</>;
+};
 
 const App = () => {
   console.log("App Component Rendering");
@@ -76,8 +132,9 @@ const App = () => {
                 <Sonner />
                 <HashRouter>
                   <MobileBottomNav />
-                  <Suspense fallback={<Loading />}>
-                    <Routes>
+                  <OnboardingChecker>
+                    <Suspense fallback={<Loading />}>
+                      <Routes>
                       {/* Public routes */}
                       <Route path="/" element={<Index />} />
                       <Route path="/store" element={<Storefront />} />
@@ -110,8 +167,9 @@ const App = () => {
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>
-                </HashRouter>
-              </TooltipProvider>
+                </OnboardingChecker>
+              </HashRouter>
+            </TooltipProvider>
             </LocationProvider>
           </AuthProvider>
         </QueryClientProvider>

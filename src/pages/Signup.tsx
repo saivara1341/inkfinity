@@ -26,6 +26,10 @@ const Signup = () => {
     accountType: "personal" as "personal" | "business",
   });
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
   const handleRoleSelect = (selectedRole: "customer" | "shop" | "manufacturer") => {
     setRole(selectedRole);
     setFormData(prev => ({

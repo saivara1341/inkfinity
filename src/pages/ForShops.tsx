@@ -120,14 +120,19 @@ const ForShops = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button variant="coral" size="lg" className="gap-2 text-base px-8" asChild>
-                  <Link to="/signup">
+                  <button onClick={() => {
+                    sessionStorage.setItem('intendedRole', 'shop_owner');
+                    window.location.href = '#/signup';
+                  }}>
                     Register Your Shop <ArrowRight className="w-5 h-5" />
-                  </Link>
+                  </button>
                 </Button>
                 <Button variant="outline" size="lg" className="gap-2 text-base" asChild>
-                  <a href="#how-it-works">
+                  <button onClick={() => {
+                    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+                  }}>
                     See How It Works
-                  </a>
+                  </button>
                 </Button>
               </div>
             </motion.div>
@@ -267,9 +272,12 @@ const ForShops = () => {
               </div>
 
               <Button variant="coral" size="lg" className="w-full mt-8 gap-2 text-base" asChild>
-                <Link to="/signup">
+                <button onClick={() => {
+                  sessionStorage.setItem('intendedRole', 'shop_owner');
+                  window.location.href = '#/signup';
+                }}>
                   Start Selling Online <ArrowRight className="w-5 h-5" />
-                </Link>
+                </button>
               </Button>
             </div>
           </motion.div>
@@ -362,9 +370,12 @@ const ForShops = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button variant="ink" size="lg" className="gap-2 text-base px-8" asChild>
-                <Link to="/signup">
+                <button onClick={() => {
+                  sessionStorage.setItem('intendedRole', 'shop_owner');
+                  window.location.href = '#/signup';
+                }}>
                   Register Now — It's Free <ArrowRight className="w-5 h-5" />
-                </Link>
+                </button>
               </Button>
               <Button variant="outline" size="lg" className="gap-2 text-base bg-accent-foreground/10 border-accent-foreground/20 text-accent-foreground hover:bg-accent-foreground/20" asChild>
                 <a href="https://wa.me/919876543210">

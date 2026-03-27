@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { handleFormKeyDown } from "@/utils/keyboardNavigation";
 
 const CATEGORIES = [
   "Paper & Cardstock", "Inks & Toners", "Printing Machinery",
@@ -153,7 +154,7 @@ const RegisterSupplier = () => {
 
           <div className="bg-card rounded-[2.5rem] p-8 md:p-12 border border-border shadow-sm">
             {step === 1 && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6" onKeyDown={handleFormKeyDown}>
                 <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
                   <Printer className="w-6 h-6 text-accent" /> Business Details
                 </h2>
@@ -238,7 +239,7 @@ const RegisterSupplier = () => {
             )}
 
             {step === 3 && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6" onKeyDown={handleFormKeyDown}>
                 <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
                   <MapPin className="w-6 h-6 text-accent" /> Warehouse Location
                 </h2>

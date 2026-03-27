@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Store, ArrowRight } from "lucide-react";
+import { Store, ArrowRight, Printer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AnimatedButton from "@/components/ui/AnimatedButton";
 
@@ -15,7 +15,10 @@ const CTASection = () => {
             viewport={{ once: true }}
             className="group relative bg-[#f47e62] rounded-[2.5rem] p-12 text-white shadow-xl overflow-hidden"
           >
-            <h3 className="relative font-display text-4xl font-bold mb-4 z-10 text-white">Ready to print?</h3>
+            <div className="relative flex items-center gap-3 mb-4 z-10">
+              <Printer className="w-10 h-10 text-white flex-shrink-0" />
+              <h3 className="font-display text-3xl sm:text-4xl font-bold whitespace-nowrap text-white">Ready to print?</h3>
+            </div>
             <p className="relative opacity-90 mb-10 text-xl leading-relaxed max-w-sm z-10 font-medium">
               Upload your design and get premium prints delivered from local shops near you.
             </p>

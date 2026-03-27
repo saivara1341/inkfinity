@@ -9,10 +9,10 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import locationsData from "@/data/india-locations.json";
 import { useLocation } from "@/contexts/LocationContext";
+import { handleFormKeyDown } from "@/utils/keyboardNavigation";
 
 const PINCODE_MAP: Record<string, string> = {
   "Chennai": "600001",
@@ -196,7 +196,7 @@ const RegisterShop = () => {
 
           {/* Step 1: Basic Info */}
           {step === 1 && (
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-card rounded-xl border border-border p-6 shadow-card space-y-5">
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-card rounded-xl border border-border p-6 shadow-card space-y-5" onKeyDown={handleFormKeyDown}>
               <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
                 <Store className="w-5 h-5 text-accent" /> Shop Information
               </h2>
@@ -240,7 +240,7 @@ const RegisterShop = () => {
 
           {/* Step 2: Location */}
           {step === 2 && (
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-card rounded-xl border border-border p-6 shadow-card space-y-5">
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-card rounded-xl border border-border p-6 shadow-card space-y-5" onKeyDown={handleFormKeyDown}>
               <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-accent" /> Shop Location
               </h2>
@@ -345,7 +345,7 @@ const RegisterShop = () => {
 
           {/* Step 3: Services */}
           {step === 3 && (
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-card rounded-xl border border-border p-6 shadow-card space-y-5">
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-card rounded-xl border border-border p-6 shadow-card space-y-5" onKeyDown={handleFormKeyDown}>
               <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
                 <FileText className="w-5 h-5 text-accent" /> Services Offered
               </h2>

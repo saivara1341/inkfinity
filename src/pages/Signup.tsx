@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { getRoleBasedPath } from "@/hooks/useRoleRedirect";
 import signupIllustration from "@/assets/signup-illustration-v2.png";
+import { handleFormKeyDown } from "@/utils/keyboardNavigation";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -18,31 +19,12 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
-  // Refs for keyboard navigation
-  const nameRef = useRef<HTMLInputElement>(null);
-  const emailRef = useRef<HTMLInputElement>(null);
-  const passwordRef = useRef<HTMLInputElement>(null);
-  const personalBtnRef = useRef<HTMLButtonElement>(null);
-  const businessBtnRef = useRef<HTMLButtonElement>(null);
-  const submitBtnRef = useRef<HTMLButtonElement>(null);
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     accountType: "personal" as "personal" | "business",
   });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent, nextRef: React.RefObject<HTMLElement>) => {
-    if (e.key === "Enter" || e.key === "ArrowDown") {
-      e.preventDefault();
-      nextRef.current?.focus();
-    }
-  };
 
   const handleRoleSelect = (selectedRole: "customer" | "shop" | "manufacturer") => {
     setRole(selectedRole);
@@ -214,17 +196,15 @@ const Signup = () => {
                   {role === "customer" ? "Register as Customer" : role === "shop" ? "Register as Shop Owner" : "Register as Manufacturer"}
                 </h1>
 
-                <div className="space-y-5 mb-8">
+                <div className="space-y-5 mb-8" onKeyDown={handleFormKeyDown}>
                   <div>
                     <label className="text-sm font-bold text-foreground/80 mb-2 block uppercase tracking-wider">Full Name</label>
                     <input 
                       type="text" 
                       name="name" 
-                      ref={nameRef}
                       placeholder="Your Full Name" 
                       value={formData.name} 
                       onChange={handleChange}
-                      onKeyDown={(e) => handleKeyDown(e, emailRef)}
                       className="w-full px-5 py-4 rounded-2xl border-2 border-border/60 bg-card/50 backdrop-blur-sm text-foreground focus:outline-none focus:border-accent transition-all shadow-sm" 
                     />
                   </div>
@@ -233,11 +213,9 @@ const Signup = () => {
                     <input 
                       type="email" 
                       name="email" 
-                      ref={emailRef}
                       placeholder="Your Email" 
                       value={formData.email} 
                       onChange={handleChange}
-                      onKeyDown={(e) => handleKeyDown(e, passwordRef)}
                       className="w-full px-5 py-4 rounded-2xl border-2 border-border/60 bg-card/50 backdrop-blur-sm text-foreground focus:outline-none focus:border-accent transition-all shadow-sm" 
                     />
                   </div>
@@ -247,19 +225,9 @@ const Signup = () => {
                       <input 
                         type={showPassword ? "text" : "password"} 
                         name="password" 
-                        ref={passwordRef}
                         placeholder="Your Password (Min. 8 characters)" 
                         value={formData.password} 
                         onChange={handleChange}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === "ArrowDown") {
-                            if (role === "customer") {
-                              personalBtnRef.current?.focus();
-                            } else {
-                              handleSignup();
-                            }
-                          }
-                        }}
                         className="w-full px-5 py-4 pr-12 rounded-2xl border-2 border-border/60 bg-card/50 backdrop-blur-sm text-foreground focus:outline-none focus:border-accent transition-all shadow-sm" 
                       />
                       <button 
@@ -278,9 +246,7 @@ const Signup = () => {
                       <div className="grid grid-cols-2 gap-3">
                         <button
                           type="button"
-                          ref={personalBtnRef}
                           onClick={() => setFormData({ ...formData, accountType: "personal" })}
-                          onKeyDown={(e) => handleKeyDown(e, businessBtnRef)}
                           className={`px-4 py-3 rounded-2xl border-2 font-bold text-sm transition-all ${
                             formData.accountType === "personal" ? "border-accent bg-accent/5 text-accent" : "border-border text-muted-foreground hover:border-accent/40"
                           }`}
@@ -289,9 +255,7 @@ const Signup = () => {
                         </button>
                         <button
                           type="button"
-                          ref={businessBtnRef}
                           onClick={() => setFormData({ ...formData, accountType: "business" })}
-                          onKeyDown={(e) => e.key === "Enter" && handleSignup()}
                           className={`px-4 py-3 rounded-2xl border-2 font-bold text-sm transition-all ${
                             formData.accountType === "business" ? "border-accent bg-accent/5 text-accent" : "border-border text-muted-foreground hover:border-accent/40"
                           }`}

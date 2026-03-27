@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingCart, BarChart3, Settings,
   ChevronDown, Printer, Bell, LogOut, Package, Sparkles, Megaphone, FileWarning, ShoppingBag, X, Menu,
-  ArrowRight, Store
+  ArrowRight, Store, Tag, Award
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -17,14 +17,18 @@ import { ShopSettings } from "@/components/shop/ShopSettings";
 import { ShopProducts } from "@/components/shop/ShopProducts";
 import ShopAIHub from "@/components/shop/ShopAIHub";
 import ShopMarketing from "@/components/shop/ShopMarketing";
+import { CouponManager } from "@/components/crm/CouponManager";
+import { CustomerSegments } from "@/components/crm/CustomerSegments";
 
-type Tab = "overview" | "orders" | "products" | "analytics" | "ai-hub" | "marketing" | "settings" | "support" | "sourcing";
+type Tab = "overview" | "orders" | "products" | "analytics" | "ai-hub" | "marketing" | "settings" | "support" | "sourcing" | "coupons" | "segments";
 
 const sidebarItems: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "products", label: "Products", icon: Package },
   { id: "orders", label: "Orders", icon: ShoppingCart },
   { id: "sourcing", label: "Material Sourcing", icon: ShoppingBag },
+  { id: "coupons", label: "Coupons", icon: Tag },
+  { id: "segments", label: "Segments", icon: Award },
   { id: "ai-hub", label: "AI Design Hub", icon: Sparkles },
   { id: "marketing", label: "Marketing", icon: Megaphone },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
@@ -181,6 +185,8 @@ const ShopDashboard = () => {
               )}
               {activeTab === "ai-hub" && <ShopAIHub />}
               {activeTab === "marketing" && <ShopMarketing />}
+              {activeTab === "coupons" && <CouponManager ownerId={shop.id} />}
+              {activeTab === "segments" && <CustomerSegments ownerId={shop.id} />}
               {activeTab === "analytics" && <ShopAnalytics orders={orders} />}
               {activeTab === "settings" && (
                 <ShopSettings shop={shop} onSave={updateShopProfile} />

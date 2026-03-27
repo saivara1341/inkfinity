@@ -4,14 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Package, 
-  Settings, 
   TrendingUp, 
   Users, 
   ShoppingCart, 
-  Truck, 
-  Boxes,
-  Printer as PrinterIcon,
-  Factory,
+  Truck,
   ArrowRight,
   PackageCheck,
   Instagram,
@@ -27,6 +23,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { SupplierProducts } from "@/components/supplier/SupplierProducts";
 import { SupplierQuotes } from "@/components/supplier/SupplierQuotes";
+import { SupplierSettings } from "@/components/supplier/SupplierSettings";
+import { CouponManager } from "@/components/crm/CouponManager";
+import { CustomerSegments } from "@/components/crm/CustomerSegments";
 import { Badge } from "@/components/ui/badge";
 
 const SupplierDashboard = () => {
@@ -34,28 +33,39 @@ const SupplierDashboard = () => {
   const navigate = useNavigate();
   const [supplier, setSupplier] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"catalog" | "quotes" | "overview">("overview");
+  const [activeTab, setActiveTab] = useState<"catalog" | "quotes" | "coupons" | "segments" | "settings">("catalog");
+
+  const fetchSupplierData = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from("suppliers")
+        .select("*")
+        .eq("owner_id", user.id)
+        .maybeSingle();
+      
+      if (data) setSupplier(data);
+    } catch (err) {
+      console.error("Error fetching supplier:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchSupplierData = async () => {
-      if (!user) return;
-      try {
-        const { data, error } = await supabase
-          .from("suppliers")
-          .select("*")
-          .eq("owner_id", user.id)
-          .maybeSingle();
-        
-        if (data) setSupplier(data);
-      } catch (err) {
-        console.error("Error fetching supplier:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchSupplierData();
   }, [user]);
+
+  const handleSaveSupplier = async (updates: any) => {
+    if (!supplier) return;
+    const { error } = await supabase
+      .from("suppliers")
+      .update(updates)
+      .eq("id", supplier.id);
+
+    if (error) throw error;
+    await fetchSupplierData();
+  };
 
   if (loading) {
     return (
@@ -101,18 +111,9 @@ const SupplierDashboard = () => {
     );
   }
 
-  const stats = [
-    { title: "Total Inquiries", value: "24", icon: Users, color: "text-blue-500" },
-    { title: "Active Listings", value: "12", icon: Package, color: "text-coral" },
-    { title: "Monthly Leads", value: "+18%", icon: TrendingUp, color: "text-green-500" },
-    { title: "Store Views", value: "1.2k", icon: ShoppingCart, color: "text-purple-500" },
-  ];
 
-  const categories = [
-    { title: "Paper & Media", icon: Boxes, count: "5 Products", desc: "GSM sheets, rolls, specialty paper" },
-    { title: "Printing Machinery", icon: PrinterIcon, count: "3 Machines", desc: "Offset, Digital, Large format" },
-    { title: "Spare Parts", icon: Settings, count: "4 Listings", desc: "Rollers, ink systems, belts" },
-  ];
+
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -138,52 +139,54 @@ const SupplierDashboard = () => {
               {supplier.facebook_url && <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full border border-border" onClick={() => window.open(supplier.facebook_url, '_blank')}><Facebook className="w-4 h-4 text-muted-foreground" /></Button>}
             </div>
           </div>
-          <div className="flex gap-4 w-full md:w-auto">
+          <div className="flex gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
             <Button 
                 variant={activeTab === "catalog" ? "coral" : "outline"}
-                className="rounded-xl px-6 h-12 flex-1 md:flex-none shadow-sm text-lg font-bold"
+                className="rounded-xl px-6 h-12 flex-none shadow-sm text-sm md:text-lg font-bold"
                 onClick={() => setActiveTab("catalog")}
             >
                 Catalog
             </Button>
             <Button 
                 variant={activeTab === "quotes" ? "coral" : "outline"}
-                className="rounded-xl px-6 h-12 flex-1 md:flex-none shadow-sm text-lg font-bold"
+                className="rounded-xl px-6 h-12 flex-none shadow-sm text-sm md:text-lg font-bold"
                 onClick={() => setActiveTab("quotes")}
             >
                 Inquiries
             </Button>
+            <Button 
+                variant={activeTab === "coupons" ? "coral" : "outline"}
+                className="rounded-xl px-6 h-12 flex-none shadow-sm text-sm md:text-lg font-bold"
+                onClick={() => setActiveTab("coupons")}
+            >
+                Coupons
+            </Button>
+            <Button 
+                variant={activeTab === "segments" ? "coral" : "outline"}
+                className="rounded-xl px-6 h-12 flex-none shadow-sm text-sm md:text-lg font-bold"
+                onClick={() => setActiveTab("segments")}
+            >
+                Segments
+            </Button>
+            <Button 
+                variant={activeTab === "settings" ? "coral" : "outline"}
+                className="rounded-xl px-6 h-12 flex-none shadow-sm text-sm md:text-lg font-bold"
+                onClick={() => setActiveTab("settings")}
+            >
+                Settings
+            </Button>
           </div>
         </header>
 
-        <div className="grid md:grid-cols-4 gap-6">
-          {stats.map((stat, idx) => (
-            <motion.div
-              key={stat.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-            >
-              <Card className="rounded-[2rem] border-none shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="p-8">
-                  <div className={`${stat.color} mb-4`}>
-                    <stat.icon className="w-8 h-8" />
-                  </div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1 uppercase tracking-wider">{stat.title}</p>
-                  <h3 className="text-3xl font-bold text-foreground">{stat.value}</h3>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="md:col-span-2 space-y-8">
-            {activeTab === "catalog" ? (
+        <div className="space-y-8">
+          <div className="space-y-8">
+            {activeTab === "catalog" && (
               <div id="supplier-catalog">
                 <SupplierProducts supplier={supplier} />
               </div>
-            ) : activeTab === "quotes" ? (
+            )}
+            
+            {activeTab === "quotes" && (
               <div>
                 <CardHeader className="p-8 pb-4">
                   <CardTitle className="text-2xl font-bold flex items-center gap-2 italic">
@@ -196,64 +199,21 @@ const SupplierDashboard = () => {
                   <SupplierQuotes supplierId={supplier.id} />
                 </CardContent>
               </div>
-            ) : (
-              <Card className="rounded-[2rem] border-none shadow-sm h-full">
-                <CardHeader className="p-8 pb-0">
-                  <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                    <Boxes className="w-6 h-6 text-coral" />
-                    Category Performance
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-8 grid gap-4">
-                  {categories.map((cat) => (
-                    <div key={cat.title} className="flex items-center justify-between p-6 rounded-2xl bg-secondary/30 border border-border/50 hover:bg-secondary/50 transition-colors cursor-pointer group">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-sm">
-                          <cat.icon className="w-6 h-6 text-coral" />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-lg text-foreground mb-1">{cat.title}</h4>
-                          <p className="text-sm text-muted-foreground">{cat.desc}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-coral">{cat.count}</p>
-                        <p className="text-xs text-muted-foreground uppercase tracking-widest">Active</p>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
+            )}
+
+            {activeTab === "coupons" && (
+              <CouponManager ownerId={supplier.id} />
+            )}
+
+            {activeTab === "segments" && (
+              <CustomerSegments ownerId={supplier.id} />
+            )}
+
+            {activeTab === "settings" && (
+              <SupplierSettings supplier={supplier} onSave={handleSaveSupplier} />
             )}
           </div>
-
-          <Card className="rounded-[2rem] border-none shadow-sm bg-[#1a1f2c] text-white">
-            <CardHeader className="p-8">
-              <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                <Truck className="w-6 h-6 text-accent" />
-                Delivery Partners
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-8 pt-0 space-y-6">
-              <p className="opacity-80 text-sm leading-relaxed">
-                Connect with b2b delivery partners for heavy machinery and bulk paper transports.
-              </p>
-              <div className="space-y-4">
-                {["Porter B2B", "ElasticRun", "Rivigo"].map((partner) => (
-                  <div key={partner} className="p-4 rounded-xl bg-white/10 border border-white/10 flex items-center justify-between">
-                    <span className="font-bold">{partner}</span>
-                    <span className="text-xs px-2 py-1 rounded bg-accent/20 text-accent font-bold">CONNECTED</span>
-                  </div>
-                ))}
-              </div>
-              <Button variant="coral" className="w-full h-12 rounded-xl mt-4">Find New Partners</Button>
-            </CardContent>
-          </Card>
         </div>
-
-        <section id="supplier-catalog" className="pt-8">
-           <SupplierProducts supplier={supplier} />
-        </section>
       </div>
       <Footer />
     </div>

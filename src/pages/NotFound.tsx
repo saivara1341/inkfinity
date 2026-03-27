@@ -5,8 +5,16 @@ const NotFound = () => {
   const location = useLocation();
 
   useEffect(() => {
-    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+    // Prevent logging error for OAuth implicit grant callbacks parsed by HashRouter
+    if (!location.pathname.includes("access_token=") && !location.pathname.includes("error_description=")) {
+      console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+    }
   }, [location.pathname]);
+
+  // Don't render the 404 page during the Google OAuth redirect flash
+  if (location.pathname.includes("access_token=") || location.pathname.includes("error_description=")) {
+    return null;
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted">

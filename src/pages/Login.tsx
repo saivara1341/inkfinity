@@ -3,10 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Printer, Mail, Eye, EyeOff } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { getRoleBasedPath } from "@/hooks/useRoleRedirect";
+import { handleFormKeyDown } from "@/utils/keyboardNavigation";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,9 +16,6 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  
-  const emailRef = useRef<HTMLInputElement>(null);
-  const passwordRef = useRef<HTMLInputElement>(null);
 
   const handleEmailLogin = async () => {
     if (!email || !password) {
@@ -53,16 +50,25 @@ const Login = () => {
           <h1 className="font-display text-3xl font-bold text-foreground mb-2">Welcome back!</h1>
           <p className="text-muted-foreground mb-8">Log in to manage your print orders</p>
 
-          <div className="space-y-4">
+          <div className="space-y-4" onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") {
+              // Only trigger explicit login if we are in the password field or let handleFormKeyDown move focus
+              if ((e.target as HTMLInputElement).type === "password") {
+                handleEmailLogin();
+              } else {
+                handleFormKeyDown(e);
+              }
+            } else {
+              handleFormKeyDown(e);
+            }
+          }}>
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">Email</label>
               <input
                 type="email"
-                ref={emailRef}
                 placeholder="Your Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => (e.key === "Enter" || e.key === "ArrowDown") && passwordRef.current?.focus()}
                 className="w-full px-4 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
@@ -71,11 +77,9 @@ const Login = () => {
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  ref={passwordRef}
                   placeholder="Your Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleEmailLogin()}
                   className="w-full px-4 py-2.5 pr-10 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">

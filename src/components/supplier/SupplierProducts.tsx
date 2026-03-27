@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Pencil, Trash2, Package, IndianRupee, Clock, ToggleLeft, ToggleRight, X, ImagePlus, Globe, Factory } from "lucide-react";
+import { Plus, Pencil, Trash2, Package, IndianRupee, Clock, ToggleLeft, ToggleRight, X, ImagePlus, Globe, Factory, Warehouse } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -158,7 +158,7 @@ export const SupplierProducts = ({ supplier }: Props) => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-display text-2xl font-bold text-foreground italic flex items-center gap-2">
-            <Factory className="w-6 h-6 text-coral" />
+            <Warehouse className="w-6 h-6 text-coral" />
             Product Catalog
           </h2>
           <p className="text-sm text-muted-foreground">Manage materials visible in the Sourcing Portal</p>

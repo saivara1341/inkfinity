@@ -16,21 +16,27 @@ const Onboarding = () => {
   const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<"customer" | "shop_owner" | "manufacturer" | "distributor" | null>(null);
 
-  // Redirect if not logged in
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/login", { replace: true });
+    } else if (user && !selectedRole && !loading) {
+      const intendedRole = sessionStorage.getItem("intendedRole") as any;
+      if (intendedRole) {
+        sessionStorage.removeItem("intendedRole");
+        handleRoleSelection(intendedRole);
+      }
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, selectedRole, loading]);
 
-  const handleRoleSelection = async () => {
-    if (!user || !selectedRole) return;
+  const handleRoleSelection = async (overrideRole?: string) => {
+    const roleToSet = overrideRole || selectedRole;
+    if (!user || !roleToSet) return;
 
     setLoading(true);
     try {
       const { error: insertError } = await supabase
         .from("user_roles")
-        .insert([{ user_id: user.id, role: selectedRole }]);
+        .insert([{ user_id: user.id, role: roleToSet }]);
 
       if (insertError) throw insertError;
 
@@ -50,15 +56,15 @@ const Onboarding = () => {
       }
       // Update user metadata with the selected role for faster frontend access and RLS fallback
       await supabase.auth.updateUser({
-        data: { user_role: selectedRole }
+        data: { user_role: roleToSet }
       });
 
-      toast.success(`Welcome to PrintFlow! You are now a ${selectedRole.replace("_", " ")}.`);
+      toast.success(`Welcome to PrintFlow! You are now a ${roleToSet.replace("_", " ")}.`);
       
       // Redirect based on role
-      if (selectedRole === "shop_owner") {
+      if (roleToSet === "shop_owner") {
         navigate("/register-shop");
-      } else if (selectedRole === "manufacturer" || selectedRole === "distributor") {
+      } else if (roleToSet === "manufacturer" || roleToSet === "distributor") {
         navigate("/register-supplier");
       } else {
         navigate("/catalog");
@@ -248,7 +254,7 @@ const Onboarding = () => {
             size="lg" 
             className="px-12 py-6 text-lg rounded-full group transition-all"
             disabled={!selectedRole || loading}
-            onClick={handleRoleSelection}
+            onClick={() => handleRoleSelection()}
           >
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin mr-2" />

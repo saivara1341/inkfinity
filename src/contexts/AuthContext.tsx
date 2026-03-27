@@ -10,6 +10,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
+  setUserRole: (role: string) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -103,8 +104,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const setUserRole = async (role: string) => {
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) throw new Error("No user logged in");
+
+      // Update auth metadata
+      const { data, error: authError } = await supabase.auth.updateUser({
+        data: { user_role: role }
+      });
+      if (authError) throw authError;
+
+      // Also upsert into user_roles table for consistency
+      const { error: dbError } = await supabase
+        .from("user_roles")
+        .upsert({ 
+          user_id: currentUser.id, 
+          role: role 
+        });
+      
+      if (dbError) {
+        console.warn("Could not sync role to DB, but metadata updated:", dbError.message);
+      }
+
+      setUser(data.user);
+      return { error: null };
+    } catch (err) {
+      console.error("Error setting user role:", err);
+      return { error: err as Error };
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut, signInWithGoogle }}>
+    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut, signInWithGoogle, setUserRole }}>
       {children}
     </AuthContext.Provider>
   );

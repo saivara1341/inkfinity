@@ -55,7 +55,7 @@ const CTASection = () => {
             </p>
             <div className="relative z-10">
               <AnimatedButton 
-                onClick={() => navigate("/for-shops")}
+                onClick={() => navigate("/select-role")}
                 variant="coral"
                 solid={true}
                 width={260}

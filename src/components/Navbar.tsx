@@ -181,7 +181,7 @@ const Navbar = () => {
           ) : (
             <>
               <Button variant="ghost" asChild><Link to="/login">Log in</Link></Button>
-              <Button variant="coral" asChild><Link to="/signup">Get Started</Link></Button>
+              <Button variant="coral" asChild><Link to="/select-role">Get Started</Link></Button>
             </>
           )}
         </div>
@@ -229,7 +229,7 @@ const Navbar = () => {
           ) : (
             <div className="flex gap-3 pt-2">
               <Button className="flex-1" variant="outline" asChild><Link to="/login">Log in</Link></Button>
-              <Button className="flex-1" variant="coral" asChild><Link to="/signup">Sign up</Link></Button>
+              <Button className="flex-1" variant="coral" asChild><Link to="/select-role">Sign up</Link></Button>
             </div>
           )}
         </div>

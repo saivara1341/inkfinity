@@ -105,7 +105,12 @@ const Login = () => {
             className="w-full h-14 rounded-2xl gap-3 border-2 hover:bg-accent/5 hover:shadow-glow hover:border-accent/40 transition-all duration-300 font-semibold text-foreground hover:text-foreground text-sm sm:text-base"
             onClick={async () => {
               const { error } = await signInWithGoogle();
-              if (error) toast({ title: "Google Login failed", description: error.message, variant: "destructive" });
+              if (error) {
+                toast({ title: "Google Login failed", description: error.message, variant: "destructive" });
+              } else {
+                // Redirect will be handled by OnboardingChecker or manually here if needed
+                navigate("/select-role");
+              }
             }}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -122,7 +127,7 @@ const Login = () => {
           </p>
           <p className="text-center text-sm text-muted-foreground mt-2">
             Don't have an account?{" "}
-            <Link to="/signup" className="text-accent font-medium hover:underline">Sign up free</Link>
+            <Link to="/select-role" className="text-accent font-medium hover:underline">Sign up free</Link>
           </p>
         </motion.div>
       </div>

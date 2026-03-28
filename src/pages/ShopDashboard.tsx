@@ -96,17 +96,17 @@ const ShopDashboard = () => {
           ))}
         </nav>
 
-        <div className="p-2 border-t border-border space-y-1">
+        <div className="p-2 border-t border-border flex items-center gap-1">
           <button
             onClick={async () => { await signOut(); navigate("/login"); }}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            className="flex-1 flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
           >
             <LogOut className="w-4 h-4 shrink-0" />
             {(sidebarOpen || mobileMenuOpen) && <span>Log Out</span>}
           </button>
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="hidden md:flex w-full items-center justify-center py-2 text-muted-foreground hover:text-foreground transition-colors"
+            className="hidden md:flex w-8 h-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors shrink-0"
           >
             <ChevronDown className={`w-4 h-4 transition-transform ${sidebarOpen ? "rotate-90" : "-rotate-90"}`} />
           </button>

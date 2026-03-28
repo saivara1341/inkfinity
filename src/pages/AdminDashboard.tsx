@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   LayoutDashboard, Store, Users, CreditCard, BarChart3, Settings,
-  Shield, ChevronDown, CheckCircle2, XCircle, Clock, IndianRupee,
-  TrendingUp, AlertTriangle, Bell, Eye, LogOut, Activity, BarChart, FileWarning, HelpCircle, User, Camera, UploadCloud, Save, Menu, X
+  Shield, CheckCircle2, XCircle, Clock, IndianRupee,
+  TrendingUp, AlertTriangle, Bell, Eye, LogOut, Activity, BarChart, FileWarning, HelpCircle, User, Camera, UploadCloud, Save, Menu, X, ChevronDown, Instagram, Facebook, Twitter, Phone
 } from "lucide-react";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart as ReBarChart, Bar } from "recharts";
 import { Button } from "@/components/ui/button";
@@ -265,14 +265,14 @@ const AdminDashboard = () => {
             </button>
           ))}
         </nav>
-        <div className="p-2 border-t border-primary-foreground/10 space-y-1">
+        <div className="p-2 border-t border-primary-foreground/10 flex items-center gap-1">
           <button onClick={async () => { await signOut(); navigate("/login"); }}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-primary-foreground/70 hover:bg-primary-foreground/10 transition-colors">
+            className="flex-1 flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-primary-foreground/70 hover:bg-primary-foreground/10 transition-colors">
             <LogOut className="w-4 h-4 shrink-0" />
             {(sidebarOpen || mobileMenuOpen) && <span>Log Out</span>}
           </button>
           <button onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="hidden md:flex w-full items-center justify-center py-2 text-primary-foreground/50 hover:text-primary-foreground transition-colors">
+            className="hidden md:flex w-8 h-8 items-center justify-center rounded-lg text-primary-foreground/50 hover:text-primary-foreground transition-colors shrink-0">
             <ChevronDown className={`w-4 h-4 transition-transform ${sidebarOpen ? "rotate-90" : "-rotate-90"}`} />
           </button>
         </div>

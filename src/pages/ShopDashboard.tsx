@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingCart, BarChart3, Settings,
   ChevronDown, Printer, Bell, LogOut, Package, Sparkles, Megaphone, FileWarning, ShoppingBag, X, Menu,
-  ArrowRight, Store, Tag, Award, PanelLeftClose, PanelLeftOpen, ArrowLeft, Home
+  ArrowRight, Store, Tag, Award, PanelLeftClose, PanelLeftOpen, ArrowLeft, Home as HomeIcon
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -92,12 +92,12 @@ const ShopDashboard = () => {
 
         {/* Navigation Items */}
 
-        <nav className="flex-1 py-2 px-2 space-y-1 overflow-y-auto">
+        <nav className="flex-1 pt-6 pb-2 px-2 space-y-1 overflow-y-auto">
           {sidebarItems.map((item) => (
             <button
               key={item.id}
               onClick={() => { setActiveTab(item.id); setMobileMenuOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`w-full flex items-center gap-4 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === item.id
                   ? "bg-accent/10 text-accent"
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -124,7 +124,7 @@ const ShopDashboard = () => {
             className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors shrink-0"
             title="Back to Landing Page"
           >
-            <Home className="w-4 h-4" />
+            <HomeIcon className="w-4 h-4" />
           </button>
         </div>
       </aside>

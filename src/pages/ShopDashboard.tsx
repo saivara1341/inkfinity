@@ -92,7 +92,7 @@ const ShopDashboard = () => {
 
         {/* Navigation Items */}
 
-        <nav className="flex-1 pt-6 pb-2 px-2 space-y-1 overflow-y-auto">
+        <nav className="flex-1 pt-8 pb-2 px-2 space-y-2 overflow-y-auto">
           {sidebarItems.map((item) => (
             <button
               key={item.id}
@@ -109,10 +109,10 @@ const ShopDashboard = () => {
           ))}
         </nav>
 
-        <div className="p-2 border-t border-border flex items-center gap-1">
+        <div className={`p-2 border-t border-border flex ${sidebarOpen ? "flex-row" : "flex-col"} items-center gap-2`}>
           <button
             onClick={async () => { await signOut(); navigate("/login"); }}
-            className="flex-1 flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            className={`${sidebarOpen ? "flex-1 justify-start px-3" : "w-10 h-10 justify-center"} flex items-center gap-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors`}
             title="Log Out"
           >
             <LogOut className="w-4 h-4 shrink-0" />
@@ -121,7 +121,7 @@ const ShopDashboard = () => {
           
           <button
             onClick={() => navigate("/")}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors shrink-0"
+            className="w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors shrink-0"
             title="Back to Landing Page"
           >
             <HomeIcon className="w-4 h-4" />

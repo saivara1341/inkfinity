@@ -8,10 +8,10 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import AdobeExpressEditor from "../AdobeExpressEditor";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { useEffect } from "react";
 
@@ -24,7 +24,8 @@ const RESIZE_PRESETS = [
 ];
 
 const ShopAIHub = () => {
-  const { toast } = useToast();
+  // removed useToast
+
   const [showAdobe, setShowAdobe] = useState(false);
   const [selectedDesign, setSelectedDesign] = useState<any>(null);
   const [showResize, setShowResize] = useState(false);

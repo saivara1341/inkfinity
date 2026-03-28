@@ -88,12 +88,6 @@ const ShopCard = ({
             <IndianRupee className="w-4 h-4" />{shop.baseCost}
           </p>
         </div>
-        <div className="text-right">
-           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Fastest Delivery</p>
-           <p className="text-sm font-medium text-foreground flex items-center gap-1.5 justify-end">
-             <Clock className="w-3.5 h-3.5 text-accent" /> 2 Days
-           </p>
-        </div>
       </div>
 
       <div className="flex flex-wrap gap-1.5 mb-5">
@@ -152,7 +146,6 @@ const Catalog = () => {
         unit: (p as any).unit || "per unit",
         sizes: (p.specifications as any)?.sizes || [],
         papers: (p.specifications as any)?.papers || [],
-        turnaroundDays: p.turnaround_days,
         minQty: p.min_quantity,
         popular: (p as any).popular
       }));
@@ -346,10 +339,6 @@ const Catalog = () => {
                           {product.unit && <span className="text-xs text-muted-foreground">{product.unit}</span>}
                         </div>
                         <div className="space-y-1.5 text-xs text-muted-foreground mb-4">
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-accent" /> 
-                            {product.turnaroundDays} business days
-                          </div>
                           <div>Min qty: {product.minQty}</div>
                         </div>
 

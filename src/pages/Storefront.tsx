@@ -23,7 +23,6 @@ interface Product {
   category: string;
   base_price: number;
   min_quantity: number;
-  turnaround_days: number;
   images: string[];
   is_active: boolean;
   shop?: { id: string; name: string; city: string; rating: number; is_verified: boolean };
@@ -345,9 +344,6 @@ const Storefront = () => {
                         </div>
                       )}
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> {product.turnaround_days}d delivery
-                        </span>
                         <span>Min: {product.min_quantity}</span>
                       </div>
                       <div className="flex gap-2 pt-2">

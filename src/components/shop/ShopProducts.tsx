@@ -41,7 +41,6 @@ const emptyForm = {
   base_price: 0,
   min_quantity: 1,
   max_quantity: "",
-  turnaround_days: 3,
   is_active: true,
   imageFile: null as File | null,
   imagePreview: "",
@@ -84,7 +83,6 @@ export const ShopProducts = ({ shop }: Props) => {
       base_price: product.base_price,
       min_quantity: product.min_quantity,
       max_quantity: product.max_quantity?.toString() || "",
-      turnaround_days: product.turnaround_days,
       is_active: product.is_active,
       imageFile: null,
       imagePreview: product.images?.[0] || "",
@@ -150,7 +148,6 @@ export const ShopProducts = ({ shop }: Props) => {
       base_price: form.base_price,
       min_quantity: form.min_quantity,
       max_quantity: form.max_quantity ? parseInt(form.max_quantity) : null,
-      turnaround_days: form.turnaround_days,
       is_active: form.is_active,
       images,
       specifications: {
@@ -257,11 +254,11 @@ export const ShopProducts = ({ shop }: Props) => {
                 />
               </div>
               <div>
-                <label className="text-sm text-muted-foreground mb-1 block">Turnaround (days)</label>
+                <label className="text-sm text-muted-foreground mb-1 block">Min Quantity</label>
                 <input
                   type="number"
-                  value={form.turnaround_days}
-                  onChange={(e) => setForm({ ...form, turnaround_days: parseInt(e.target.value) || 3 })}
+                  value={form.min_quantity}
+                  onChange={(e) => setForm({ ...form, min_quantity: parseInt(e.target.value) || 1 })}
                   className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
@@ -469,10 +466,6 @@ export const ShopProducts = ({ shop }: Props) => {
                 <span className="flex items-center gap-1">
                   <IndianRupee className="w-3.5 h-3.5" />
                   {product.base_price}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5" />
-                  {product.turnaround_days}d
                 </span>
                 <span>Min: {product.min_quantity}</span>
               </div>

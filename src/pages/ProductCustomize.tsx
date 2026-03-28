@@ -87,7 +87,6 @@ const ProductCustomize = () => {
             finishes: (data.specifications as any)?.finishes || [],
             quantityTiers: data.volume_pricing || (data.specifications as any)?.quantityTiers || [],
             printingMethods: (data.specifications as any)?.printingMethods || [],
-            turnaroundDays: data.turnaround_days,
             minQty: data.min_quantity,
             stock_quantity: data.stock_quantity,
           };
@@ -549,10 +548,6 @@ const ProductCustomize = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 mt-2">
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Clock className="w-3 h-3" /> {product.turnaroundDays} business days
-                  </span>
-                  <span className="text-xs text-muted-foreground">•</span>
                   <span className="text-xs text-muted-foreground">
                     {product.printingMethods.map(m => m.label).join(", ")}
                   </span>

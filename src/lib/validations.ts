@@ -34,7 +34,6 @@ export const productSchema = z.object({
   base_price: z.number().min(0, "Price must be positive"),
   min_quantity: z.number().int().min(1, "Min quantity must be at least 1"),
   max_quantity: z.number().int().optional(),
-  turnaround_days: z.number().int().min(1).max(60),
 });
 
 export type SignupInput = z.infer<typeof signupSchema>;

@@ -65,7 +65,7 @@ const ShopDashboard = () => {
         fixed md:relative z-50 h-full bg-card border-r border-border flex flex-col transition-all duration-300 shrink-0
         ${mobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}
       `}>
-        <div className="h-16 flex items-center px-4 border-b border-border gap-3 cursor-pointer hover:bg-secondary/30 transition-colors" onClick={() => navigate("/")}>
+        <div className="h-16 flex items-center px-4 border-b border-border gap-3">
           <div className="w-9 h-9 rounded-lg bg-gradient-coral flex items-center justify-center shrink-0">
             <Printer className="w-5 h-5 text-accent-foreground" />
           </div>

@@ -138,6 +138,18 @@ CREATE TABLE IF NOT EXISTS public.inventory_items (
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS public.designs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    img_url TEXT NOT NULL,
+    specifications JSONB DEFAULT '{}',
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- 6. SALES & ORDERS
 CREATE TABLE IF NOT EXISTS public.orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -205,8 +217,11 @@ ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.inventory_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.designs ENABLE ROW LEVEL SECURITY;
 
 -- Unified Policies
+DROP POLICY IF EXISTS "Designs are viewable by owner" ON "public"."designs";
+CREATE POLICY "Designs are viewable by owner" ON "public"."designs" FOR ALL USING (auth.uid() = owner_id);
 DROP POLICY IF EXISTS "Public shops are viewable by everyone" ON "public"."shops";
 CREATE POLICY "Public shops are viewable by everyone" ON "public"."shops" FOR SELECT USING (true);
 

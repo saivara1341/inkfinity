@@ -11,6 +11,9 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import AdobeExpressEditor from "../AdobeExpressEditor";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { supabase } from "@/lib/supabase";
+import { formatDistanceToNow } from "date-fns";
+import { useEffect } from "react";
 
 const RESIZE_PRESETS = [
   { id: "a4", name: "A4 Print", w: 2480, h: 3508 },
@@ -27,11 +30,33 @@ const ShopAIHub = () => {
   const [showResize, setShowResize] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
 
-  // Mock data for recent designs
-  const [recentDesignsList, setRecentDesignsList] = useState([
-    { id: "1", name: "Neon Startup Logo", type: "Logo", date: "2 hours ago", img: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=800&auto=format&fit=crop" },
-    { id: "2", name: "Minimalist Business Card", type: "Card", date: "5 hours ago", img: "https://images.unsplash.com/photo-1572044162444-ad60f128bde7?w=800&auto=format&fit=crop" },
-  ]);
+  const [recentDesignsList, setRecentDesignsList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDesigns();
+  }, []);
+
+  const fetchDesigns = async () => {
+    try {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("designs")
+        .select("*")
+        .eq("owner_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setRecentDesignsList(data || []);
+    } catch (error) {
+      console.error("Error fetching designs:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleResize = (preset: typeof RESIZE_PRESETS[0]) => {
     setIsResizing(true);
@@ -107,19 +132,19 @@ const ShopAIHub = () => {
             <div className="space-y-1">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Order Conversion</span>
-                <span className="font-medium text-success">85% Successful</span>
+                <span className="font-medium text-success">0% No data</span>
               </div>
-              <Progress value={85} className="h-2 bg-secondary" />
+              <Progress value={0} className="h-2 bg-secondary" />
             </div>
             <div className="pt-4 border-t border-border space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Total AI Designs</p>
-                  <p className="text-2xl font-bold">124</p>
+                  <p className="text-2xl font-bold">{recentDesignsList.length}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Designs Sold</p>
-                  <p className="text-2xl font-bold text-accent">₹6.2k</p>
+                  <p className="text-2xl font-bold text-accent">₹0</p>
                 </div>
               </div>
               <div className="p-3 bg-secondary/30 rounded-xl border border-border/50 flex items-center gap-3">
@@ -128,7 +153,7 @@ const ShopAIHub = () => {
                 </div>
                 <div>
                     <p className="text-[10px] text-muted-foreground uppercase font-bold">Avg. Revenue / Design</p>
-                    <p className="text-sm font-bold">₹50.00</p>
+                    <p className="text-sm font-bold">₹0.00</p>
                 </div>
               </div>
             </div>
@@ -142,11 +167,17 @@ const ShopAIHub = () => {
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {recentDesignsList.map((design) => (
+          {loading ? (
+            <div className="col-span-full py-20 flex flex-col items-center justify-center text-muted-foreground gap-3">
+              <Loader2 className="w-8 h-8 animate-spin" />
+              <p className="text-sm font-medium">Loading designs...</p>
+            </div>
+          ) : recentDesignsList.length > 0 ? (
+            recentDesignsList.map((design) => (
             <div key={design.id} className="group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
               <div className="aspect-[16/10] overflow-hidden relative">
                 <img 
-                  src={design.img} 
+                  src={design.img_url} 
                   alt={design.name} 
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
@@ -180,14 +211,21 @@ const ShopAIHub = () => {
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between mt-4 text-[10px] uppercase font-bold tracking-widest text-muted-foreground">
-                    <span>{design.date}</span>
+                    <span>{formatDistanceToNow(new Date(design.created_at), { addSuffix: true })}</span>
                     <button className="text-accent flex items-center gap-1 hover:underline">
                         <Download className="w-3 h-3" /> Download Link
                     </button>
                 </div>
               </div>
             </div>
-          ))}
+          ))
+          ) : (
+            <div className="col-span-full py-20 flex flex-col items-center justify-center border-2 border-dashed border-border rounded-3xl bg-secondary/5 text-muted-foreground gap-1">
+              <ImageIcon className="w-10 h-10 mb-2 opacity-20" />
+              <p className="text-sm font-bold">No designs found</p>
+              <p className="text-xs">Generate a new design to see it here.</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -227,15 +265,33 @@ const ShopAIHub = () => {
       {showAdobe && (
         <AdobeExpressEditor 
           productType="Sticker" 
-          onDesignSave={(url) => {
-            setRecentDesignsList(prev => [{
-              id: Math.random().toString(),
-              name: "Adobe Custom Design",
-              type: "Custom",
-              date: "Just now",
-              img: url
-            }, ...prev]);
-            setShowAdobe(false);
+          onDesignSave={async (url) => {
+            try {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (!user) return;
+
+              const { data, error } = await supabase
+                .from("designs")
+                .insert({
+                  owner_id: user.id,
+                  name: `Design ${new Date().toLocaleDateString()}`,
+                  type: "Adobe Custom",
+                  img_url: url,
+                  specifications: { source: "Adobe Express" }
+                })
+                .select()
+                .single();
+
+              if (error) throw error;
+              
+              setRecentDesignsList(prev => [data, ...prev]);
+              toast.success("Design saved to repository");
+            } catch (error) {
+              console.error("Error saving design:", error);
+              toast.error("Failed to save design to repository");
+            } finally {
+              setShowAdobe(false);
+            }
           }}
           onClose={() => setShowAdobe(false)}
         />

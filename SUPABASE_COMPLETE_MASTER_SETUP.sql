@@ -114,6 +114,7 @@ CREATE TABLE IF NOT EXISTS public.products (
     category TEXT NOT NULL,
     base_price NUMERIC(10,2) NOT NULL DEFAULT 0,
     min_quantity INTEGER DEFAULT 1,
+    max_quantity INTEGER,
     stock_quantity INTEGER DEFAULT 0,
     volume_pricing JSONB DEFAULT '[]',
     images TEXT[] DEFAULT '{}',

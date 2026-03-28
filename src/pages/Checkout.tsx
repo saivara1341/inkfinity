@@ -46,6 +46,7 @@ const Checkout = () => {
   });
   const [deliveryMethod, setDeliveryMethod] = useState("shop-pickup");
   const [paymentMethod, setPaymentMethod] = useState("upi");
+  const [selectedPaymentApp, setSelectedPaymentApp] = useState<string>("");
   const [shippingMethod, setShippingMethod] = useState<"home_delivery" | "shop_pickup">("home_delivery");
   const [waivedQA, setWaivedQA] = useState(false);
   const [qaWarnings, setQaWarnings] = useState<string[]>([]);
@@ -663,26 +664,58 @@ const Checkout = () => {
                               </button>
                             </div>
 
-                            {/* App Deep Links */}
-                            <div className="grid grid-cols-3 gap-2">
-                              {[
-                                { name: "GPay", color: "bg-[#4285F4]/10 text-[#4285F4]", scheme: "googlepay" },
-                                { name: "PhonePe", color: "bg-[#5f259f]/10 text-[#5f259f]", scheme: "phonepe" },
-                                { name: "Paytm", color: "bg-[#00baf2]/10 text-[#00baf2]", scheme: "paytm" }
-                              ].map(app => (
-                                <button
-                                  key={app.name}
-                                  onClick={() => {
-                                    const upiId = shops.find(s => s.id === (items[0]?.shop_id || selectedShopId))?.upi_id || "payment@printflow";
-                                    const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(shops.find(s => s.id === (items[0]?.shop_id || selectedShopId))?.name || "PrintFlow")}&am=${grandTotal}&cu=INR`;
-                                    window.open(upiUrl);
-                                  }}
-                                  className={`flex flex-col items-center justify-center py-2.5 rounded-xl border border-transparent hover:border-accent/20 transition-all ${app.color}`}
+                            {/* App Selection & Deep Links */}
+                            <div className="space-y-3">
+                              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider pl-1 font-display">Select Payment App</label>
+                              <div className="grid grid-cols-1 gap-3">
+                                <select 
+                                  value={selectedPaymentApp}
+                                  onChange={(e) => setSelectedPaymentApp(e.target.value)}
+                                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-accent/20"
                                 >
-                                  <ExternalLink className="w-3 h-3 mb-1" />
-                                  <span className="text-[10px] font-bold">{app.name}</span>
-                                </button>
-                              ))}
+                                  <option value="">-- Choose App --</option>
+                                  {(currentShop as any)?.supported_payment_apps?.length > 0 
+                                    ? (currentShop as any).supported_payment_apps.map((app: string) => (
+                                        <option key={app} value={app}>{app}</option>
+                                      ))
+                                    : ["GPay", "PhonePe", "Paytm", "BHIM"].map(app => (
+                                        <option key={app} value={app}>{app}</option>
+                                      ))
+                                  }
+                                </select>
+
+                                <AnimatePresence mode="wait">
+                                  {selectedPaymentApp && (
+                                    <motion.button
+                                      key={selectedPaymentApp}
+                                      initial={{ opacity: 0, y: 10 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      exit={{ opacity: 0, y: -10 }}
+                                      onClick={() => {
+                                        const upiId = currentShop?.upi_id || "payment@printflow";
+                                        const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(currentShop?.name || "PrintFlow")}&am=${grandTotal}&cu=INR`;
+                                        
+                                        // Attempt to open specifically if possible, else generic upi://
+                                        let finalUrl = upiUrl;
+                                        if (selectedPaymentApp === "GPay") finalUrl = upiUrl; // Standard
+                                        else if (selectedPaymentApp === "PhonePe") finalUrl = upiUrl; 
+                                        else if (selectedPaymentApp === "Paytm") finalUrl = upiUrl;
+                                        
+                                        window.open(finalUrl);
+                                      }}
+                                      className={`w-full flex items-center justify-center gap-3 py-4 rounded-xl font-bold text-white shadow-lg transition-all active:scale-95 ${
+                                        selectedPaymentApp === "GPay" ? "bg-[#4285F4] shadow-[#4285F4]/20" :
+                                        selectedPaymentApp === "PhonePe" ? "bg-[#5f259f] shadow-[#5f259f]/20" :
+                                        selectedPaymentApp === "Paytm" ? "bg-[#00baf2] shadow-[#00baf2]/20" :
+                                        "bg-green-600 shadow-green-600/20"
+                                      }`}
+                                    >
+                                      <Smartphone className="w-5 h-5" />
+                                      Open and Pay with {selectedPaymentApp}
+                                    </motion.button>
+                                  )}
+                                </AnimatePresence>
+                              </div>
                             </div>
                             
                             <div className="grid grid-cols-2 gap-3">

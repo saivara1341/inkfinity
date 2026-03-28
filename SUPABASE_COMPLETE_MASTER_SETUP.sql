@@ -73,6 +73,13 @@ CREATE TABLE IF NOT EXISTS public.shops (
     is_active BOOLEAN DEFAULT true,
     rating NUMERIC(2,1) DEFAULT 0,
     services TEXT[] DEFAULT '{}',
+    whatsapp_number TEXT,
+    qr_code_url TEXT,
+    supported_payment_apps TEXT[] DEFAULT '{}',
+    upi_id TEXT,
+    bank_name TEXT,
+    bank_account_number TEXT,
+    ifsc_code TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -249,3 +256,18 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- 11. STORAGE BUCKETS
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('shop-logos', 'shop-logos', true)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('designs', 'designs', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Storage Policies
+CREATE POLICY "Public Read Logos" ON storage.objects FOR SELECT USING (bucket_id = 'shop-logos');
+CREATE POLICY "Public Read Designs" ON storage.objects FOR SELECT USING (bucket_id = 'designs');
+CREATE POLICY "Auth Upload Logos" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'shop-logos');
+CREATE POLICY "Auth Upload Designs" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'designs');

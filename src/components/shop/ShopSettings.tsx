@@ -41,6 +41,7 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
     razorpay_key_secret: shop?.razorpay_key_secret || "",
     whatsapp_number: (shop as any)?.whatsapp_number || "",
     qr_code_url: (shop as any)?.qr_code_url || "",
+    supported_payment_apps: (shop as any)?.supported_payment_apps || [],
     is_verified: shop?.is_verified || false,
   });
 
@@ -305,12 +306,47 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
             <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1 font-display">WhatsApp (For Confirmation)</label>
             <input
               type="text"
+              name="whatsapp_number"
               value={form.whatsapp_number}
-              onChange={(e) => setForm(prev => ({ ...prev, whatsapp_number: e.target.value }))}
+              onChange={handleChange}
               className="w-full px-4 py-2.5 rounded-xl border border-input bg-background/50 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20"
               placeholder="+91 XXXXX XXXXX"
             />
           </div>
+        </div>
+
+        <div className="space-y-4">
+          <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1 font-display">Supported Payment Apps</label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {["GPay", "PhonePe", "Paytm", "BHIM"].map((app) => (
+              <label 
+                key={app} 
+                className={`flex items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                  form.supported_payment_apps.includes(app) 
+                    ? "border-green-500 bg-green-500/5 text-green-700" 
+                    : "border-border hover:border-green-500/30"
+                }`}
+              >
+                <input 
+                  type="checkbox" 
+                  checked={form.supported_payment_apps.includes(app)}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setForm(prev => ({
+                      ...prev,
+                      supported_payment_apps: checked 
+                        ? [...prev.supported_payment_apps, app]
+                        : prev.supported_payment_apps.filter(a => a !== app)
+                    }));
+                  }}
+                  className="hidden"
+                />
+                <Smartphone className={`w-4 h-4 ${form.supported_payment_apps.includes(app) ? "text-green-500" : "text-muted-foreground opacity-40"}`} />
+                <span className="text-xs font-bold">{app}</span>
+              </label>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground italic">Select the apps you use to receive payments. Customers will be able to open these apps directly from the checkout.</p>
         </div>
 
         <div className="p-6 border-2 border-dashed border-border rounded-2xl bg-secondary/5 group hover:bg-secondary/10 transition-all flex flex-col md:flex-row items-center gap-6">

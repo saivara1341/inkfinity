@@ -21,19 +21,23 @@ const AdobeExpressEditor = ({ productType, onDesignSave, onClose }: AdobeExpress
 
   useEffect(() => {
     const initAdobe = async () => {
-      if (!window.AdobeCCShared) {
-        // Wait a bit if SDK not yet loaded
+      let sdk = window.AdobeCCShared || (window as any).ccEverywhere;
+      let retries = 0;
+      
+      while (!sdk && retries < 5) {
         await new Promise(r => setTimeout(r, 1000));
+        sdk = window.AdobeCCShared || (window as any).ccEverywhere;
+        retries++;
       }
 
-      if (!window.AdobeCCShared) {
+      if (!sdk) {
         toast.error("Adobe Express SDK failed to load. Please refresh.");
         onClose();
         return;
       }
 
       try {
-        const ccEverywhere = await window.AdobeCCShared.initialize({
+        const ccEverywhere = await sdk.initialize({
           hostInfo: {
             clientId: import.meta.env.VITE_ADOBE_CLIENT_ID || "PRINTFLOW_ADOBE_CLIENT_ID",
             appName: "PrintFlow",

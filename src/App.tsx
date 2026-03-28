@@ -88,6 +88,19 @@ const OnboardingChecker = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => {
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (
+        document.activeElement instanceof HTMLInputElement &&
+        document.activeElement.type === "number"
+      ) {
+        document.activeElement.blur();
+      }
+    };
+    window.addEventListener("wheel", handleWheel, { passive: true });
+    return () => window.removeEventListener("wheel", handleWheel);
+  }, []);
+
   return (
     <ErrorBoundary>
       <HelmetProvider>

@@ -5,8 +5,9 @@ import {
   Loader2, QrCode, Upload, X, Info, Sparkles, Clock, ArrowRight, Store,
   Building2, Globe, MapPin, Phone, Mail, FileText, Smartphone,
   Instagram, Facebook, Twitter, ShieldCheck, ShieldAlert, ShieldQuestion,
-  UserCheck, Briefcase, Landmark, Check
+  UserCheck, Briefcase, Landmark, Check, ArrowLeft, Home
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Database } from "@/integrations/supabase/types";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export const ShopSettings = ({ shop, onSave }: Props) => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     name: shop?.name || "",
     description: shop?.description || "",
@@ -124,7 +126,9 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
       <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
         <div className="flex items-center justify-between">
           <h3 className="font-display font-semibold text-xl text-foreground">Shop Profile Settings</h3>
-          <Button variant="ghost" size="sm" onClick={() => setActiveView("menu")}>Back to Menu</Button>
+          <Button variant="ghost" size="sm" className="gap-2" onClick={() => setActiveView("menu")}>
+            <ArrowLeft className="w-4 h-4" /> Back to Menu
+          </Button>
         </div>
 
         {/* Share Shop Feature */}
@@ -276,7 +280,9 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
       <div className="flex items-center justify-between">
         <h3 className="font-display font-semibold text-xl text-foreground">Payment Configuration</h3>
-        <Button variant="ghost" size="sm" onClick={() => setActiveView("menu")}>Back to Menu</Button>
+        <Button variant="ghost" size="sm" className="gap-2" onClick={() => setActiveView("menu")}>
+          <ArrowLeft className="w-4 h-4" /> Back to Menu
+        </Button>
       </div>
 
       <div className="p-6 rounded-3xl bg-accent/5 border border-accent/10 space-y-4">
@@ -513,9 +519,18 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
         </div>
       </div>
 
-      <div className="pt-4 border-t border-border">
+      <div className="pt-6 border-t border-border flex flex-col sm:flex-row gap-4 items-center justify-between">
         <Button variant="coral" size="lg" className="w-full md:w-auto shadow-lg shadow-coral/20" onClick={handleSave} disabled={saving}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "Save Payment Settings"}
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          size="lg" 
+          className="w-full md:w-auto gap-2 rounded-xl"
+          onClick={() => navigate("/")}
+        >
+          <Home className="w-4 h-4" /> Back to Home
         </Button>
       </div>
     </div>
@@ -525,7 +540,9 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
       <div className="flex items-center justify-between">
         <h3 className="font-display font-semibold text-xl text-foreground">Verification Center</h3>
-        <Button variant="ghost" size="sm" onClick={() => setActiveView("menu")}>Back to Menu</Button>
+        <Button variant="ghost" size="sm" className="gap-2" onClick={() => setActiveView("menu")}>
+          <ArrowLeft className="w-4 h-4" /> Back to Menu
+        </Button>
       </div>
       
       <div className={`p-8 rounded-[2.5rem] border-2 flex flex-col items-center text-center gap-6 transition-all ${

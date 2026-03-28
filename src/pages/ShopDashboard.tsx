@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingCart, BarChart3, Settings,
   ChevronDown, Printer, Bell, LogOut, Package, Sparkles, Megaphone, FileWarning, ShoppingBag, X, Menu,
-  ArrowRight, Store, Tag, Award
+  ArrowRight, Store, Tag, Award, PanelLeftClose, PanelLeftOpen, ArrowLeft
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -32,8 +32,8 @@ const sidebarItems: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "ai-hub", label: "AI Design Hub", icon: Sparkles },
   { id: "marketing", label: "Marketing", icon: Megaphone },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
-  { id: "support", label: "Support & Reports", icon: FileWarning },
   { id: "settings", label: "Settings", icon: Settings },
+  { id: "support", label: "Support & Reports", icon: FileWarning },
 ];
 
 const ShopDashboard = () => {
@@ -118,7 +118,7 @@ const ShopDashboard = () => {
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="hidden md:flex w-8 h-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors shrink-0"
           >
-            <ChevronDown className={`w-4 h-4 transition-transform ${sidebarOpen ? "rotate-90" : "-rotate-90"}`} />
+            {sidebarOpen ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeftOpen className="w-5 h-5" />}
           </button>
         </div>
       </aside>
@@ -146,11 +146,14 @@ const ShopDashboard = () => {
           </div>
           <div className="flex items-center gap-3">
             <NotificationBell />
-            <div className="w-9 h-9 rounded-full bg-accent/20 flex items-center justify-center">
+            <button 
+              onClick={() => setActiveTab("settings")}
+              className="w-9 h-9 rounded-full bg-accent/20 flex items-center justify-center hover:bg-accent/30 transition-colors"
+            >
               <span className="text-sm font-bold text-accent">
                 {shop?.name?.charAt(0)?.toUpperCase() || "S"}
               </span>
-            </div>
+            </button>
           </div>
         </header>
 

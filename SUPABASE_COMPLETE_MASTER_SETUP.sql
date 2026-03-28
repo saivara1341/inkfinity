@@ -220,25 +220,49 @@ ALTER TABLE public.inventory_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.designs ENABLE ROW LEVEL SECURITY;
 
 -- Unified Policies
-DROP POLICY IF EXISTS "Designs are viewable by owner" ON "public"."designs";
-CREATE POLICY "Designs are viewable by owner" ON "public"."designs" FOR ALL USING (auth.uid() = owner_id);
-DROP POLICY IF EXISTS "Public shops are viewable by everyone" ON "public"."shops";
-CREATE POLICY "Public shops are viewable by everyone" ON "public"."shops" FOR SELECT USING (true);
+-- Profiles
+DROP POLICY IF EXISTS "Profiles updateable by owner" ON public.profiles;
+CREATE POLICY "Profiles updateable by owner" ON public.profiles FOR UPDATE USING (auth.uid() = user_id);
 
-DROP POLICY IF EXISTS "Owners manage their own shops" ON "public"."shops";
-CREATE POLICY "Owners manage their own shops" ON "public"."shops" FOR ALL USING (auth.uid() = owner_id);
+DROP POLICY IF EXISTS "Profiles viewable by owner" ON public.profiles;
+CREATE POLICY "Profiles viewable by owner" ON public.profiles FOR SELECT USING (auth.uid() = user_id);
 
-DROP POLICY IF EXISTS "Active coupons viewable by everyone" ON "public"."coupons";
-CREATE POLICY "Active coupons viewable by everyone" ON "public"."coupons" FOR SELECT USING (is_active = true);
+-- Designs
+DROP POLICY IF EXISTS "Designs are viewable by owner" ON public.designs;
+CREATE POLICY "Designs are viewable by owner" ON public.designs FOR ALL USING (auth.uid() = owner_id);
 
-DROP POLICY IF EXISTS "Owners manage their own coupons" ON "public"."coupons";
-CREATE POLICY "Owners manage their own coupons" ON "public"."coupons" FOR ALL USING (auth.uid() = owner_id);
+-- Shops
+DROP POLICY IF EXISTS "Public shops are viewable by everyone" ON public.shops;
+CREATE POLICY "Public shops are viewable by everyone" ON public.shops FOR SELECT USING (true);
 
-DROP POLICY IF EXISTS "Profiles updateable by owner" ON "public"."profiles";
-CREATE POLICY "Profiles updateable by owner" ON "public"."profiles" FOR UPDATE USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Owners manage their own shops" ON public.shops;
+CREATE POLICY "Owners manage their own shops" ON public.shops FOR ALL USING (auth.uid() = owner_id);
 
-DROP POLICY IF EXISTS "Profiles viewable by owner" ON "public"."profiles";
-CREATE POLICY "Profiles viewable by owner" ON "public"."profiles" FOR SELECT USING (auth.uid() = user_id);
+-- Coupons
+DROP POLICY IF EXISTS "Active coupons viewable by everyone" ON public.coupons;
+CREATE POLICY "Active coupons viewable by everyone" ON public.coupons FOR SELECT USING (is_active = true);
+
+DROP POLICY IF EXISTS "Owners manage their own coupons" ON public.coupons;
+CREATE POLICY "Owners manage their own coupons" ON public.coupons FOR ALL USING (auth.uid() = owner_id);
+
+-- Products
+DROP POLICY IF EXISTS "Public products are viewable by everyone" ON public.products;
+CREATE POLICY "Public products are viewable by everyone" ON public.products FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Owners manage their products" ON public.products;
+CREATE POLICY "Owners manage their products" ON public.products FOR ALL 
+USING (EXISTS (
+    SELECT 1 FROM public.shops 
+    WHERE id = products.shop_id AND owner_id = auth.uid()
+))
+WITH CHECK (EXISTS (
+    SELECT 1 FROM public.shops 
+    WHERE id = products.shop_id AND owner_id = auth.uid()
+));
+
+-- Orders
+DROP POLICY IF EXISTS "Users view their own orders" ON public.orders;
+CREATE POLICY "Users view their own orders" ON public.orders FOR SELECT USING (auth.uid() = customer_id OR auth.uid() IN (SELECT owner_id FROM public.shops WHERE id = shop_id));
 
 -- 9. FUNCTIONS & SEARCH
 DROP FUNCTION IF EXISTS search_products(TEXT);
@@ -260,7 +284,16 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- 10. TRIGGERS
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  initial_role public.app_role;
 BEGIN
+  -- Safely parse the role
+  BEGIN
+    initial_role := (NEW.raw_user_meta_data->>'user_role')::public.app_role;
+  EXCEPTION WHEN OTHERS THEN
+    initial_role := 'customer'::public.app_role;
+  END;
+
   INSERT INTO public.profiles (user_id, full_name, avatar_url, customer_type)
   VALUES (
     NEW.id, 
@@ -270,7 +303,7 @@ BEGIN
   ) ON CONFLICT (user_id) DO NOTHING;
   
   INSERT INTO public.user_roles (user_id, role)
-  VALUES (NEW.id, COALESCE((NEW.raw_user_meta_data->>'user_role')::app_role, 'customer'))
+  VALUES (NEW.id, initial_role)
   ON CONFLICT (user_id, role) DO NOTHING;
   
   RETURN NEW;
@@ -291,6 +324,10 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('designs', 'designs', true)
 ON CONFLICT (id) DO NOTHING;
 
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('product-images', 'product-images', true)
+ON CONFLICT (id) DO NOTHING;
+
 -- Storage Policies
 DROP POLICY IF EXISTS "Public Read Logos" ON "storage"."objects";
 CREATE POLICY "Public Read Logos" ON "storage"."objects" FOR SELECT USING (bucket_id = 'shop-logos');
@@ -303,3 +340,9 @@ CREATE POLICY "Auth Upload Logos" ON "storage"."objects" FOR INSERT TO authentic
 
 DROP POLICY IF EXISTS "Auth Upload Designs" ON "storage"."objects";
 CREATE POLICY "Auth Upload Designs" ON "storage"."objects" FOR INSERT TO authenticated WITH CHECK (bucket_id = 'designs');
+
+DROP POLICY IF EXISTS "Public Read Product Images" ON "storage"."objects";
+CREATE POLICY "Public Read Product Images" ON "storage"."objects" FOR SELECT USING (bucket_id = 'product-images');
+
+DROP POLICY IF EXISTS "Auth Upload Product Images" ON "storage"."objects";
+CREATE POLICY "Auth Upload Product Images" ON "storage"."objects" FOR INSERT TO authenticated WITH CHECK (bucket_id = 'product-images');

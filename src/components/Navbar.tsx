@@ -88,7 +88,7 @@ const Navbar = () => {
           <Link to="/store?view=shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             <MapPin className="w-3.5 h-3.5" /> Find Shops
           </Link>
-          {(!user || role === "customer") && (
+          {(!user || (user?.user_metadata?.user_role !== "shop_owner" && user?.user_metadata?.user_role !== "manufacturer" && user?.user_metadata?.user_role !== "distributor" && role === "customer")) && (
             <Link to="/for-shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">For Shops</Link>
           )}
 

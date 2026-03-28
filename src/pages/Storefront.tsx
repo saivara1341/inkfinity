@@ -15,6 +15,26 @@ import Footer from "@/components/Footer";
 import ShareControl from "@/components/ShareControl";
 import WishlistButton from "@/components/WishlistButton";
 
+const SocialIcons = ({ services, className = "" }: { services: string[] | null, className?: string }) => {
+  if (!services) return null;
+  const socialServices = services.filter(s => s.startsWith("social:"));
+  if (socialServices.length === 0) return null;
+
+  return (
+    <div className={`flex items-center gap-2 ${className}`}>
+      {socialServices.map(s => {
+        const [,, handle] = s.split(":");
+        if (!handle) return null;
+        if (s.includes("instagram")) return <a key={s} href={`https://instagram.com/${handle}`} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-accent transition-colors"><Instagram className="w-3.5 h-3.5" /></a>;
+        if (s.includes("facebook")) return <a key={s} href={`https://facebook.com/${handle}`} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-accent transition-colors"><Facebook className="w-3.5 h-3.5" /></a>;
+        if (s.includes("twitter")) return <a key={s} href={`https://twitter.com/${handle}`} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-accent transition-colors"><Twitter className="w-3.5 h-3.5" /></a>;
+        if (s.includes("whatsapp")) return <a key={s} href={`https://wa.me/${handle.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-accent transition-colors"><Phone className="w-3.5 h-3.5" /></a>;
+        return null;
+      })}
+    </div>
+  );
+};
+
 interface Product {
   id: string;
   shop_id: string;
@@ -173,17 +193,7 @@ const Storefront = () => {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MapPin className="w-3.5 h-3.5" /> {activeShop.city}
                     {activeShop.is_verified && <span className="text-xs px-1.5 py-0.5 rounded bg-success/20 text-success">✓ Verified</span>}
-                    {/* Social Icons for Shop */}
-                    <div className="flex items-center gap-2 ml-2 pl-2 border-l border-border">
-                      {activeShop.services?.filter(s => s.startsWith("social:")).map(s => {
-                        const [,, handle] = s.split(":");
-                        if (s.includes("instagram")) return <a key={s} href={`https://instagram.com/${handle}`} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-accent transition-colors"><Instagram className="w-3.5 h-3.5" /></a>;
-                        if (s.includes("facebook")) return <a key={s} href={`https://facebook.com/${handle}`} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-accent transition-colors"><Facebook className="w-3.5 h-3.5" /></a>;
-                        if (s.includes("twitter")) return <a key={s} href={`https://twitter.com/${handle}`} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-accent transition-colors"><Twitter className="w-3.5 h-3.5" /></a>;
-                        if (s.includes("whatsapp")) return <a key={s} href={`https://wa.me/${handle.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-accent transition-colors"><Phone className="w-3.5 h-3.5" /></a>;
-                        return null;
-                      })}
-                    </div>
+                    <SocialIcons services={activeShop.services} className="ml-2 pl-2 border-l border-border" />
                   </div>
                 </div>
               </div>
@@ -407,6 +417,7 @@ const Storefront = () => {
                           <span>•</span>
                           <Star className="w-3 h-3 text-warning fill-warning" /> {shop.rating || "New"}
                         </div>
+                        <SocialIcons services={shop.services} className="mt-2" />
                       </div>
                     </div>
                     {shop.description && (

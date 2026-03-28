@@ -121,8 +121,16 @@ const SupplierDashboard = () => {
       <div className="p-8 pt-24 max-w-7xl mx-auto space-y-8">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-8 rounded-[2rem] shadow-sm border border-border/50 gap-6">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center gap-4 mb-2">
               <h1 className="font-display text-4xl font-bold text-foreground italic">Supplier Portal</h1>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => navigate("/")}
+                className="rounded-full gap-2 border-accent/20 text-accent hover:bg-accent/5"
+              >
+                <Globe className="w-4 h-4" /> Back to Marketplace
+              </Button>
               {supplier.verified && (
                 <Badge className="bg-blue-500 hover:bg-blue-600 text-white gap-1 px-3 py-1 rounded-full">
                   <PackageCheck className="w-3 h-3" /> Verified Manufacturer

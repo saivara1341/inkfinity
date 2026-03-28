@@ -164,7 +164,10 @@ export const ShopProducts = ({ shop }: Props) => {
       else toast.success("Product updated!");
     } else {
       const { error } = await supabase.from("products").insert(payload);
-      if (error) toast.error("Failed to add product");
+      if (error) {
+        console.error("Product creation error:", error);
+        toast.error(`Failed to add product: ${error.message}`);
+      }
       else toast.success("Product added!");
     }
     setSaving(false);
@@ -262,15 +265,7 @@ export const ShopProducts = ({ shop }: Props) => {
                   className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">Min Quantity</label>
-                <input
-                  type="number"
-                  value={form.min_quantity}
-                  onChange={(e) => setForm({ ...form, min_quantity: parseInt(e.target.value) || 1 })}
-                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-              </div>
+
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">Max Quantity</label>
                 <input

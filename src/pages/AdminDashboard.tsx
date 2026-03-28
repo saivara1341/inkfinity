@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   LayoutDashboard, Store, Users, CreditCard, BarChart3, Settings,
   Shield, CheckCircle2, XCircle, Clock, IndianRupee,
-  TrendingUp, AlertTriangle, Bell, Eye, LogOut, Activity, BarChart, FileWarning, HelpCircle, User, Camera, UploadCloud, Save, Menu, X, ChevronDown, Instagram, Facebook, Twitter, Phone
+  TrendingUp, AlertTriangle, Bell, Eye, LogOut, Activity, BarChart, FileWarning, HelpCircle, User, Camera, UploadCloud, Save, Menu, X, ChevronDown, Instagram, Facebook, Twitter, Phone, Globe
 } from "lucide-react";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart as ReBarChart, Bar } from "recharts";
 import { Button } from "@/components/ui/button";
@@ -247,13 +247,23 @@ const AdminDashboard = () => {
         fixed md:relative z-50 h-full
         ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
       `}>
-        <div className="h-16 flex items-center px-4 border-b border-primary-foreground/10 gap-3">
+        <div className="h-16 flex items-center px-4 border-b border-primary-foreground/10 gap-3 cursor-pointer hover:bg-white/10 transition-colors" onClick={() => navigate("/")}>
           <Shield className="w-6 h-6 text-accent shrink-0" />
           {(sidebarOpen || mobileMenuOpen) && <span className="font-display font-bold">PrintFlow Admin</span>}
-          <button onClick={() => setMobileMenuOpen(false)} className="md:hidden ml-auto p-2 text-primary-foreground/70">
+          <button onClick={(e) => { e.stopPropagation(); setMobileMenuOpen(false); }} className="md:hidden ml-auto p-2 text-primary-foreground/70">
             <X className="w-6 h-6" />
           </button>
         </div>
+        <div className="px-2 pt-4">
+          <button
+            onClick={() => navigate("/")}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold text-primary-foreground bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-all border border-primary-foreground/20 mb-2"
+          >
+            <Globe className="w-5 h-5 shrink-0" />
+            {(sidebarOpen || mobileMenuOpen) && <span>Back to Website</span>}
+          </button>
+        </div>
+
         <nav className="flex-1 py-4 px-2 space-y-1">
           {sidebarItems.map((item) => (
             <button key={item.id} onClick={() => { setActiveTab(item.id); setMobileMenuOpen(false); }}

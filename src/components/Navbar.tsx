@@ -161,7 +161,7 @@ const Navbar = () => {
                     {getDashboardLabel()}
                   </Link>
                   <Link
-                    to="/orders"
+                    to="/dashboard?tab=orders"
                     onClick={() => setProfileOpen(false)}
                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
                   >

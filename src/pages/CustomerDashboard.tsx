@@ -54,6 +54,15 @@ const CustomerDashboard = () => {
   const { orders, loading } = useCustomerOrders();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const tab = searchParams.get("tab") as Tab | null;
+    if (tab && ["orders", "tracking", "profile"].includes(tab)) {
+      setActiveTab(tab);
+    } else {
+      setActiveTab("orders");
+    }
+  }, [searchParams]);
+
   if (!user) {
     navigate("/login");
     return null;
@@ -216,11 +225,13 @@ const OrdersView = ({ orders }: { orders: Order[] }) => {
       <ReportModal />
       <ReviewModal />
 
-      <div className="text-center">
-        <Button variant="coral" size="lg" asChild>
-          <Link to="/catalog">Place New Order</Link>
-        </Button>
-      </div>
+      {orders.length > 0 && (
+        <div className="text-center pt-8">
+          <Button variant="coral" size="lg" asChild>
+            <Link to="/catalog">Place New Order</Link>
+          </Button>
+        </div>
+      )}
     </motion.div>
   );
 };

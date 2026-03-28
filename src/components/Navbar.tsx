@@ -1,6 +1,6 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation as useRouterLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Printer, Menu, X, ShoppingCart, User, LogOut, MapPin, Settings, ChevronDown, Package } from "lucide-react";
+import { Printer, Menu, X, ShoppingCart, User, LogOut, MapPin, Settings, ChevronDown, Package, LayoutDashboard } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -16,6 +16,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const profileRef = useRef<HTMLDivElement>(null);
   const { location, city, requestLocation, loading: locationLoading } = useLocation();
+  const routerLocation = useRouterLocation();
 
   useEffect(() => {
     if (!user) { setRole(null); return; }
@@ -88,6 +89,13 @@ const Navbar = () => {
           <Link to="/store?view=shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             <MapPin className="w-3.5 h-3.5" /> Find Shops
           </Link>
+          
+          {role === "shop_owner" && routerLocation.pathname === "/" && (
+            <Link to="/shop" className="text-sm font-semibold text-accent flex items-center gap-1.5 hover:opacity-80 transition-opacity">
+              <LayoutDashboard className="w-4 h-4" /> My Shop
+            </Link>
+          )}
+
           {(!user || (user?.user_metadata?.user_role !== "shop_owner" && user?.user_metadata?.user_role !== "manufacturer" && user?.user_metadata?.user_role !== "distributor" && role === "customer")) && (
             <Link to="/for-shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">For Shops</Link>
           )}
@@ -205,6 +213,12 @@ const Navbar = () => {
           <Link to="/store?view=shops" className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 text-sm font-medium" onClick={() => setMobileOpen(false)}>
             <MapPin className="w-4 h-4 text-accent" /> Find Shops Near You
           </Link>
+
+          {role === "shop_owner" && routerLocation.pathname === "/" && (
+            <Link to="/shop" className="flex items-center gap-3 p-4 rounded-xl bg-accent text-white text-sm font-bold shadow-lg" onClick={() => setMobileOpen(false)}>
+              <LayoutDashboard className="w-4 h-4" /> Go to My Shop Dashboard
+            </Link>
+          )}
           
           {user ? (
             <div className="space-y-3 pt-2">

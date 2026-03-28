@@ -523,15 +523,6 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
         <Button variant="coral" size="lg" className="w-full md:w-auto shadow-lg shadow-coral/20" onClick={handleSave} disabled={saving}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "Save Payment Settings"}
         </Button>
-        
-        <Button 
-          variant="outline" 
-          size="lg" 
-          className="w-full md:w-auto gap-2 rounded-xl"
-          onClick={() => navigate("/")}
-        >
-          <Home className="w-4 h-4" /> Back to Home
-        </Button>
       </div>
     </div>
   );

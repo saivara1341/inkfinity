@@ -74,20 +74,23 @@ const ShopDashboard = () => {
               {shop?.name || "My Shop"}
             </span>
           )}
+          {/* Mobile Close Button */}
           <button onClick={(e) => { e.stopPropagation(); setMobileMenuOpen(false); }} className="md:hidden ml-auto p-2 text-muted-foreground">
             <X className="w-5 h-5" />
           </button>
+          
+          {/* Desktop Toggle Button */}
+          {!mobileMenuOpen && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setSidebarOpen(!sidebarOpen); }}
+              className="hidden md:flex ml-auto w-8 h-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors shrink-0"
+            >
+              {sidebarOpen ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeftOpen className="w-5 h-5" />}
+            </button>
+          )}
         </div>
 
-        <div className="px-2 pt-4">
-          <button
-            onClick={() => navigate("/")}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold text-accent bg-accent/10 hover:bg-accent/20 transition-all border border-accent/20 mb-2"
-          >
-            <Store className="w-5 h-5 shrink-0" />
-            {(sidebarOpen || mobileMenuOpen) && <span>Back to Home</span>}
-          </button>
-        </div>
+        {/* Navigation Items */}
 
         <nav className="flex-1 py-2 px-2 space-y-1 overflow-y-auto">
           {sidebarItems.map((item) => (
@@ -110,15 +113,18 @@ const ShopDashboard = () => {
           <button
             onClick={async () => { await signOut(); navigate("/login"); }}
             className="flex-1 flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            title="Log Out"
           >
             <LogOut className="w-4 h-4 shrink-0" />
             {(sidebarOpen || mobileMenuOpen) && <span>Log Out</span>}
           </button>
+          
           <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="hidden md:flex w-8 h-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors shrink-0"
+            onClick={() => navigate("/")}
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors shrink-0"
+            title="Back to Landing Page"
           >
-            {sidebarOpen ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeftOpen className="w-5 h-5" />}
+            <Home className="w-4 h-4" />
           </button>
         </div>
       </aside>

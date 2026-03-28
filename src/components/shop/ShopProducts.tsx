@@ -38,13 +38,13 @@ const emptyForm = {
   name: "",
   description: "",
   category: "Visiting Cards",
-  base_price: 0,
-  min_quantity: 1,
+  base_price: "" as string | number,
+  min_quantity: "1" as string | number,
   max_quantity: "",
   is_active: true,
   imageFile: null as File | null,
   imagePreview: "",
-  price_tiers: [{ min: 1, price_per_unit: 0 }] as { min: number; price_per_unit: number }[],
+  price_tiers: [{ min: "1", price_per_unit: "0" }] as any[],
   sizes: [] as string[],
   materials: [] as string[],
 };
@@ -80,13 +80,16 @@ export const ShopProducts = ({ shop }: Props) => {
       name: product.name,
       description: product.description || "",
       category: product.category,
-      base_price: product.base_price,
-      min_quantity: product.min_quantity,
+      base_price: product.base_price.toString(),
+      min_quantity: product.min_quantity.toString(),
       max_quantity: product.max_quantity?.toString() || "",
       is_active: product.is_active,
       imageFile: null,
       imagePreview: product.images?.[0] || "",
-      price_tiers: (product.specifications as any)?.price_tiers || [{ min: 1, price_per_unit: product.base_price }],
+      price_tiers: ((product.specifications as any)?.price_tiers || [{ min: 1, price_per_unit: product.base_price }]).map((t: any) => ({
+        min: t.min?.toString() || "",
+        price_per_unit: t.price_per_unit?.toString() || ""
+      })),
       sizes: (product.specifications as any)?.sizes || [],
       materials: (product.specifications as any)?.materials || [],
     });
@@ -117,8 +120,8 @@ export const ShopProducts = ({ shop }: Props) => {
   };
 
   const handleSave = async () => {
-    if (!shop || !form.name || !form.category) {
-      toast.error("Please fill required fields");
+    if (!shop || !form.name || !form.category || form.base_price === "" || form.min_quantity === "") {
+      toast.error("Please fill required fields (Name, Category, Price, Min Quantity)");
       return;
     }
     setSaving(true);
@@ -145,14 +148,17 @@ export const ShopProducts = ({ shop }: Props) => {
       name: form.name,
       description: form.description || null,
       category: form.category,
-      base_price: form.base_price,
-      min_quantity: form.min_quantity,
+      base_price: parseFloat(form.base_price.toString()) || 0,
+      min_quantity: parseInt(form.min_quantity.toString()) || 1,
       max_quantity: form.max_quantity ? parseInt(form.max_quantity) : null,
       is_active: form.is_active,
       images,
       specifications: {
         ...((editingId ? products.find(p => p.id === editingId)?.specifications : {}) as any),
-        price_tiers: form.price_tiers,
+        price_tiers: form.price_tiers.map(t => ({
+          min: parseInt(t.min.toString()) || 0,
+          price_per_unit: parseFloat(t.price_per_unit.toString()) || 0
+        })),
         sizes: form.sizes,
         materials: form.materials,
       }
@@ -252,7 +258,7 @@ export const ShopProducts = ({ shop }: Props) => {
                 <input
                   type="number"
                   value={form.base_price}
-                  onChange={(e) => setForm({ ...form, base_price: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) => setForm({ ...form, base_price: e.target.value })}
                   className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
@@ -261,7 +267,7 @@ export const ShopProducts = ({ shop }: Props) => {
                 <input
                   type="number"
                   value={form.min_quantity}
-                  onChange={(e) => setForm({ ...form, min_quantity: parseInt(e.target.value) || 1 })}
+                  onChange={(e) => setForm({ ...form, min_quantity: e.target.value })}
                   className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
@@ -335,7 +341,7 @@ export const ShopProducts = ({ shop }: Props) => {
                 </h4>
                 <Button size="sm" variant="ghost" onClick={() => setForm({
                   ...form,
-                  price_tiers: [...form.price_tiers, { min: form.price_tiers[form.price_tiers.length-1].min * 10, price_per_unit: form.price_tiers[form.price_tiers.length-1].price_per_unit * 0.9 }]
+                  price_tiers: [...form.price_tiers, { min: (parseInt(form.price_tiers[form.price_tiers.length-1].min.toString()) * 10).toString(), price_per_unit: (parseFloat(form.price_tiers[form.price_tiers.length-1].price_per_unit.toString()) * 0.9).toString() }]
                 })}>
                   + Add Tier
                 </Button>
@@ -350,7 +356,7 @@ export const ShopProducts = ({ shop }: Props) => {
                         value={tier.min}
                         onChange={(e) => {
                           const newTiers = [...form.price_tiers];
-                          newTiers[i].min = parseInt(e.target.value) || 0;
+                          newTiers[i].min = e.target.value;
                           setForm({ ...form, price_tiers: newTiers });
                         }}
                         className="w-full bg-background border border-input rounded p-1 text-xs"
@@ -363,7 +369,7 @@ export const ShopProducts = ({ shop }: Props) => {
                         value={tier.price_per_unit}
                         onChange={(e) => {
                           const newTiers = [...form.price_tiers];
-                          newTiers[i].price_per_unit = parseFloat(e.target.value) || 0;
+                          newTiers[i].price_per_unit = e.target.value;
                           setForm({ ...form, price_tiers: newTiers });
                         }}
                         className="w-full bg-background border border-input rounded p-1 text-xs"

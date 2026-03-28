@@ -59,7 +59,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         toast.error(msg);
         setLoading(false);
       },
-      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   };
 

@@ -139,8 +139,8 @@ const ShopDashboard = () => {
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto min-w-0">
-        <header className="h-16 border-b border-border flex items-center justify-between px-4 md:px-6 sticky top-0 bg-background/80 backdrop-blur-sm z-20">
-          <div className="flex items-center gap-3">
+        <header className="h-16 border-b border-border flex items-center justify-between px-4 md:pl-10 md:pr-6 sticky top-0 bg-background/80 backdrop-blur-sm z-20">
+          <div className="flex items-center gap-6">
             <button 
               onClick={() => setMobileMenuOpen(true)}
               className="md:hidden p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-transform"

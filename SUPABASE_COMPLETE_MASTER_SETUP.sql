@@ -207,16 +207,26 @@ ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.inventory_items ENABLE ROW LEVEL SECURITY;
 
 -- Unified Policies
+DROP POLICY IF EXISTS "Public shops are viewable by everyone" ON public.shops;
 CREATE POLICY "Public shops are viewable by everyone" ON public.shops FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Owners manage their own shops" ON public.shops;
 CREATE POLICY "Owners manage their own shops" ON public.shops FOR ALL USING (auth.uid() = owner_id);
 
+DROP POLICY IF EXISTS "Active coupons viewable by everyone" ON public.coupons;
 CREATE POLICY "Active coupons viewable by everyone" ON public.coupons FOR SELECT USING (is_active = true);
+
+DROP POLICY IF EXISTS "Owners manage their own coupons" ON public.coupons;
 CREATE POLICY "Owners manage their own coupons" ON public.coupons FOR ALL USING (auth.uid() = owner_id);
 
+DROP POLICY IF EXISTS "Profiles updateable by owner" ON public.profiles;
 CREATE POLICY "Profiles updateable by owner" ON public.profiles FOR UPDATE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Profiles viewable by owner" ON public.profiles;
 CREATE POLICY "Profiles viewable by owner" ON public.profiles FOR SELECT USING (auth.uid() = user_id);
 
 -- 9. FUNCTIONS & SEARCH
+DROP FUNCTION IF EXISTS search_products(TEXT);
 CREATE OR REPLACE FUNCTION search_products(search_term TEXT)
 RETURNS SETOF public.products AS $$
 BEGIN
@@ -267,7 +277,14 @@ VALUES ('designs', 'designs', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Storage Policies
+DROP POLICY IF EXISTS "Public Read Logos" ON storage.objects;
 CREATE POLICY "Public Read Logos" ON storage.objects FOR SELECT USING (bucket_id = 'shop-logos');
+
+DROP POLICY IF EXISTS "Public Read Designs" ON storage.objects;
 CREATE POLICY "Public Read Designs" ON storage.objects FOR SELECT USING (bucket_id = 'designs');
+
+DROP POLICY IF EXISTS "Auth Upload Logos" ON storage.objects;
 CREATE POLICY "Auth Upload Logos" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'shop-logos');
+
+DROP POLICY IF EXISTS "Auth Upload Designs" ON storage.objects;
 CREATE POLICY "Auth Upload Designs" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'designs');

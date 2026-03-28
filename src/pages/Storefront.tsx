@@ -180,6 +180,7 @@ const Storefront = () => {
                         if (s.includes("instagram")) return <a key={s} href={`https://instagram.com/${handle}`} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-accent transition-colors"><Instagram className="w-3.5 h-3.5" /></a>;
                         if (s.includes("facebook")) return <a key={s} href={`https://facebook.com/${handle}`} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-accent transition-colors"><Facebook className="w-3.5 h-3.5" /></a>;
                         if (s.includes("twitter")) return <a key={s} href={`https://twitter.com/${handle}`} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-accent transition-colors"><Twitter className="w-3.5 h-3.5" /></a>;
+                        if (s.includes("whatsapp")) return <a key={s} href={`https://wa.me/${handle.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-accent transition-colors"><Phone className="w-3.5 h-3.5" /></a>;
                         return null;
                       })}
                     </div>

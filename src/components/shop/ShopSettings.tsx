@@ -35,6 +35,7 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
     instagram_handle: "",
     facebook_handle: "",
     twitter_handle: "",
+    whatsapp_handle: "",
     accepts_razorpay: shop?.accepts_razorpay || false,
     use_custom_razorpay: shop?.use_custom_razorpay || false,
     razorpay_key_id: shop?.razorpay_key_id || "",
@@ -51,11 +52,13 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
       const insta = shop.services.find(s => s.startsWith("social:instagram:"))?.split(":")[2] || "";
       const fb = shop.services.find(s => s.startsWith("social:facebook:"))?.split(":")[2] || "";
       const tw = shop.services.find(s => s.startsWith("social:twitter:"))?.split(":")[2] || "";
+      const wa = shop.services.find(s => s.startsWith("social:whatsapp:"))?.split(":")[2] || "";
       setForm(prev => ({
         ...prev,
         instagram_handle: insta,
         facebook_handle: fb,
         twitter_handle: tw,
+        whatsapp_handle: wa,
       }));
     }
   }, [shop?.services]);
@@ -81,6 +84,7 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
       if (form.instagram_handle) updatedServices.push(`social:instagram:${form.instagram_handle}`);
       if (form.facebook_handle) updatedServices.push(`social:facebook:${form.facebook_handle}`);
       if (form.twitter_handle) updatedServices.push(`social:twitter:${form.twitter_handle}`);
+      if (form.whatsapp_handle) updatedServices.push(`social:whatsapp:${form.whatsapp_handle}`);
 
       await onSave({
         ...form,
@@ -113,91 +117,160 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
     );
   }
 
-  const renderProfileForm = () => (
-    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-      <div className="flex items-center justify-between">
-        <h3 className="font-display font-semibold text-xl text-foreground">Shop Profile Settings</h3>
-        <Button variant="ghost" size="sm" onClick={() => setActiveView("menu")}>Back to Menu</Button>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {fields.map((f) => (
-          <div key={f.key}>
-            <label className="text-sm font-medium text-muted-foreground mb-1.5 block">{f.label}</label>
-            <input
-              type="text"
-              name={f.key}
-              value={(form as any)[f.key]}
-              onChange={handleChange}
-              className="w-full px-4 py-2.5 rounded-xl border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/40 transition-all"
-            />
-          </div>
-        ))}
-      </div>
-      <div>
-        <label className="text-sm font-medium text-muted-foreground mb-1.5 block">Description</label>
-        <textarea
-          name="description"
-          value={form.description}
-          onChange={handleChange}
-          rows={4}
-          className="w-full px-4 py-2.5 rounded-xl border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/40 resize-none transition-all"
-          placeholder="Tell customers about your shop's specialties..."
-        />
-      </div>
+  const renderProfileForm = () => {
+    const shopUrl = `${window.location.origin}/store?view=products&shop=${shop.id}`;
 
-      <div className="p-4 rounded-xl border border-border bg-secondary/30 space-y-3">
-        <h4 className="text-sm font-bold text-foreground">Social Media Links</h4>
-        <p className="text-xs text-muted-foreground">Connect your social profiles to your shop.</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block">Instagram</label>
-            <div className="relative">
-              <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input 
-                name="instagram_handle" 
-                value={form.instagram_handle} 
-                onChange={handleChange} 
-                placeholder="@username"
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring" 
-              />
+    return (
+      <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+        <div className="flex items-center justify-between">
+          <h3 className="font-display font-semibold text-xl text-foreground">Shop Profile Settings</h3>
+          <Button variant="ghost" size="sm" onClick={() => setActiveView("menu")}>Back to Menu</Button>
+        </div>
+
+        {/* Share Shop Feature */}
+        <div className="p-6 rounded-2xl bg-accent/5 border border-accent/20 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+              <Globe className="w-5 h-5 text-accent" />
+            </div>
+            <div>
+              <h4 className="font-bold text-foreground">Share Your Shop</h4>
+              <p className="text-xs text-muted-foreground">Promote your shop link to customers.</p>
             </div>
           </div>
-          <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block">Facebook</label>
-            <div className="relative">
-              <Facebook className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input 
-                name="facebook_handle" 
-                value={form.facebook_handle} 
-                onChange={handleChange} 
-                placeholder="username"
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring" 
-              />
-            </div>
-          </div>
-          <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block">Twitter / X</label>
-            <div className="relative">
-              <Twitter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input 
-                name="twitter_handle" 
-                value={form.twitter_handle} 
-                onChange={handleChange} 
-                placeholder="@username"
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring" 
-              />
+          
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input 
+              readOnly 
+              value={shopUrl}
+              className="flex-1 px-4 py-2 rounded-xl border border-input bg-background/50 text-xs font-mono text-muted-foreground"
+            />
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2 shrink-0"
+                onClick={() => {
+                  navigator.clipboard.writeText(shopUrl);
+                  toast.success("Link copied to clipboard!");
+                }}
+              >
+                Copy Link
+              </Button>
+              <Button 
+                variant="coral" 
+                size="sm" 
+                className="gap-2 shrink-0"
+                onClick={() => {
+                  window.open(`https://wa.me/?text=${encodeURIComponent(`Check out my shop on PrintFlow: ${shopUrl}`)}`, "_blank");
+                }}
+              >
+                Share on WhatsApp
+              </Button>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="pt-4 border-t border-border">
-        <Button variant="coral" size="lg" className="w-full md:w-auto shadow-lg shadow-coral/20" onClick={handleSave} disabled={saving}>
-          {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "Save Profile Changes"}
-        </Button>
+        <div className="p-6 rounded-2xl bg-card border border-border shadow-sm space-y-6">
+          <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-muted-foreground" /> Contact Information
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {fields.map((f) => (
+              <div key={f.key}>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block">{f.label}</label>
+                <input
+                  type="text"
+                  name={f.key}
+                  value={(form as any)[f.key]}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 rounded-xl border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/40 transition-all font-display"
+                />
+              </div>
+            ))}
+          </div>
+          <div>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block">Description</label>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              rows={4}
+              className="w-full px-4 py-2.5 rounded-xl border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/40 resize-none transition-all"
+              placeholder="Tell customers about your shop's specialties..."
+            />
+          </div>
+        </div>
+
+        <div className="p-6 rounded-2xl border border-border bg-secondary/30 space-y-4">
+          <div className="flex items-center gap-2">
+            <Instagram className="w-4 h-4 text-muted-foreground" />
+            <h4 className="text-sm font-bold text-foreground">Social Media Links</h4>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 block">Instagram</label>
+              <div className="relative">
+                <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input 
+                  name="instagram_handle" 
+                  value={form.instagram_handle} 
+                  onChange={handleChange} 
+                  placeholder="@username"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring" 
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 block">Facebook</label>
+              <div className="relative">
+                <Facebook className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input 
+                  name="facebook_handle" 
+                  value={form.facebook_handle} 
+                  onChange={handleChange} 
+                  placeholder="username"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring" 
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 block">Twitter / X</label>
+              <div className="relative">
+                <Twitter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input 
+                  name="twitter_handle" 
+                  value={form.twitter_handle} 
+                  onChange={handleChange} 
+                  placeholder="@username"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring" 
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 block">WhatsApp</label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input 
+                  name="whatsapp_handle" 
+                  value={form.whatsapp_handle} 
+                  onChange={handleChange} 
+                  placeholder="+91 XXXXX XXXXX"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring" 
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-border">
+          <Button variant="coral" size="lg" className="w-full md:w-auto shadow-lg shadow-coral/20" onClick={handleSave} disabled={saving}>
+            {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "Save Profile Changes"}
+          </Button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderPaymentForm = () => (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">

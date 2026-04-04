@@ -81,26 +81,26 @@ const visitingCardSizes: PrintSize[] = [
 ];
 
 const visitingCardPapers: PaperType[] = [
-  { id: "art-300", label: "300 GSM Art Card", gsm: 300, description: "Standard glossy finish, professional look", priceMultiplier: 1, image: "/assets/products/glossy_finish_visiting_card_mockup_1775247440849.png" },
-  { id: "art-350", label: "350 GSM Art Card", gsm: 350, description: "Thicker, premium feel", priceMultiplier: 1.15, image: "/assets/products/premium_visiting_cards_mockup_1775247422194.png" },
-  { id: "matte-350", label: "350 GSM Matte Card", gsm: 350, description: "Elegant non-glossy finish", priceMultiplier: 1.2, image: "/assets/products/premium_visiting_cards_mockup_1775247422194.png" },
-  { id: "textured-400", label: "400 GSM Textured", gsm: 400, description: "Linen or felt texture, luxury feel", priceMultiplier: 1.8, image: "/assets/products/gold_foil_visiting_card_mockup_1775247458938.png" },
-  { id: "metallic", label: "Metallic Gold/Silver", gsm: 350, description: "Shimmering metallic finish", priceMultiplier: 2.5, image: "/assets/products/gold_foil_visiting_card_mockup_1775247458938.png" },
-  { id: "transparent-pvc", label: "Transparent PVC", gsm: 0, description: "Clear plastic card, modern look", priceMultiplier: 4, image: "/assets/products/sticker_mockup_canva_style_1775247512635.png" },
+  { id: "art-300", label: "300 GSM Art Card", gsm: 300, description: "Standard glossy finish, professional look", priceMultiplier: 1, image: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=200&h=200&fit=crop" },
+  { id: "art-350", label: "350 GSM Art Card", gsm: 350, description: "Thicker, premium feel", priceMultiplier: 1.15, image: "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=200&h=200&fit=crop" },
+  { id: "matte-350", label: "350 GSM Matte Card", gsm: 350, description: "Elegant non-glossy finish", priceMultiplier: 1.2, image: "https://images.unsplash.com/photo-1572502742898-d5e4a3e5e1b5?w=200&h=200&fit=crop" },
+  { id: "textured-400", label: "400 GSM Textured", gsm: 400, description: "Linen or felt texture, luxury feel", priceMultiplier: 1.8, image: "https://images.unsplash.com/photo-1589384267710-7a25bc5b4862?w=200&h=200&fit=crop" },
+  { id: "metallic", label: "Metallic Gold/Silver", gsm: 350, description: "Shimmering metallic finish", priceMultiplier: 2.5, image: "https://images.unsplash.com/photo-1589384267710-7a25bc5b4862?w=200&h=200&fit=crop" },
+  { id: "transparent-pvc", label: "Transparent PVC", gsm: 0, description: "Clear plastic card, modern look", priceMultiplier: 4, image: "https://images.unsplash.com/photo-1581413809628-98e3b3a5fe6f?w=200&h=200&fit=crop" },
   { id: "kraft", label: "300 GSM Kraft Paper", gsm: 300, description: "Eco-friendly rustic brown", priceMultiplier: 1.3, image: "https://images.unsplash.com/photo-1595113316349-9fa430eb3749?w=200&h=200&fit=crop" },
-  { id: "velvet", label: "400 GSM Velvet Touch", gsm: 400, description: "Soft-touch laminated, ultra premium", priceMultiplier: 3, image: "/assets/products/premium_visiting_cards_mockup_1775247422194.png" },
+  { id: "velvet", label: "400 GSM Velvet Touch", gsm: 400, description: "Soft-touch laminated, ultra premium", priceMultiplier: 3, image: "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=200&h=200&fit=crop" },
 ];
 
 const visitingCardFinishes: FinishType[] = [
-  { id: "none", label: "No Finish", description: "Standard uncoated", priceAdd: 0, image: "/assets/products/premium_visiting_cards_mockup_1775247422194.png" },
-  { id: "glossy-lam", label: "Glossy Lamination", description: "Shiny protective coating", priceAdd: 0.3, image: "/assets/products/glossy_finish_visiting_card_mockup_1775247440849.png" },
-  { id: "matte-lam", label: "Matte Lamination", description: "Smooth matte protective coating", priceAdd: 0.4, image: "/assets/products/premium_visiting_cards_mockup_1775247422194.png" },
-  { id: "spot-uv", label: "Spot UV", description: "Raised glossy accent on specific areas", priceAdd: 0.8, image: "/assets/products/gold_foil_visiting_card_mockup_1775247458938.png" },
-  { id: "foil-gold", label: "Gold Foil Stamping", description: "Metallic gold emboss on text/logo", priceAdd: 1.5, image: "/assets/products/gold_foil_visiting_card_mockup_1775247458938.png" },
-  { id: "foil-silver", label: "Silver Foil Stamping", description: "Metallic silver emboss", priceAdd: 1.5, image: "/assets/products/gold_foil_visiting_card_mockup_1775247458938.png" },
-  { id: "emboss", label: "Embossing", description: "Raised 3D texture on design elements", priceAdd: 1.2, image: "/assets/products/premium_visiting_cards_mockup_1775247422194.png" },
-  { id: "deboss", label: "Debossing", description: "Pressed-in texture", priceAdd: 1.2, image: "/assets/products/premium_visiting_cards_mockup_1775247422194.png" },
-  { id: "edge-color", label: "Edge Coloring", description: "Painted card edges for premium look", priceAdd: 2, image: "/assets/products/gold_foil_visiting_card_mockup_1775247458938.png" },
+  { id: "none", label: "No Finish", description: "Standard uncoated", priceAdd: 0, image: "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=200&h=200&fit=crop" },
+  { id: "glossy-lam", label: "Glossy Lamination", description: "Shiny protective coating", priceAdd: 0.3, image: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=200&h=200&fit=crop" },
+  { id: "matte-lam", label: "Matte Lamination", description: "Smooth matte protective coating", priceAdd: 0.4, image: "https://images.unsplash.com/photo-1572502742898-d5e4a3e5e1b5?w=200&h=200&fit=crop" },
+  { id: "spot-uv", label: "Spot UV", description: "Raised glossy accent on specific areas", priceAdd: 0.8, image: "https://images.unsplash.com/photo-1589384267710-7a25bc5b4862?w=200&h=200&fit=crop" },
+  { id: "foil-gold", label: "Gold Foil Stamping", description: "Metallic gold emboss on text/logo", priceAdd: 1.5, image: "https://images.unsplash.com/photo-1589384267710-7a25bc5b4862?w=200&h=200&fit=crop" },
+  { id: "foil-silver", label: "Silver Foil Stamping", description: "Metallic silver emboss", priceAdd: 1.5, image: "https://images.unsplash.com/photo-1589384267710-7a25bc5b4862?w=200&h=200&fit=crop" },
+  { id: "emboss", label: "Embossing", description: "Raised 3D texture on design elements", priceAdd: 1.2, image: "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=200&h=200&fit=crop" },
+  { id: "deboss", label: "Debossing", description: "Pressed-in texture", priceAdd: 1.2, image: "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=200&h=200&fit=crop" },
+  { id: "edge-color", label: "Edge Coloring", description: "Painted card edges for premium look", priceAdd: 2, image: "https://images.unsplash.com/photo-1589384267710-7a25bc5b4862?w=200&h=200&fit=crop" },
 ];
 
 // ═══════════════════════════════════════════════
@@ -599,7 +599,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "pvc-id-card", name: "PVC ID Card", description: "Standard plastic identity cards",
-        image: "/assets/products/id_card_branded.png",
+        image: "https://images.unsplash.com/photo-1581413809628-98e3b3a5fe6f?w=400&q=80",
         startingPrice: "₹25", unit: "per card", minQty: 1, popular: true,
         sizes: idCardSizes, papers: idCardPapers, finishes: [{ id: "none", label: "No Finish", description: "Standard", priceAdd: 0 }, { id: "matte", label: "Matte Surface", description: "Anti-glare", priceAdd: 5 }],
         quantityTiers: [

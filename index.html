@@ -1,94 +1,111 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <script>
-      // SELF-HEALING: Force unregister any stale service workers
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) {
-            registration.unregister();
-            console.log("Unregistered stale service worker");
-          }
-        });
-      }
-      // Clear cache on load
-      console.log("INDEX.HTML EXECUTING - V18");
-    </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- TODO: Set the document title to the name of your application -->
-    <title>PrintFlow — India&#39;s Smartest Printing Platform</title>
-    <meta name="description" content="Upload your design and get professional prints from local shops — visiting cards, flyers, posters, banners &amp; more.">
-    <meta name="author" content="PrintFlow" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="PrintFlow" />
-    <meta name="theme-color" content="#e8613a" />
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="apple-touch-icon" href="favicon.svg" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="PrintFlow — India's Smartest Printing Platform">
-    <meta property="og:description" content="Upload your design and get professional prints from local shops — visiting cards, flyers, posters, banners &amp; more.">
-    <meta property="og:image" content="og-image.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="PrintFlow — India's Smartest Printing Platform">
-    <meta name="twitter:description" content="Upload your design and get professional prints from local shops — visiting cards, flyers, posters, banners &amp; more.">
-    <meta name="twitter:image" content="og-image.png" />
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script src="https://sdk.cc-embed.adobe.com/v1/CCEmbedSDK.js"></script>
-    <script src="https://sdk.canva.com/designbutton/v2/api.js"></script>
+
+<head>
+  <meta charset="UTF-8" />
+  <script>
+    // SELF-HEALING: Force unregister any stale service workers
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        for (let registration of registrations) {
+          registration.unregister();
+          console.log("Unregistered stale service worker");
+        }
+      });
+    }
+    // Clear cache on load
+    console.log("INDEX.HTML EXECUTING - V18");
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- TODO: Set the document title to the name of your application -->
+  <title>PrintFlow — India&#39;s Smartest Printing Platform</title>
+  <meta name="description"
+    content="Upload your design and get professional prints from local shops — visiting cards, flyers, posters, banners &amp; more.">
+  <meta name="author" content="PrintFlow" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="PrintFlow" />
+  <meta name="theme-color" content="#e8613a" />
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖨</text></svg>" />
+  <link rel="apple-touch-icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖨</text></svg>" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="PrintFlow — India's Smartest Printing Platform">
+  <meta property="og:description"
+    content="Upload your design and get professional prints from local shops — visiting cards, flyers, posters, banners &amp; more.">
+  <meta property="og:image" content="og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="PrintFlow — India's Smartest Printing Platform">
+  <meta name="twitter:description"
+    content="Upload your design and get professional prints from local shops — visiting cards, flyers, posters, banners &amp; more.">
+  <meta name="twitter:image" content="og-image.png" />
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="https://sdk.cc-embed.adobe.com/v1/CCEmbedSDK.js"></script>
+  <script src="https://sdk.canva.com/designbutton/v2/api.js"></script>
 </head>
 
-  <body>
-    <div id="root">
-      <style>
-        .initial-loader-container {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 100vh;
-          background-color: #ffffff;
-          font-family: system-ui, -apple-system, sans-serif;
+<body>
+  <div id="root">
+    <style>
+      .initial-loader-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background-color: #ffffff;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+
+      .initial-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(232, 97, 58, 0.2);
+        border-left-color: #e8613a;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
         }
-        .initial-spinner {
-          width: 50px;
-          height: 50px;
-          border: 4px solid rgba(232, 97, 58, 0.2);
-          border-left-color: #e8613a;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-bottom: 20px;
+
+        100% {
+          transform: rotate(360deg);
         }
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        .initial-title {
-          font-size: 24px;
-          font-weight: 800;
-          color: #000;
-          margin: 0;
-          letter-spacing: -0.5px;
-        }
-        .initial-title span {
-          color: #e8613a;
-          font-style: italic;
-        }
-        .initial-text {
-          color: #666;
-          font-size: 14px;
-          margin-top: 8px;
-          font-weight: 500;
-        }
-      </style>
-      <div class="initial-loader-container">
-        <div class="initial-spinner"></div>
-        <h2 class="initial-title">Print<span>Flow</span></h2>
-        <p class="initial-text">Warming up the rollers...</p>
-      </div>
+      }
+
+      .initial-title {
+        font-size: 24px;
+        font-weight: 800;
+        color: #000;
+        margin: 0;
+        letter-spacing: -0.5px;
+      }
+
+      .initial-title span {
+        color: #e8613a;
+        font-style: italic;
+      }
+
+      .initial-text {
+        color: #666;
+        font-size: 14px;
+        margin-top: 8px;
+        font-weight: 500;
+      }
+    </style>
+    <div class="initial-loader-container">
+      <div class="initial-spinner"></div>
+      <h2 class="initial-title">Print<span>Flow</span></h2>
+      <p class="initial-text">Warming up the rollers...</p>
     </div>
-    <script type="module" src="src/main.tsx"></script>
-  </body>
+  </div>
+  <script type="module" src="src/main.tsx"></script>
+</body>
+
 </html>

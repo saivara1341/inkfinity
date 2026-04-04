@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageSquare, X, Send, Bot, MapPin, Package,
-  IndianRupee, Sparkles, Star, Search, Truck, Clock
+  IndianRupee, Printer, Star, Search, Truck, Clock
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { productCategories, getAllSubcategories } from "@/data/printingProducts";
@@ -321,7 +321,7 @@ export const QuickOrderBot = () => {
         className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-primary to-primary/80 text-white rounded-2xl shadow-2xl flex items-center justify-center hover:scale-110 transition-transform z-50 group"
         aria-label="Chat with PrintFlow Assistant"
       >
-        <Sparkles className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+        <Printer className="w-6 h-6 group-hover:rotate-12 transition-transform" />
       </button>
 
       <AnimatePresence>
@@ -331,13 +331,13 @@ export const QuickOrderBot = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 80, scale: 0.95 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-6 right-6 w-[400px] h-[600px] max-w-[92vw] max-h-[80vh] bg-white rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.15)] border border-slate-200 flex flex-col z-50 overflow-hidden"
+            className="fixed bottom-6 right-6 w-[400px] h-[600px] max-w-[92vw] max-h-[70vh] sm:max-h-[80vh] bg-white rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.15)] border border-slate-200 flex flex-col z-50 overflow-hidden"
           >
             {/* Header */}
             <div className="px-5 py-4 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-primary" />
+                  <Printer className="w-5 h-5 text-primary" />
                 </div>
                 <div>
                   <h3 className="font-bold text-sm">PrintFlow Assistant</h3>

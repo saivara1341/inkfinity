@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { IndianRupee, Star, Package, ChevronRight, Heart, Share2, Zap } from "lucide-react";
+import { IndianRupee, Star, Package, ChevronRight, Heart, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -131,11 +131,11 @@ const ProductCardV2 = ({ product }: ProductCardV2Props) => {
         <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
           {product.popular && (
             <div className="px-2.5 py-1 bg-[#FF7300] text-white text-[10px] font-bold uppercase tracking-wider rounded-md shadow-lg flex items-center gap-1.5 backdrop-blur-sm">
-              <Zap className="w-3 h-3 fill-current" /> Bestseller
+              <Star className="w-3 h-3 fill-current" /> Bestseller
             </div>
           )}
           <div className="px-2.5 py-1 bg-white/90 text-slate-900 text-[10px] font-bold uppercase tracking-wider rounded-md shadow-sm border border-black/5 backdrop-blur-sm">
-            {product.turnaroundDays}-Day Delivery
+            {product.turnaroundDays ? `${product.turnaroundDays}-Day Delivery` : "Fast Delivery"}
           </div>
         </div>
       </div>

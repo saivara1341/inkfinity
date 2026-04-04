@@ -49,6 +49,10 @@ const CATEGORY_IMAGES: Record<string, string> = {
   "Hospital & Medical": "https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=800&q=80",
   "weddings": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
   "Luxury Weddings": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
+  "student-projects": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&q=80",
+  "Student Projects & Binding": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&q=80",
+  "instagram-trending": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800&q=80",
+  "Instagram Trending": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800&q=80",
   "custom": "https://images.unsplash.com/photo-1623013898240-dc50ec9588b3?w=800&q=80",
 };
 

@@ -399,7 +399,7 @@ export const productCategories: ProductCategory[] = [
         sizes: visitingCardSizes.filter(s => ["vc-standard", "vc-indian"].includes(s.id)),
         papers: visitingCardPapers.slice(0, 4), finishes: visitingCardFinishes.slice(0, 5),
         quantityTiers: [
-          { min: 100, max: 999, pricePerUnit: 2.49 }, 
+          { min: 100, max: 999, pricePerUnit: 2.49 },
           { min: 1000, max: 1999, pricePerUnit: 2.24 }, // -10% (2.49 * 0.9 = 2.241)
           { min: 2000, max: 4999, pricePerUnit: 2.11 }, // -15% (2.49 * 0.85 = 2.1165)
           { min: 5000, max: 99999, pricePerUnit: 1.86 }, // -25% (2.49 * 0.75 = 1.8675)
@@ -955,6 +955,330 @@ export const productCategories: ProductCategory[] = [
           { min: 250, max: 999, pricePerUnit: 85 },
         ],
         printingMethods: printingMethodsDigital, turnaroundDays: "10-14",
+      },
+    ],
+  },
+  // ═══════════════════════════════════════════════
+  // STUDENT PROJECTS & BOOK BINDING
+  // ═══════════════════════════════════════════════
+  {
+    id: "student-projects",
+    name: "Student Projects & Binding",
+    description: "Affordable printing and binding for academic submissions",
+    icon: "BookOpen",
+    subcategories: [
+      {
+        id: "spiral-binding", name: "Spiral Binding", description: "Durable plastic spiral binding for reports and presentations",
+        startingPrice: "₹30", unit: "per copy", minQty: 1, popular: true,
+        sizes: [
+          { id: "sp-a4", label: "A4", dimensions: "210 × 297 mm", widthMM: 210, heightMM: 297, widthInch: "8.3", heightInch: "11.7", basePrice: 30 },
+          { id: "sp-a3", label: "A3", dimensions: "297 × 420 mm", widthMM: 297, heightMM: 420, widthInch: "11.7", heightInch: "16.5", basePrice: 60 },
+          { id: "sp-legal", label: "Legal", dimensions: "216 × 356 mm", widthMM: 216, heightMM: 356, widthInch: "8.5", heightInch: "14", basePrice: 35 },
+        ],
+        papers: [
+          { id: "bond-80", label: "80 GSM Bond Paper", gsm: 80, description: "Standard B&W print paper", priceMultiplier: 1 },
+          { id: "bond-100", label: "100 GSM Bond Paper", gsm: 100, description: "Thicker pages, less show-through", priceMultiplier: 1.2 },
+        ],
+        finishes: [
+          { id: "transparent-cover", label: "Transparent Front Cover", description: "Clear PVC front + black back", priceAdd: 10 },
+          { id: "color-cover", label: "Colored Front Cover", description: "Opaque colored front cover", priceAdd: 15 },
+        ],
+        quantityTiers: [
+          { min: 1, max: 4, pricePerUnit: 50 }, { min: 5, max: 9, pricePerUnit: 40 },
+          { min: 10, max: 99, pricePerUnit: 30 },
+        ],
+        printingMethods: [{ id: "digital", label: "Digital Printing", description: "Laser or inkjet for small runs" }],
+        turnaroundDays: "1-2",
+      },
+      {
+        id: "hardcover-binding", name: "Hardcover Binding", description: "Professional hardbound thesis and project reports with gold/silver embossing",
+        startingPrice: "₹150", unit: "per copy", minQty: 1, popular: true,
+        sizes: [
+          { id: "hb-a4", label: "A4 Hardbound", dimensions: "210 × 297 mm", widthMM: 210, heightMM: 297, widthInch: "8.3", heightInch: "11.7", basePrice: 150 },
+        ],
+        papers: [
+          { id: "bond-80", label: "80 GSM Bond Paper", gsm: 80, description: "Standard pages", priceMultiplier: 1 },
+          { id: "bond-100", label: "100 GSM Bond Paper", gsm: 100, description: "Premium pages", priceMultiplier: 1.3 },
+        ],
+        finishes: [
+          { id: "gold-emboss", label: "Gold Letter Embossing", description: "University name & title in gold foil", priceAdd: 80 },
+          { id: "silver-emboss", label: "Silver Letter Embossing", description: "Silver foil title", priceAdd: 80 },
+          { id: "plain", label: "Plain Cover (No Emboss)", description: "Solid rexine cover only", priceAdd: 0 },
+        ],
+        quantityTiers: [
+          { min: 1, max: 2, pricePerUnit: 250 }, { min: 3, max: 5, pricePerUnit: 200 },
+          { min: 6, max: 20, pricePerUnit: 150 },
+        ],
+        printingMethods: [{ id: "digital", label: "Digital + Letterpress", description: "Print + embossed cover" }],
+        turnaroundDays: "2-4",
+      },
+      {
+        id: "softcover-binding", name: "Softcover / Perfect Binding", description: "Glue-bound soft cover reports and manuals",
+        startingPrice: "₹60", unit: "per copy", minQty: 1,
+        sizes: [
+          { id: "sc-a4", label: "A4", dimensions: "210 × 297 mm", widthMM: 210, heightMM: 297, widthInch: "8.3", heightInch: "11.7", basePrice: 60 },
+          { id: "sc-a5", label: "A5 (Half size)", dimensions: "148 × 210 mm", widthMM: 148, heightMM: 210, widthInch: "5.8", heightInch: "8.3", basePrice: 45 },
+        ],
+        papers: [
+          { id: "bond-80", label: "80 GSM Bond Paper", gsm: 80, description: "Standard", priceMultiplier: 1 },
+          { id: "gloss-130", label: "130 GSM Gloss Art (color pages)", gsm: 130, description: "For color-heavy pages", priceMultiplier: 1.5 },
+        ],
+        finishes: [
+          { id: "glossy-cover", label: "Glossy Laminated Cover", description: "300 GSM glossy cover", priceAdd: 20 },
+          { id: "matte-cover", label: "Matte Laminated Cover", description: "300 GSM matte cover", priceAdd: 25 },
+        ],
+        quantityTiers: [
+          { min: 1, max: 4, pricePerUnit: 90 }, { min: 5, max: 9, pricePerUnit: 75 },
+          { min: 10, max: 50, pricePerUnit: 60 },
+        ],
+        printingMethods: [{ id: "digital", label: "Digital Printing", description: "Short run printing & binding" }],
+        turnaroundDays: "2-3",
+      },
+      {
+        id: "mini-project-report", name: "Mini Project Report", description: "Complete A4 printing + spiral binding for semester mini projects",
+        startingPrice: "₹40", unit: "per copy", minQty: 1, popular: true,
+        sizes: [
+          { id: "mpr-a4", label: "A4 (up to 50 pages)", dimensions: "210 × 297 mm", widthMM: 210, heightMM: 297, widthInch: "8.3", heightInch: "11.7", basePrice: 40 },
+          { id: "mpr-a4-100", label: "A4 (51-100 pages)", dimensions: "210 × 297 mm", widthMM: 210, heightMM: 297, widthInch: "8.3", heightInch: "11.7", basePrice: 70 },
+          { id: "mpr-a4-200", label: "A4 (101-200 pages)", dimensions: "210 × 297 mm", widthMM: 210, heightMM: 297, widthInch: "8.3", heightInch: "11.7", basePrice: 120 },
+        ],
+        papers: [
+          { id: "bond-70", label: "70 GSM Bond Paper", gsm: 70, description: "Economy paper", priceMultiplier: 0.8 },
+          { id: "bond-80", label: "80 GSM Bond Paper", gsm: 80, description: "Standard", priceMultiplier: 1 },
+        ],
+        finishes: [
+          { id: "spiral-transparent", label: "Spiral + Transparent Cover", description: "Standard student cover", priceAdd: 10 },
+        ],
+        quantityTiers: [
+          { min: 1, max: 2, pricePerUnit: 60 }, { min: 3, max: 9, pricePerUnit: 50 },
+          { min: 10, max: 99, pricePerUnit: 40 },
+        ],
+        printingMethods: [{ id: "digital", label: "Digital Printing", description: "Laser print single/double sided" }],
+        turnaroundDays: "1",
+      },
+      {
+        id: "major-project-thesis", name: "Major Project / Thesis", description: "Complete printing + hardbound binding with embossed cover for final year projects & PhD thesis",
+        startingPrice: "₹250", unit: "per copy", minQty: 1, popular: true,
+        sizes: [
+          { id: "thesis-a4", label: "A4 Thesis (up to 150 pages)", dimensions: "210 × 297 mm", widthMM: 210, heightMM: 297, widthInch: "8.3", heightInch: "11.7", basePrice: 250 },
+          { id: "thesis-a4-300", label: "A4 Thesis (151-300 pages)", dimensions: "210 × 297 mm", widthMM: 210, heightMM: 297, widthInch: "8.3", heightInch: "11.7", basePrice: 400 },
+        ],
+        papers: [
+          { id: "bond-80", label: "80 GSM Bond Paper", gsm: 80, description: "Standard thesis paper", priceMultiplier: 1 },
+          { id: "bond-100", label: "100 GSM Bond Paper", gsm: 100, description: "Premium pages", priceMultiplier: 1.3 },
+        ],
+        finishes: [
+          { id: "gold-emboss", label: "Gold Embossed Hardcover", description: "Navy/Maroon rexine with gold letters", priceAdd: 100 },
+          { id: "silver-emboss", label: "Silver Embossed Hardcover", description: "Black rexine with silver letters", priceAdd: 100 },
+          { id: "cd-pocket", label: "CD Pocket (back cover)", description: "For project CD/DVD", priceAdd: 30 },
+        ],
+        quantityTiers: [
+          { min: 1, max: 2, pricePerUnit: 350 }, { min: 3, max: 5, pricePerUnit: 300 },
+          { min: 6, max: 20, pricePerUnit: 250 },
+        ],
+        printingMethods: [{ id: "digital", label: "Digital + Letterpress", description: "Full printing + hardcover binding" }],
+        turnaroundDays: "3-5",
+      },
+    ],
+  },
+  // ═══════════════════════════════════════════════
+  // INSTAGRAM TRENDING PRODUCTS (2025-2026)
+  // ═══════════════════════════════════════════════
+  {
+    id: "instagram-trending",
+    name: "Instagram Trending",
+    description: "Viral products that Indian print shops sell via Instagram reels",
+    icon: "TrendingUp",
+    subcategories: [
+      {
+        id: "acrylic-photo-frame", name: "Acrylic Photo Frame", description: "UV printed photo on crystal-clear acrylic with LED base — #1 trending reel product",
+        startingPrice: "₹299", unit: "per piece", minQty: 1, popular: true,
+        sizes: [
+          { id: "acr-6x6", label: "6×6 inch", dimensions: "152 × 152 mm", widthMM: 152, heightMM: 152, widthInch: "6", heightInch: "6", basePrice: 299 },
+          { id: "acr-8x10", label: "8×10 inch", dimensions: "203 × 254 mm", widthMM: 203, heightMM: 254, widthInch: "8", heightInch: "10", basePrice: 499 },
+          { id: "acr-12x12", label: "12×12 inch", dimensions: "305 × 305 mm", widthMM: 305, heightMM: 305, widthInch: "12", heightInch: "12", basePrice: 799 },
+          { id: "acr-heart", label: "Heart Shape", dimensions: "200 × 200 mm", widthMM: 200, heightMM: 200, widthInch: "8", heightInch: "8", basePrice: 599 },
+        ],
+        papers: [
+          { id: "acrylic-3mm", label: "3mm Clear Acrylic", gsm: 0, description: "Standard thickness", priceMultiplier: 1 },
+          { id: "acrylic-5mm", label: "5mm Premium Acrylic", gsm: 0, description: "Thick luxe feel", priceMultiplier: 1.5 },
+        ],
+        finishes: [
+          { id: "led-base", label: "LED Light Base", description: "Color-changing LED wooden base", priceAdd: 150 },
+          { id: "wooden-stand", label: "Wooden Easel Stand", description: "Natural wood display stand", priceAdd: 80 },
+          { id: "no-base", label: "No Base (Wall Mount)", description: "3M adhesive wall mount", priceAdd: 0 },
+        ],
+        quantityTiers: [
+          { min: 1, max: 4, pricePerUnit: 499 }, { min: 5, max: 14, pricePerUnit: 399 },
+          { min: 15, max: 99, pricePerUnit: 299 },
+        ],
+        printingMethods: [{ id: "uv", label: "UV Flatbed Printing", description: "Direct UV print on acrylic" }],
+        turnaroundDays: "3-5",
+      },
+      {
+        id: "custom-neon-sign", name: "Custom Neon Sign", description: "LED neon flex signs for rooms, cafes, and events — hugely viral on Instagram",
+        startingPrice: "₹999", unit: "per sign", minQty: 1, popular: true,
+        sizes: [
+          { id: "neon-12", label: "12 inch wide", dimensions: "305 mm", widthMM: 305, heightMM: 150, widthInch: "12", heightInch: "6", basePrice: 999 },
+          { id: "neon-18", label: "18 inch wide", dimensions: "457 mm", widthMM: 457, heightMM: 225, widthInch: "18", heightInch: "9", basePrice: 1499 },
+          { id: "neon-24", label: "24 inch wide", dimensions: "610 mm", widthMM: 610, heightMM: 300, widthInch: "24", heightInch: "12", basePrice: 2499 },
+          { id: "neon-36", label: "36 inch wide", dimensions: "914 mm", widthMM: 914, heightMM: 450, widthInch: "36", heightInch: "18", basePrice: 3999 },
+        ],
+        papers: [
+          { id: "neon-flex", label: "LED Neon Flex", gsm: 0, description: "Silicone LED tubes on acrylic base", priceMultiplier: 1 },
+        ],
+        finishes: [
+          { id: "clear-acrylic", label: "Clear Acrylic Backing", description: "Transparent background", priceAdd: 0 },
+          { id: "black-acrylic", label: "Black Acrylic Backing", description: "Opaque dark backdrop", priceAdd: 200 },
+          { id: "dimmer", label: "Dimmer Switch", description: "Adjustable brightness", priceAdd: 150 },
+        ],
+        quantityTiers: [
+          { min: 1, max: 2, pricePerUnit: 2499 }, { min: 3, max: 9, pricePerUnit: 1999 },
+          { min: 10, max: 49, pricePerUnit: 1499 },
+        ],
+        printingMethods: [{ id: "led-fab", label: "LED Fabrication", description: "Custom bent LED neon flex" }],
+        turnaroundDays: "5-7",
+      },
+      {
+        id: "custom-keychain", name: "Custom Photo Keychain", description: "Resin or acrylic keychains with UV-printed photos — popular gifting product on reels",
+        startingPrice: "₹49", unit: "per keychain", minQty: 5, popular: true,
+        sizes: [
+          { id: "key-circle", label: "Circle (45mm)", dimensions: "45 mm", widthMM: 45, heightMM: 45, widthInch: "1.8", heightInch: "1.8", basePrice: 49 },
+          { id: "key-rect", label: "Rectangle (50×35mm)", dimensions: "50 × 35 mm", widthMM: 50, heightMM: 35, widthInch: "2", heightInch: "1.4", basePrice: 59 },
+          { id: "key-heart", label: "Heart Shape", dimensions: "45 × 40 mm", widthMM: 45, heightMM: 40, widthInch: "1.8", heightInch: "1.6", basePrice: 59 },
+        ],
+        papers: [
+          { id: "acrylic-keychain", label: "Clear Acrylic", gsm: 0, description: "UV printed on acrylic", priceMultiplier: 1 },
+          { id: "resin-keychain", label: "Resin (Epoxy Dome)", gsm: 0, description: "3D dome finish", priceMultiplier: 1.5 },
+          { id: "wood-keychain", label: "Wooden", gsm: 0, description: "Laser engraved wood", priceMultiplier: 1.3 },
+        ],
+        finishes: [
+          { id: "no-finish", label: "Standard", description: "Direct print", priceAdd: 0 },
+          { id: "glitter", label: "Glitter Resin", description: "Sparkle effect", priceAdd: 20 },
+        ],
+        quantityTiers: [
+          { min: 5, max: 19, pricePerUnit: 79 }, { min: 20, max: 49, pricePerUnit: 59 },
+          { min: 50, max: 999, pricePerUnit: 49 },
+        ],
+        printingMethods: [{ id: "uv", label: "UV Printing", description: "Direct to substrate" }],
+        turnaroundDays: "3-5",
+      },
+      {
+        id: "custom-mug", name: "Custom Photo Mug", description: "Sublimation printed ceramic mugs — evergreen Instagram gift product",
+        startingPrice: "₹149", unit: "per mug", minQty: 1, popular: true,
+        sizes: [
+          { id: "mug-11oz", label: "11 oz Standard", dimensions: "330 ml", widthMM: 95, heightMM: 82, widthInch: "3.7", heightInch: "3.2", basePrice: 149 },
+          { id: "mug-15oz", label: "15 oz Large", dimensions: "450 ml", widthMM: 105, heightMM: 95, widthInch: "4.1", heightInch: "3.7", basePrice: 199 },
+          { id: "mug-magic", label: "Magic Color-Changing Mug", dimensions: "330 ml", widthMM: 95, heightMM: 82, widthInch: "3.7", heightInch: "3.2", basePrice: 249 },
+        ],
+        papers: [
+          { id: "ceramic-white", label: "White Ceramic", gsm: 0, description: "Standard glossy white", priceMultiplier: 1 },
+          { id: "ceramic-inner-color", label: "Inner Color Ceramic", gsm: 0, description: "White outside, colored inside", priceMultiplier: 1.2 },
+        ],
+        finishes: [
+          { id: "gift-box", label: "Gift Box Packaging", description: "Foam-lined box with window", priceAdd: 50 },
+          { id: "no-box", label: "Standard (Bubble Wrap)", description: "Safe shipping wrap", priceAdd: 0 },
+        ],
+        quantityTiers: [
+          { min: 1, max: 4, pricePerUnit: 199 }, { min: 5, max: 14, pricePerUnit: 169 },
+          { min: 15, max: 99, pricePerUnit: 149 },
+        ],
+        printingMethods: [{ id: "sublimation", label: "Sublimation Printing", description: "Heat transfer to ceramic" }],
+        turnaroundDays: "2-3",
+      },
+      {
+        id: "phone-case-custom", name: "Custom Phone Case", description: "UV printed personalized phone cases — top-selling Instagram product",
+        startingPrice: "₹199", unit: "per case", minQty: 1,
+        sizes: [
+          { id: "case-iphone15", label: "iPhone 15 / 15 Pro / Pro Max", dimensions: "Various", widthMM: 77, heightMM: 158, widthInch: "3", heightInch: "6.2", basePrice: 199 },
+          { id: "case-samsung-s24", label: "Samsung S24 / S24 Ultra", dimensions: "Various", widthMM: 79, heightMM: 162, widthInch: "3.1", heightInch: "6.4", basePrice: 199 },
+          { id: "case-oneplus", label: "OnePlus / Realme / Redmi", dimensions: "Various", widthMM: 75, heightMM: 160, widthInch: "3", heightInch: "6.3", basePrice: 149 },
+        ],
+        papers: [
+          { id: "hard-case", label: "Hard Polycarbonate", gsm: 0, description: "Rigid snap-on case", priceMultiplier: 1 },
+          { id: "soft-case", label: "Soft TPU", gsm: 0, description: "Flexible silicone case", priceMultiplier: 0.9 },
+          { id: "glass-case", label: "Tempered Glass Back", gsm: 0, description: "Premium glass back case", priceMultiplier: 1.5 },
+        ],
+        finishes: [
+          { id: "matte-finish", label: "Matte Finish", description: "Smooth matte texture", priceAdd: 0 },
+          { id: "glossy-finish", label: "High Gloss", description: "Shiny finish", priceAdd: 20 },
+        ],
+        quantityTiers: [
+          { min: 1, max: 4, pricePerUnit: 249 }, { min: 5, max: 14, pricePerUnit: 199 },
+          { min: 15, max: 99, pricePerUnit: 149 },
+        ],
+        printingMethods: [{ id: "uv", label: "UV Flatbed Printing", description: "Direct print on case" }],
+        turnaroundDays: "2-4",
+      },
+      {
+        id: "resin-art-print", name: "Resin Art Photo Print", description: "Epoxy resin coated photo prints — premium 3D glass-like finish trending on Instagram",
+        startingPrice: "₹399", unit: "per piece", minQty: 1,
+        sizes: [
+          { id: "resin-8x8", label: "8×8 inch", dimensions: "203 × 203 mm", widthMM: 203, heightMM: 203, widthInch: "8", heightInch: "8", basePrice: 399 },
+          { id: "resin-10x10", label: "10×10 inch", dimensions: "254 × 254 mm", widthMM: 254, heightMM: 254, widthInch: "10", heightInch: "10", basePrice: 599 },
+          { id: "resin-12x18", label: "12×18 inch", dimensions: "305 × 457 mm", widthMM: 305, heightMM: 457, widthInch: "12", heightInch: "18", basePrice: 999 },
+        ],
+        papers: [
+          { id: "mdf-board", label: "MDF Board + Photo", gsm: 0, description: "Photo on MDF with resin top coat", priceMultiplier: 1 },
+          { id: "wood-board", label: "Natural Wood Board", gsm: 0, description: "Rustic wood base", priceMultiplier: 1.3 },
+        ],
+        finishes: [
+          { id: "clear-resin", label: "Clear Epoxy Resin", description: "Crystal clear glass effect", priceAdd: 0 },
+          { id: "glitter-resin", label: "Glitter Resin", description: "Sparkle particles embedded", priceAdd: 100 },
+        ],
+        quantityTiers: [
+          { min: 1, max: 4, pricePerUnit: 599 }, { min: 5, max: 14, pricePerUnit: 499 },
+          { min: 15, max: 49, pricePerUnit: 399 },
+        ],
+        printingMethods: [{ id: "digital-resin", label: "Digital Print + Resin Coat", description: "High-res print with hand-poured resin" }],
+        turnaroundDays: "5-7",
+      },
+      {
+        id: "canvas-wall-art", name: "Canvas Wall Art", description: "Gallery-wrapped canvas prints — home decor bestseller on Instagram",
+        startingPrice: "₹349", unit: "per piece", minQty: 1,
+        sizes: [
+          { id: "canv-8x12", label: "8×12 inch", dimensions: "203 × 305 mm", widthMM: 203, heightMM: 305, widthInch: "8", heightInch: "12", basePrice: 349 },
+          { id: "canv-12x18", label: "12×18 inch", dimensions: "305 × 457 mm", widthMM: 305, heightMM: 457, widthInch: "12", heightInch: "18", basePrice: 599 },
+          { id: "canv-16x24", label: "16×24 inch", dimensions: "406 × 610 mm", widthMM: 406, heightMM: 610, widthInch: "16", heightInch: "24", basePrice: 899 },
+          { id: "canv-24x36", label: "24×36 inch", dimensions: "610 × 914 mm", widthMM: 610, heightMM: 914, widthInch: "24", heightInch: "36", basePrice: 1499 },
+        ],
+        papers: [
+          { id: "cotton-canvas", label: "Cotton Canvas", gsm: 380, description: "Premium artist-grade cotton", priceMultiplier: 1 },
+          { id: "poly-canvas", label: "Polyester Canvas", gsm: 320, description: "Economy, vibrant colors", priceMultiplier: 0.8 },
+        ],
+        finishes: [
+          { id: "gallery-wrap", label: "Gallery Wrap (1.5 inch depth)", description: "Photo wraps around edges", priceAdd: 0 },
+          { id: "white-border", label: "White Border Wrap", description: "Clean white edge", priceAdd: 0 },
+          { id: "float-frame", label: "Floating Frame", description: "Wooden floater frame", priceAdd: 300 },
+        ],
+        quantityTiers: [
+          { min: 1, max: 4, pricePerUnit: 599 }, { min: 5, max: 9, pricePerUnit: 449 },
+          { min: 10, max: 49, pricePerUnit: 349 },
+        ],
+        printingMethods: [{ id: "giclee", label: "Giclée Printing", description: "Archival inkjet on canvas" }],
+        turnaroundDays: "3-5",
+      },
+      {
+        id: "wooden-photo-plaque", name: "Wooden Photo Plaque", description: "UV printed photos on natural wood — rustic Instagram aesthetic",
+        startingPrice: "₹249", unit: "per piece", minQty: 1,
+        sizes: [
+          { id: "wood-6x6", label: "6×6 inch", dimensions: "152 × 152 mm", widthMM: 152, heightMM: 152, widthInch: "6", heightInch: "6", basePrice: 249 },
+          { id: "wood-8x10", label: "8×10 inch", dimensions: "203 × 254 mm", widthMM: 203, heightMM: 254, widthInch: "8", heightInch: "10", basePrice: 399 },
+        ],
+        papers: [
+          { id: "birch-plywood", label: "Birch Plywood", gsm: 0, description: "Light natural wood grain", priceMultiplier: 1 },
+          { id: "mdf-wood", label: "MDF Board", gsm: 0, description: "Smooth finish fiberboard", priceMultiplier: 0.8 },
+        ],
+        finishes: [
+          { id: "matte-coat", label: "Matte Clear Coat", description: "Protected matte UV finish", priceAdd: 0 },
+          { id: "no-coat", label: "Raw Wood (No Coat)", description: "Natural wood texture visible", priceAdd: 0 },
+        ],
+        quantityTiers: [
+          { min: 1, max: 4, pricePerUnit: 399 }, { min: 5, max: 14, pricePerUnit: 299 },
+          { min: 15, max: 49, pricePerUnit: 249 },
+        ],
+        printingMethods: [{ id: "uv", label: "UV Flatbed Printing", description: "Direct UV print on wood" }],
+        turnaroundDays: "3-5",
       },
     ],
   },

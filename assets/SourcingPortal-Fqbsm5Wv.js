@@ -1,4 +1,4 @@
-import{j as e}from"./vendor-utils-DUQm24WM.js";import{r,u as w,W as y,P as i,f as k,b3 as u,k as S,m as P,o as C,D as _}from"./vendor-ui-DvktEJKW.js";import{a as B,s as q,B as l,I as M}from"./index-DIllYY5V.js";import{B as x}from"./badge-DbYBE9BK.js";import{a as T}from"./vendor-react-DjDgO61J.js";import"./vendor-graphics-BaZU-AUz.js";const D=()=>{const[h,p]=r.useState(""),[t,f]=r.useState("all"),[c,g]=r.useState([]),[b,n]=r.useState(!0),{user:z}=B(),j=T();r.useEffect(()=>{N()},[t]);const N=async()=>{n(!0);try{let s=q.from("supplier_products").select(`
+import{j as e}from"./vendor-utils-DUQm24WM.js";import{r,u as w,W as y,P as i,f as k,b3 as u,k as S,m as P,o as C,D as _}from"./vendor-ui-DvktEJKW.js";import{a as B,s as q,B as l,I as M}from"./index-B0OjTqyu.js";import{B as x}from"./badge-CEmhjKcm.js";import{a as T}from"./vendor-react-DjDgO61J.js";import"./vendor-graphics-BaZU-AUz.js";const D=()=>{const[h,p]=r.useState(""),[t,f]=r.useState("all"),[c,g]=r.useState([]),[b,n]=r.useState(!0),{user:z}=B(),j=T();r.useEffect(()=>{N()},[t]);const N=async()=>{n(!0);try{let s=q.from("supplier_products").select(`
           *,
           suppliers (
             company_name,

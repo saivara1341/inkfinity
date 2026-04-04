@@ -5,8 +5,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { 
-  Search, Package, Star, ChevronRight, IndianRupee, MapPin, Zap, 
+import {
+  Search, Package, Star, ChevronRight, IndianRupee, MapPin, Zap,
   Store, ShieldCheck, ArrowRight, Sparkles, ShoppingBag
 } from "lucide-react";
 import { productCategories, getAllSubcategories } from "@/data/printingProducts";
@@ -34,7 +34,7 @@ const Catalog = () => {
     queryKey: ["catalog-products", activeCategory, search],
     queryFn: async () => {
       let dbProducts = [];
-      
+
       if (search.length >= 2) {
         const { data, error } = await supabase.rpc("search_products", {
           query: search,
@@ -49,7 +49,7 @@ const Catalog = () => {
         if (error) throw error;
         dbProducts = data || [];
       }
-      
+
       const mappedDb = dbProducts.map(p => ({
         id: p.id,
         name: p.name,
@@ -62,14 +62,14 @@ const Catalog = () => {
         papers: (p.specifications as any)?.papers || [],
         minQty: p.min_quantity,
         popular: (p as any).popular,
-        image: (p as any).image_url
+        image: p.images && p.images.length > 0 ? p.images[0] : null
       }));
 
       const staticProducts = getAllSubcategories();
       const filteredStatic = staticProducts.filter(p => {
         const matchCat = activeCategory === "all" || p.categoryId === activeCategory;
-        const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) || 
-                            p.description.toLowerCase().includes(search.toLowerCase());
+        const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) ||
+          p.description.toLowerCase().includes(search.toLowerCase());
         return matchCat && matchSearch;
       });
 
@@ -84,12 +84,12 @@ const Catalog = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <SEO 
+      <SEO
         title={activeCategory === "all" ? "What will you design today?" : `${productCategories.find(c => c.id === activeCategory)?.name} | Print Shop`}
         description="Premium online printing services with Canva-inspired designs. Business cards, flyers, posters and more."
       />
       <Navbar />
-      
+
       {/* Search & Hero Section (Canva Style) */}
       <section className="pt-28 pb-16 bg-[#F8F9FA]">
         <div className="container mx-auto px-4 max-w-6xl text-center">
@@ -106,7 +106,7 @@ const Catalog = () => {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-950 mb-8 tracking-tight">
               What will you <span className="text-[#FF7300]">print</span> today?
             </h1>
-            
+
             <div className="relative max-w-2xl mx-auto group">
               <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-[#FF7300] transition-colors" />
               <input
@@ -143,7 +143,7 @@ const Catalog = () => {
                 </motion.button>
               );
             })}
-            
+
             {/* View All Button */}
             {!showAllCategories && productCategories.length > 7 && (
               <motion.button
@@ -175,10 +175,10 @@ const Catalog = () => {
                 Found {allProducts.length} premium print products
               </p>
             </div>
-            
+
             <div className="flex items-center gap-3 self-end md:self-auto">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="rounded-full border-slate-200 text-slate-600 font-bold text-xs h-10 px-5 gap-2"
                 onClick={() => { setActiveCategory("all"); setSearch(""); }}
               >
@@ -208,10 +208,10 @@ const Catalog = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
                   >
-                    <ProductCardV2 
-                      product={product} 
-                      onViewShops={() => {}} 
-                      Icon={Package} 
+                    <ProductCardV2
+                      product={product}
+                      onViewShops={() => { }}
+                      Icon={Package}
                     />
                   </motion.div>
                 ))}
@@ -228,7 +228,7 @@ const Catalog = () => {
               <p className="text-slate-500 max-w-sm mx-auto mb-8">
                 We couldn't find any products matching "{search}". Try searching for something else or browse our categories.
               </p>
-              <Button 
+              <Button
                 onClick={() => { setSearch(""); setActiveCategory("all"); }}
                 className="bg-slate-900 text-white rounded-xl px-8"
               >
@@ -249,8 +249,8 @@ const Catalog = () => {
           <p className="text-lg text-white/80 mb-10 max-w-2xl mx-auto font-medium">
             Let our AI assistant help you place an order in seconds. Just chat and we'll handle the rest.
           </p>
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             className="bg-white text-[#FF7300] hover:bg-slate-50 px-10 rounded-2xl h-14 font-black uppercase tracking-widest text-xs shadow-xl shadow-black/20 gap-3"
             onClick={() => document.getElementById('quick-order-trigger')?.click()}
           >

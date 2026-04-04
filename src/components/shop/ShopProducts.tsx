@@ -614,14 +614,25 @@ export const ShopProducts = ({ shop }: Props) => {
               className={`bg-card rounded-xl border border-border p-5 shadow-card hover:shadow-elevated transition-all ${!product.is_active ? "opacity-60" : ""
                 }`}
             >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <h4 className="font-display font-semibold text-foreground">{product.name}</h4>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent">{product.category}</span>
-                </div>
-                {!product.is_active && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">Inactive</span>
+              <div className="flex gap-4 mb-3">
+                {product.images && product.images.length > 0 ? (
+                  <img src={product.images[0]} alt={product.name} className="w-16 h-16 rounded-lg object-cover bg-secondary flex-shrink-0 border border-border" />
+                ) : (
+                  <div className="w-16 h-16 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 border border-border">
+                    <Package className="w-6 h-6 text-muted-foreground" />
+                  </div>
                 )}
+                <div className="flex-1">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="font-display font-semibold text-foreground">{product.name}</h4>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent">{product.category}</span>
+                    </div>
+                    {!product.is_active && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">Inactive</span>
+                    )}
+                  </div>
+                </div>
               </div>
               {product.description && (
                 <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{product.description}</p>

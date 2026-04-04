@@ -177,14 +177,10 @@ export const QuickOrderBot = () => {
       <button
         id="quick-order-trigger"
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-8 right-8 w-20 h-20 bg-[#8B0000] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all z-50 group border-4 border-[#DAA520]/20"
-        aria-label="Quick Order"
+        className="fixed bottom-8 right-8 w-16 h-16 bg-[#8B0000] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform z-50 border-2 border-[#DAA520]/60 group"
+        aria-label="Chat with Assistant"
       >
-        <Printer className="w-9 h-9 group-hover:rotate-12 transition-transform text-[#DAA520]" />
-        <div className="bg-[#8B0000]/10 px-2 py-1 rounded flex items-center gap-1.5 self-start">
-          <Sparkles className="w-3 h-3 text-[#8B0000] fill-[#8B0000]" />
-          <span className="text-[#8B0000] text-[10px] font-bold tracking-wider">Fast Track</span>
-        </div>
+        <MessageSquare className="w-7 h-7 text-[#DAA520] group-hover:scale-110 transition-transform" />
       </button>
 
       <AnimatePresence>

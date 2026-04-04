@@ -1,6 +1,0 @@
-components\landing\FeaturesSection.tsx:import showcaseFloral1 from "@/assets/bg-swirl-seamless.png";
-components\landing\FeaturesSection.tsx:import showcaseFloral2 from "@/assets/bg-gradient-soft.png";
-components\landing\FeaturesSection.tsx:        <img src={showcaseFloral1} alt="" className="w-full h-full object-contain" />
-components\landing\FeaturesSection.tsx:        <img src={showcaseFloral2} alt="" className="w-full h-full object-cover" />
-pages\Onboarding.tsx:import bgBlueFloral from "@/assets/bg-blue-floral.png";
-pages\Onboarding.tsx:        <img src={bgBlueFloral} alt="" className="w-full h-full object-contain" />

@@ -41,7 +41,54 @@
 </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <style>
+        .initial-loader-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+          background-color: #ffffff;
+          font-family: system-ui, -apple-system, sans-serif;
+        }
+        .initial-spinner {
+          width: 50px;
+          height: 50px;
+          border: 4px solid rgba(232, 97, 58, 0.2);
+          border-left-color: #e8613a;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin-bottom: 20px;
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        .initial-title {
+          font-size: 24px;
+          font-weight: 800;
+          color: #000;
+          margin: 0;
+          letter-spacing: -0.5px;
+        }
+        .initial-title span {
+          color: #e8613a;
+          font-style: italic;
+        }
+        .initial-text {
+          color: #666;
+          font-size: 14px;
+          margin-top: 8px;
+          font-weight: 500;
+        }
+      </style>
+      <div class="initial-loader-container">
+        <div class="initial-spinner"></div>
+        <h2 class="initial-title">Print<span>Flow</span></h2>
+        <p class="initial-text">Warming up the rollers...</p>
+      </div>
+    </div>
     <script type="module" src="src/main.tsx"></script>
   </body>
 </html>

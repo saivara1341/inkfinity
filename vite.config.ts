@@ -14,6 +14,18 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-graphics': ['three', '@react-three/fiber', '@react-three/drei'],
+          'vendor-ui': ['framer-motion', 'lucide-react', 'sonner'],
+          'vendor-utils': ['@tanstack/react-query', '@supabase/supabase-js']
+        }
+      }
+    }
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

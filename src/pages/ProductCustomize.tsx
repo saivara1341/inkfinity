@@ -292,18 +292,11 @@ const ProductCustomize = () => {
                         }`}
                     >
                       <div className="w-24 h-24 rounded-[1.5rem] overflow-hidden flex-shrink-0 bg-gray-50">
-                        {paper.image ? (
-                          <img src={paper.image} alt={paper.label} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-300"><Layers className="w-8 h-8" /></div>
-                        )}
+                        <img src={paper.image || "https://images.unsplash.com/photo-1618331835717-801e976710b2?w=400&q=80"} alt={paper.label} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                       </div>
                       <div className="flex-1 pr-4">
                         <div className="flex items-center justify-between">
                           <p className="font-black text-black">{paper.label}</p>
-                          {paper.priceMultiplier > 1 && (
-                            <Badge className="bg-[#FF7300]/10 text-[#FF7300] border-none font-black text-[10px]">+{Math.round((paper.priceMultiplier - 1) * 100)}%</Badge>
-                          )}
                         </div>
                         <p className="text-xs text-gray-500 mt-1 leading-relaxed">{paper.description}</p>
                       </div>
@@ -325,11 +318,7 @@ const ProductCustomize = () => {
                         }`}
                     >
                       <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gray-50">
-                        {finish.image ? (
-                          <img src={finish.image} alt={finish.label} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-300"><Sparkles className="w-8 h-8" /></div>
-                        )}
+                        <img src={finish.image || "https://images.unsplash.com/photo-1563298723-dcfebaa392e3?w=400&q=80"} alt={finish.label} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                       </div>
                       <div>
                         <p className="text-sm font-black text-black">{finish.label}</p>
@@ -621,11 +610,7 @@ const ProductCustomize = () => {
                 </div>
 
                 {/* Trust Badges */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-2xl border border-gray-100 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center"><CheckCircle2 className="w-4 h-4 text-black" /></div>
-                    <p className="text-[10px] font-black uppercase text-gray-500 leading-tight">ISO 9001<br />Certified</p>
-                  </div>
+                <div className="grid grid-cols-1 gap-4">
                   <div className="p-4 rounded-2xl border border-gray-100 flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center"><Clock className="w-4 h-4 text-black" /></div>
                     <p className="text-[10px] font-black uppercase text-gray-500 leading-tight">24-Hr Print<br />Support</p>

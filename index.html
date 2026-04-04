@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      // SELF-HEALING: Force unregister any stale service workers
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+            console.log("Unregistered stale service worker");
+          }
+        });
+      }
+      // Clear cache on load
+      console.log("INDEX.HTML EXECUTING - V18");
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- TODO: Set the document title to the name of your application -->
+    <title>PrintFlow — India&#39;s Smartest Printing Platform</title>
+    <meta name="description" content="Upload your design and get professional prints from local shops — visiting cards, flyers, posters, banners &amp; more.">
+    <meta name="author" content="PrintFlow" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="PrintFlow" />
+    <meta name="theme-color" content="#e8613a" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="apple-touch-icon" href="favicon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="PrintFlow — India's Smartest Printing Platform">
+    <meta property="og:description" content="Upload your design and get professional prints from local shops — visiting cards, flyers, posters, banners &amp; more.">
+    <meta property="og:image" content="og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="PrintFlow — India's Smartest Printing Platform">
+    <meta name="twitter:description" content="Upload your design and get professional prints from local shops — visiting cards, flyers, posters, banners &amp; more.">
+    <meta name="twitter:image" content="og-image.png" />
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://sdk.cc-embed.adobe.com/v1/CCEmbedSDK.js"></script>
+    <script src="https://sdk.canva.com/designbutton/v2/api.js"></script>
+</head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="src/main.tsx"></script>
+  </body>
+</html>

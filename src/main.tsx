@@ -1,0 +1,7 @@
+console.log("MAIN.tsx START - V2"); // Force re-build for deployment refresh
+
+import { createRoot } from "react-dom/client";
+import App from "./App.tsx";
+import "./index.css";
+
+createRoot(document.getElementById("root")!).render(<App />);

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PrintFlow</string>
+    <string name="title_activity_main">PrintFlow</string>
+    <string name="package_name">com.printflow.app</string>
+    <string name="custom_url_scheme">com.printflow.app</string>
+</resources>

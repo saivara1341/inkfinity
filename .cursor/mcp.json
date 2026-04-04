@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "Canva": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote@latest",
+        "https://mcp.canva.com/mcp"
+      ]
+    }
+  }
+}

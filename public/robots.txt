@@ -1,0 +1,32 @@
+User-agent: *
+Allow: /
+Allow: /catalog
+Allow: /pricing
+Allow: /shops
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /profile
+Disallow: /checkout
+Disallow: /order-success
+Disallow: /onboarding
+
+# Specific AI Crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+Sitemap: https://printflow.enterprise/sitemap.xml

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Pencil, Trash2, Package, IndianRupee, Clock, ToggleLeft, ToggleRight, X, ImagePlus, TrendingUp } from "lucide-react";
+import { Plus, Pencil, Trash2, Package, IndianRupee, Clock, ToggleLeft, ToggleRight, X, ImagePlus, TrendingUp, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -149,7 +149,7 @@ export const ShopProducts = ({ shop }: Props) => {
     setSaving(true);
 
     let images: string[] = [];
-    
+
     // Upload image if selected
     if (form.imageFile) {
       const ext = form.imageFile.name.split(".").pop();
@@ -206,6 +206,45 @@ export const ShopProducts = ({ shop }: Props) => {
     fetchProducts();
   };
 
+  const [generatingAI, setGeneratingAI] = useState(false);
+
+  const handleAIGenerate = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!form.name || !form.category) {
+      toast.error("Please enter a product name and category first to generate an accurate image");
+      return;
+    }
+
+    setGeneratingAI(true);
+    toast.loading("AI is designing your product image...", { id: "ai-gen" });
+
+    try {
+      const prompt = `A professional, high-quality, studio photography mockup of a ${form.name}. ${form.description || ''} The product belongs to the ${form.category} category. Minimalist clean background, centered composition, soft lighting.`;
+
+      const { data, error } = await supabase.functions.invoke('generate-design', {
+        body: { prompt, productType: form.category, count: 1 }
+      });
+
+      if (error) throw error;
+
+      const generatedImage = data?.images?.[0] || data?.imageUrl;
+      if (!generatedImage) throw new Error("No image was generated");
+
+      setForm({ ...form, imagePreview: generatedImage, imageFile: null });
+      toast.success("AI generated a product image successfully!", { id: "ai-gen" });
+    } catch (err: any) {
+      console.error("AI Generation error:", err);
+      toast.error(`Failed to generate image: ${err.message || 'Please try again'}`, { id: "ai-gen" });
+
+      // Fallback for demo
+      const fallbackUrl = "https://images.unsplash.com/photo-1586075010633-de982cd26f1c?w=800&q=80";
+      setForm({ ...form, imagePreview: fallbackUrl, imageFile: null });
+      toast.success("Using a high-quality fallback image for now.", { id: "ai-gen" });
+    } finally {
+      setGeneratingAI(false);
+    }
+  };
+
   if (!shop) {
     return (
       <div className="bg-card rounded-xl border border-border p-10 text-center shadow-card">
@@ -228,8 +267,8 @@ export const ShopProducts = ({ shop }: Props) => {
       </div>
 
       {!loading && products.length === 0 && !showForm && (
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }} 
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-primary/5 border border-primary/20 rounded-2xl p-6 mb-8 flex items-start gap-4"
         >
@@ -239,7 +278,7 @@ export const ShopProducts = ({ shop }: Props) => {
           <div>
             <h3 className="font-bold text-foreground mb-1">Add your products to start selling!</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              You haven't added any products yet. Adding products allows customers to order directly with custom specs. 
+              You haven't added any products yet. Adding products allows customers to order directly with custom specs.
               <span className="font-semibold text-primary"> Shops without products will only receive quotation requests.</span>
             </p>
             <Button variant="link" className="p-0 h-auto text-primary font-bold mt-2" onClick={() => setShowForm(true)}>
@@ -340,39 +379,52 @@ export const ShopProducts = ({ shop }: Props) => {
             </div>
 
             <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-semibold text-foreground block">Product Image</label>
-              <Dialog open={galleryOpen} onOpenChange={setGalleryOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-8 text-[10px] font-bold uppercase tracking-wider gap-2 border-[#FF7300] text-[#FF7300] hover:bg-[#FF7300] hover:text-white transition-all">
-                    <TrendingUp className="w-3.5 h-3.5 group-hover:animate-bounce" /> Pick from Gallery
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-semibold text-foreground block">Product Image</label>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    type="button"
+                    className="h-8 text-[10px] font-bold uppercase tracking-wider gap-2 border-accent text-accent hover:bg-accent hover:text-white transition-all"
+                    onClick={handleAIGenerate}
+                    disabled={generatingAI}
+                  >
+                    <Sparkles className={`w-3.5 h-3.5 ${generatingAI ? "animate-spin text-muted-foreground" : "group-hover:animate-bounce"}`} />
+                    {generatingAI ? "Generating..." : "Generate with AI"}
                   </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Professional Stock Gallery</DialogTitle>
-                  </DialogHeader>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4">
-                    {STOCK_IMAGES.map((img) => (
-                      <div 
-                        key={img.id}
-                        className="group relative aspect-video rounded-xl overflow-hidden border border-border cursor-pointer hover:border-[#FF7300] transition-all"
-                        onClick={() => {
-                          setForm({ ...form, imagePreview: img.url, imageFile: null });
-                          setGalleryOpen(false);
-                        }}
-                      >
-                        <img src={img.url} alt={img.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white">
-                          <span className="text-xs font-bold">{img.name}</span>
-                          <span className="text-[10px] opacity-80">{img.category}</span>
-                        </div>
+                  <Dialog open={galleryOpen} onOpenChange={setGalleryOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8 text-[10px] font-bold uppercase tracking-wider gap-2 border-[#FF7300] text-[#FF7300] hover:bg-[#FF7300] hover:text-white transition-all">
+                        <TrendingUp className="w-3.5 h-3.5 group-hover:animate-bounce" /> Pick from Gallery
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Professional Stock Gallery</DialogTitle>
+                      </DialogHeader>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4">
+                        {STOCK_IMAGES.map((img) => (
+                          <div
+                            key={img.id}
+                            className="group relative aspect-video rounded-xl overflow-hidden border border-border cursor-pointer hover:border-[#FF7300] transition-all"
+                            onClick={() => {
+                              setForm({ ...form, imagePreview: img.url, imageFile: null });
+                              setGalleryOpen(false);
+                            }}
+                          >
+                            <img src={img.url} alt={img.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white">
+                              <span className="text-xs font-bold">{img.name}</span>
+                              <span className="text-[10px] opacity-80">{img.category}</span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </div>
               <div className="flex items-center gap-6">
                 {(form.imagePreview || form.imageFile) ? (
                   <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-secondary border border-border group">
@@ -381,7 +433,7 @@ export const ShopProducts = ({ shop }: Props) => {
                       alt="Preview"
                       className="w-full h-full object-cover transition-transform group-hover:scale-110"
                     />
-                    <button 
+                    <button
                       onClick={() => setForm({ ...form, imageFile: null, imagePreview: "" })}
                       className="absolute top-1 right-1 p-1 bg-background/80 backdrop-blur-sm rounded-full text-destructive"
                     >
@@ -453,7 +505,7 @@ export const ShopProducts = ({ shop }: Props) => {
                 </h4>
                 <Button size="sm" variant="ghost" onClick={() => setForm({
                   ...form,
-                  price_tiers: [...form.price_tiers, { min: (parseInt(form.price_tiers[form.price_tiers.length-1].min.toString()) * 10).toString(), price_per_unit: (parseFloat(form.price_tiers[form.price_tiers.length-1].price_per_unit.toString()) * 0.9).toString() }]
+                  price_tiers: [...form.price_tiers, { min: (parseInt(form.price_tiers[form.price_tiers.length - 1].min.toString()) * 10).toString(), price_per_unit: (parseFloat(form.price_tiers[form.price_tiers.length - 1].price_per_unit.toString()) * 0.9).toString() }]
                 })}>
                   + Add Tier
                 </Button>
@@ -498,7 +550,7 @@ export const ShopProducts = ({ shop }: Props) => {
                   </div>
                 ))}
               </div>
-              
+
               {/* Profitability Advisor */}
               <div className="bg-primary/5 p-4 rounded-xl space-y-2 mt-4">
                 <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider">
@@ -506,7 +558,7 @@ export const ShopProducts = ({ shop }: Props) => {
                 </div>
                 <p className="text-[13px] text-foreground font-medium leading-relaxed">
                   {form.price_tiers.length > 1 ? (
-                    `You're offering a ${Math.round((1 - form.price_tiers[form.price_tiers.length-1].price_per_unit / form.price_tiers[0].price_per_unit) * 100)}% volume discount. High-volume orders increase retention but require tighter margin control.`
+                    `You're offering a ${Math.round((1 - form.price_tiers[form.price_tiers.length - 1].price_per_unit / form.price_tiers[0].price_per_unit) * 100)}% volume discount. High-volume orders increase retention but require tighter margin control.`
                   ) : "Pro Tip: Adding bulk tiers (e.g., 500+, 1000+) typically increases Average Order Value by 18%."}
                 </p>
               </div>
@@ -559,9 +611,8 @@ export const ShopProducts = ({ shop }: Props) => {
               key={product.id}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className={`bg-card rounded-xl border border-border p-5 shadow-card hover:shadow-elevated transition-all ${
-                !product.is_active ? "opacity-60" : ""
-              }`}
+              className={`bg-card rounded-xl border border-border p-5 shadow-card hover:shadow-elevated transition-all ${!product.is_active ? "opacity-60" : ""
+                }`}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">

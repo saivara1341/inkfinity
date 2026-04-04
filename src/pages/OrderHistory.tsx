@@ -5,8 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Package, Box, Truck, CheckCircle2, Clock, 
+import {
+  Package, Box, Truck, CheckCircle2, Clock,
   ExternalLink, MessageSquare, Star, ChevronRight,
   MapPin, IndianRupee, Phone
 } from "lucide-react";
@@ -34,7 +34,7 @@ export const OrderHistory = () => {
         `)
         .eq("customer_id", user?.id)
         .order("created_at", { ascending: false });
-      
+
       if (error) throw error;
       return data || [];
     },
@@ -64,7 +64,7 @@ export const OrderHistory = () => {
       <Navbar />
       <div className="flex-1 pt-32 pb-20 container mx-auto px-4">
         <div className="space-y-4 max-w-4xl mx-auto">
-          {[1,2,3].map(i => <div key={i} className="h-32 bg-secondary/30 rounded-2xl animate-pulse" />)}
+          {[1, 2, 3].map(i => <div key={i} className="h-32 bg-secondary/30 rounded-2xl animate-pulse" />)}
         </div>
       </div>
       <Footer />
@@ -74,7 +74,7 @@ export const OrderHistory = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      
+
       <div className="flex-1 pt-32 pb-20">
         <div className="container mx-auto px-4 max-w-5xl">
           <header className="mb-10 text-center sm:text-left">
@@ -92,7 +92,7 @@ export const OrderHistory = () => {
           ) : (
             <div className="space-y-6">
               {orders.map((order: any, idx: number) => (
-                <motion.div 
+                <motion.div
                   key={order.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -110,7 +110,7 @@ export const OrderHistory = () => {
                           <p className="text-sm font-bold text-foreground">Plated on {new Date(order.created_at).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center gap-3">
                         <Badge className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 ${getStatusColor(order.status)}`}>
                           {getStatusIcon(order.status)}
@@ -128,7 +128,7 @@ export const OrderHistory = () => {
                           {(order.design_file_url || (order.specifications as any)?.design_file_url) ? (
                             <img src={order.design_file_url || (order.specifications as any)?.design_file_url} className="w-full h-full object-cover" alt="Order Design" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center opacity-30 italic text-[10px]">No Preview</div>
+                            <img src="https://images.unsplash.com/photo-1586075010633-de982cd26f1c?w=400&q=80" className="w-full h-full object-cover opacity-60 grayscale" alt="Printing Mockup Fallback" />
                           )}
                         </div>
                       </div>
@@ -137,7 +137,7 @@ export const OrderHistory = () => {
                         <div>
                           <h4 className="font-bold text-foreground text-lg mb-1">{order.product_name || "Custom Print Product"}</h4>
                           <p className="text-sm text-muted-foreground flex items-center gap-2">
-                             From <span className="text-accent font-medium">{order.shops?.name || "Verified Partner"}</span>
+                            From <span className="text-accent font-medium">{order.shops?.name || "Verified Partner"}</span>
                           </p>
                         </div>
 
@@ -158,16 +158,16 @@ export const OrderHistory = () => {
                           <p className="text-[10px] font-bold text-muted-foreground uppercase">Total Amount</p>
                           <p className="text-2xl font-display font-bold text-foreground">₹{(order.grand_total || (order.specifications as any)?.grand_total || 0).toLocaleString("en-IN")}</p>
                         </div>
-                        
+
                         <div className="flex flex-col gap-2 w-full sm:w-auto">
                           <Button variant="outline" size="sm" className="gap-2 text-[10px] font-bold uppercase tracking-wider" asChild>
                             <Link to={`/order-success?order=${order.order_number || order.id}`}>
                               View Details <ExternalLink className="w-3 h-3" />
                             </Link>
                           </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             className="gap-2 text-[10px] font-bold uppercase tracking-wider text-accent border-accent/30 hover:bg-accent/5"
                             onClick={() => setMessagingOrderId(order.id)}
                           >
@@ -194,11 +194,11 @@ export const OrderHistory = () => {
       <Dialog open={!!messagingOrderId} onOpenChange={(open) => !open && setMessagingOrderId(null)}>
         <DialogContent className="sm:max-w-[450px] p-0 border-none bg-transparent shadow-none">
           {messagingOrderId && (
-            <OrderMessages 
-              orderId={messagingOrderId} 
+            <OrderMessages
+              orderId={messagingOrderId}
               buyerId={user?.id}
               shopOwnerId={orders.find((o: any) => o.id === messagingOrderId)?.shop_id}
-              onClose={() => setMessagingOrderId(null)} 
+              onClose={() => setMessagingOrderId(null)}
             />
           )}
         </DialogContent>

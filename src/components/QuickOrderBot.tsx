@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  MessageSquare, X, Send, User, Bot, ShoppingBag, 
-  Upload, CheckCircle2, Zap, MapPin, Package, IndianRupee, Printer 
+import {
+  MessageSquare, X, Send, User, Bot, ShoppingBag,
+  Upload, CheckCircle2, Zap, MapPin, Package, IndianRupee, Printer, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -122,21 +122,21 @@ export const QuickOrderBot = () => {
         }
       } else if (step === 6) {
         if (orderData.customQuantity && !orderData.quantity) {
-           const qty = parseInt(input);
-           if (!isNaN(qty)) {
-             setOrderData({ ...orderData, quantity: qty });
-             addMessage("bot", `Noted: ${qty} pieces. Now, please provide your Pincode or City to find nearby shops.`, undefined, "location");
-           } else {
-             addMessage("bot", "Please enter a valid number for quantity.");
-           }
+          const qty = parseInt(input);
+          if (!isNaN(qty)) {
+            setOrderData({ ...orderData, quantity: qty });
+            addMessage("bot", `Noted: ${qty} pieces. Now, please provide your Pincode or City to find nearby shops.`, undefined, "location");
+          } else {
+            addMessage("bot", "Please enter a valid number for quantity.");
+          }
         } else {
-           setOrderData({ ...orderData, location: input });
-           addMessage("bot", `Searching for expert weavers near ${input}...`);
-           
-           setTimeout(() => {
-             addMessage("bot", "Splendid! We found 3 premium shops nearby. Would you prefer 'Shop Pickup' or 'Home Delivery'?", ["Shop Pickup", "Home Delivery"]);
-             setStep(7);
-           }, 1000);
+          setOrderData({ ...orderData, location: input });
+          addMessage("bot", `Searching for expert weavers near ${input}...`);
+
+          setTimeout(() => {
+            addMessage("bot", "Splendid! We found 3 premium shops nearby. Would you prefer 'Shop Pickup' or 'Home Delivery'?", ["Shop Pickup", "Home Delivery"]);
+            setStep(7);
+          }, 1000);
         }
       } else if (step === 7) {
         setOrderData({ ...orderData, deliveryType: input });
@@ -154,7 +154,7 @@ export const QuickOrderBot = () => {
       } else if (step === 9) {
         if (input.includes("Payment")) {
           addMessage("bot", `Processing your artisanal print request #INK-Q${Math.floor(Math.random() * 9000) + 1000}...`);
-          
+
           setTimeout(() => {
             addMessage("bot", "Order Successful! Your Master Craftsman has been notified. You can track this in your dashboard or here.", ["Track Order", "Finish"]);
             setStep(10);
@@ -181,8 +181,9 @@ export const QuickOrderBot = () => {
         aria-label="Quick Order"
       >
         <Printer className="w-9 h-9 group-hover:rotate-12 transition-transform text-[#DAA520]" />
-        <div className="absolute -top-1 -right-1 w-6 h-6 bg-[#DAA520] rounded-full border-2 border-[#8B0000] flex items-center justify-center animate-pulse">
-           <Zap className="w-3 h-3 text-[#8B0000] fill-[#8B0000]" />
+        <div className="bg-[#8B0000]/10 px-2 py-1 rounded flex items-center gap-1.5 self-start">
+          <Sparkles className="w-3 h-3 text-[#8B0000] fill-[#8B0000]" />
+          <span className="text-[#8B0000] text-[10px] font-bold tracking-wider">Fast Track</span>
         </div>
       </button>
 
@@ -196,10 +197,10 @@ export const QuickOrderBot = () => {
           >
             {/* Header */}
             <div className="p-8 bg-[#1A1A1A] text-white relative overflow-hidden">
-               <div className="absolute inset-0 opacity-15 pointer-elements-none" style={{
-                 backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0c16.568 0 30 13.432 30 30s-13.432 30-30 30S0 46.568 0 30 13.432 0 30 0zm0 10c-11.046 0-20 8.954-20 20s8.954 20 20 20 20-8.954 20-20-8.954-20-20-20z' fill='%23DAA520' fill-rule='evenodd'/%3E%3C/svg%3E")`,
-               }} />
-               <div className="flex items-center justify-between relative z-10">
+              <div className="absolute inset-0 opacity-15 pointer-elements-none" style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0c16.568 0 30 13.432 30 30s-13.432 30-30 30S0 46.568 0 30 13.432 0 30 0zm0 10c-11.046 0-20 8.954-20 20s8.954 20 20 20 20-8.954 20-20-8.954-20-20-20z' fill='%23DAA520' fill-rule='evenodd'/%3E%3C/svg%3E")`,
+              }} />
+              <div className="flex items-center justify-between relative z-10">
                 <div className="flex items-center gap-5">
                   <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#8B0000] to-[#5a0000] flex items-center justify-center shadow-lg border-2 border-[#DAA520]/40 transition-transform hover:rotate-6 duration-500">
                     <Printer className="w-8 h-8 text-[#DAA520]" />
@@ -212,7 +213,7 @@ export const QuickOrderBot = () => {
                     </div>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => setIsOpen(false)}
                   className="bg-white/10 hover:bg-white/20 p-3 rounded-2xl transition-all border border-white/20 group"
                   aria-label="Close Assistant"
@@ -227,8 +228,8 @@ export const QuickOrderBot = () => {
             <div className="absolute right-0 top-0 bottom-0 w-1.5 bg-[#8B0000]/10" />
 
             {/* Body */}
-            <div 
-              ref={scrollRef} 
+            <div
+              ref={scrollRef}
               className="flex-1 overflow-y-auto p-8 space-y-8 relative"
               style={{
                 backgroundImage: 'radial-gradient(#8B000008 1px, transparent 1px)',
@@ -243,18 +244,17 @@ export const QuickOrderBot = () => {
                     </div>
                   )}
                   <div className={`max-w-[85%] space-y-4`}>
-                    <motion.div 
+                    <motion.div
                       initial={{ scale: 0.9, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      className={`p-5 rounded-3xl text-sm font-medium leading-relaxed ${
-                        m.type === "user" 
-                          ? "bg-[#8B0000] text-white rounded-br-none shadow-xl shadow-[#8B0000]/20 font-sans" 
-                          : "bg-white text-[#1A1A1A] border-2 border-[#8B0000]/5 rounded-bl-none shadow-sm font-serif italic text-[15px]"
-                      }`}
+                      className={`p-5 rounded-3xl text-sm font-medium leading-relaxed ${m.type === "user"
+                        ? "bg-[#8B0000] text-white rounded-br-none shadow-xl shadow-[#8B0000]/20 font-sans"
+                        : "bg-white text-[#1A1A1A] border-2 border-[#8B0000]/5 rounded-bl-none shadow-sm font-serif italic text-[15px]"
+                        }`}
                     >
                       {m.content}
                     </motion.div>
-                    
+
                     {m.options && (
                       <div className="flex flex-wrap gap-2 mt-2">
                         {m.options.map(opt => (
@@ -270,35 +270,35 @@ export const QuickOrderBot = () => {
                     )}
 
                     {m.action === 'upload' && (
-                       <label className="flex flex-col items-center justify-center p-8 bg-white border-4 border-dashed border-[#8B0000]/10 rounded-[2.5rem] hover:bg-[#8B0000]/5 cursor-pointer transition-all group shadow-inner">
-                         <div className="w-16 h-16 rounded-full bg-[#8B0000]/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <Upload className="w-8 h-8 text-[#8B0000]" />
-                         </div>
-                         <span className="text-[11px] font-black uppercase text-[#8B0000] tracking-widest">Select Your Masterpiece</span>
-                         <span className="text-[9px] text-[#8B0000]/50 mt-1 uppercase font-bold tracking-wider">PDF, AI, CDR, or PNG (Max 50MB)</span>
-                         <input type="file" className="hidden" onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                               toast.success(`${file.name} uploaded successfully!`);
-                               handleOptionClick("Artwork Uploaded ✅");
-                            }
-                         }} />
-                       </label>
+                      <label className="flex flex-col items-center justify-center p-8 bg-white border-4 border-dashed border-[#8B0000]/10 rounded-[2.5rem] hover:bg-[#8B0000]/5 cursor-pointer transition-all group shadow-inner">
+                        <div className="w-16 h-16 rounded-full bg-[#8B0000]/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                          <Upload className="w-8 h-8 text-[#8B0000]" />
+                        </div>
+                        <span className="text-[11px] font-black uppercase text-[#8B0000] tracking-widest">Select Your Masterpiece</span>
+                        <span className="text-[9px] text-[#8B0000]/50 mt-1 uppercase font-bold tracking-wider">PDF, AI, CDR, or PNG (Max 50MB)</span>
+                        <input type="file" className="hidden" onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            toast.success(`${file.name} uploaded successfully!`);
+                            handleOptionClick("Artwork Uploaded ✅");
+                          }
+                        }} />
+                      </label>
                     )}
 
                     {m.action === 'location' && (
-                       <div className="relative group">
-                         <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8B0000]" />
-                         <Input 
-                           placeholder="Enter Pincode..." 
-                           className="pl-11 h-12 rounded-2xl border-2 border-[#8B0000]/10 focus:border-[#8B0000] bg-white text-sm"
-                           onKeyDown={(e) => {
-                             if (e.key === 'Enter') handleSend();
-                           }}
-                           value={inputValue}
-                           onChange={(e) => setInputValue(e.target.value)}
-                         />
-                       </div>
+                      <div className="relative group">
+                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8B0000]" />
+                        <Input
+                          placeholder="Enter Pincode..."
+                          className="pl-11 h-12 rounded-2xl border-2 border-[#8B0000]/10 focus:border-[#8B0000] bg-white text-sm"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSend();
+                          }}
+                          value={inputValue}
+                          onChange={(e) => setInputValue(e.target.value)}
+                        />
+                      </div>
                     )}
                   </div>
                 </div>

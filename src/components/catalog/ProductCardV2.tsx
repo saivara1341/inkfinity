@@ -11,6 +11,58 @@ interface ProductCardV2Props {
   Icon: any;
 }
 
+// Category-based fallback images — ensures every product has a stunning, relevant photo
+const CATEGORY_IMAGES: Record<string, string> = {
+  "visiting-cards": "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=800&q=80",
+  "Visiting Cards": "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=800&q=80",
+  "flyers": "https://images.unsplash.com/photo-1563298723-dcfebaa392e3?w=800&q=80",
+  "Flyers & Leaflets": "https://images.unsplash.com/photo-1563298723-dcfebaa392e3?w=800&q=80",
+  "brochures": "https://images.unsplash.com/photo-1544819667-9bfc1de23d4e?w=800&q=80",
+  "Pamphlets & Brochures": "https://images.unsplash.com/photo-1544819667-9bfc1de23d4e?w=800&q=80",
+  "posters": "https://images.unsplash.com/photo-1558487661-9d4f01e2ad64?w=800&q=80",
+  "Posters": "https://images.unsplash.com/photo-1558487661-9d4f01e2ad64?w=800&q=80",
+  "banners": "https://images.unsplash.com/photo-1603201667141-5a2d4c673378?w=800&q=80",
+  "Banners & Flex": "https://images.unsplash.com/photo-1603201667141-5a2d4c673378?w=800&q=80",
+  "stickers": "https://images.unsplash.com/photo-1496096265110-f83ad7f96608?w=800&q=80",
+  "Stickers & Labels": "https://images.unsplash.com/photo-1496096265110-f83ad7f96608?w=800&q=80",
+  "id-cards": "https://images.unsplash.com/photo-1581413809628-98e3b3a5fe6f?w=800&q=80",
+  "ID Cards & PVC": "https://images.unsplash.com/photo-1581413809628-98e3b3a5fe6f?w=800&q=80",
+  "standees": "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&q=80",
+  "Standees & Roll-Ups": "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&q=80",
+  "invitations": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
+  "Invitations & Wedding Cards": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
+  "letterheads": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80",
+  "Letterheads & Envelopes": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80",
+  "packaging": "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800&q=80",
+  "Packaging & Boxes": "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800&q=80",
+  "certificates": "https://images.unsplash.com/photo-1523050854058-8df90110c8f1?w=800&q=80",
+  "Certificates & Awards": "https://images.unsplash.com/photo-1523050854058-8df90110c8f1?w=800&q=80",
+  "tshirts": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80",
+  "T-Shirts & Merchandise": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80",
+  "notepads": "https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&q=80",
+  "Notepads & Diaries": "https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&q=80",
+  "menus": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80",
+  "Menu Cards": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80",
+  "calendars": "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=800&q=80",
+  "Calendars": "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=800&q=80",
+  "hospital": "https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=800&q=80",
+  "Hospital & Medical": "https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=800&q=80",
+  "weddings": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
+  "Luxury Weddings": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
+  "custom": "https://images.unsplash.com/photo-1623013898240-dc50ec9588b3?w=800&q=80",
+};
+
+const DEFAULT_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1586075010633-de982cd26f1c?w=800&q=80";
+
+const getProductImage = (product: any): string => {
+  if (product.image) return product.image;
+  // Try matching by categoryName, categoryId, or category
+  return CATEGORY_IMAGES[product.categoryName] ||
+    CATEGORY_IMAGES[product.categoryId] ||
+    CATEGORY_IMAGES[product.category] ||
+    DEFAULT_PRODUCT_IMAGE;
+};
+
 const ProductCardV2 = ({ product }: ProductCardV2Props) => {
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
@@ -40,29 +92,28 @@ const ProductCardV2 = ({ product }: ProductCardV2Props) => {
       {/* Product Image Section */}
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-50">
         <motion.img
-          src={product.image || "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=800&q=80"}
+          src={getProductImage(product)}
           alt={product.name}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
-        
+
         {/* Floating Actions (Visible on Hover) */}
         <AnimatePresence>
           {isHovered && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
               className="absolute top-3 right-3 flex flex-col gap-2"
             >
-              <button 
+              <button
                 onClick={toggleFavorite}
-                className={`w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-sm ${
-                  isFavorite ? "bg-red-500 text-white" : "bg-white/80 text-slate-600 hover:text-red-500"
-                }`}
+                className={`w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-sm ${isFavorite ? "bg-red-500 text-white" : "bg-white/80 text-slate-600 hover:text-red-500"
+                  }`}
               >
                 <Heart className={`w-4.5 h-4.5 ${isFavorite ? "fill-current" : ""}`} />
               </button>
-              <button 
+              <button
                 onClick={handleShare}
                 className="w-9 h-9 rounded-full bg-white/80 backdrop-blur-md text-slate-600 hover:text-[#FF7300] flex items-center justify-center transition-all shadow-sm"
               >
@@ -116,8 +167,8 @@ const ProductCardV2 = ({ product }: ProductCardV2Props) => {
               <span className="text-xs text-slate-400 font-medium normal-case">/ {product.unit.includes('100') ? '100 pcs' : product.unit.replace('per ', '')}</span>
             </div>
           </div>
-          
-          <Button 
+
+          <Button
             variant="ghost"
             className="p-0 h-auto hover:bg-transparent group/btn"
           >

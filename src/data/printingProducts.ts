@@ -81,26 +81,26 @@ const visitingCardSizes: PrintSize[] = [
 ];
 
 const visitingCardPapers: PaperType[] = [
-  { id: "art-300", label: "300 GSM Art Card", gsm: 300, description: "Standard glossy finish, professional look", priceMultiplier: 1, image: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=200&h=200&fit=crop" },
-  { id: "art-350", label: "350 GSM Art Card", gsm: 350, description: "Thicker, premium feel", priceMultiplier: 1.15, image: "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=200&h=200&fit=crop" },
-  { id: "matte-350", label: "350 GSM Matte Card", gsm: 350, description: "Elegant non-glossy finish", priceMultiplier: 1.2, image: "https://images.unsplash.com/photo-1572502742898-d5e4a3e5e1b5?w=200&h=200&fit=crop" },
-  { id: "textured-400", label: "400 GSM Textured", gsm: 400, description: "Linen or felt texture, luxury feel", priceMultiplier: 1.8, image: "https://images.unsplash.com/photo-1589384267710-7a25bc5b4862?w=200&h=200&fit=crop" },
-  { id: "metallic", label: "Metallic Gold/Silver", gsm: 350, description: "Shimmering metallic finish", priceMultiplier: 2.5, image: "https://images.unsplash.com/photo-1589384267710-7a25bc5b4862?w=200&h=200&fit=crop" },
-  { id: "transparent-pvc", label: "Transparent PVC", gsm: 0, description: "Clear plastic card, modern look", priceMultiplier: 4, image: "https://images.unsplash.com/photo-1581413809628-98e3b3a5fe6f?w=200&h=200&fit=crop" },
-  { id: "kraft", label: "300 GSM Kraft Paper", gsm: 300, description: "Eco-friendly rustic brown", priceMultiplier: 1.3, image: "https://images.unsplash.com/photo-1595113316349-9fa430eb3749?w=200&h=200&fit=crop" },
-  { id: "velvet", label: "400 GSM Velvet Touch", gsm: 400, description: "Soft-touch laminated, ultra premium", priceMultiplier: 3, image: "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=200&h=200&fit=crop" },
+  { id: "art-300", label: "300 GSM Art Card", gsm: 300, description: "Standard glossy finish, professional look", priceMultiplier: 1, image: "https://images.unsplash.com/photo-1598214817158-ab355a6d96f4?w=800&q=80" },
+  { id: "art-350", label: "350 GSM Art Card", gsm: 350, description: "Thicker, premium feel", priceMultiplier: 1.15, image: "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=800&q=80" },
+  { id: "matte-350", label: "350 GSM Matte Card", gsm: 350, description: "Elegant non-glossy finish", priceMultiplier: 1.2, image: "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=800&q=80" },
+  { id: "textured-400", label: "400 GSM Textured", gsm: 400, description: "Linen or felt texture, luxury feel", priceMultiplier: 1.8, image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=800&q=80" },
+  { id: "metallic", label: "Metallic Gold/Silver", gsm: 350, description: "Shimmering metallic finish", priceMultiplier: 2.5, image: "https://images.unsplash.com/photo-1614850715649-1d0106293bd1?w=800&q=80" },
+  { id: "transparent-pvc", label: "Transparent PVC", gsm: 0, description: "Clear plastic card, modern look", priceMultiplier: 4, image: "https://images.unsplash.com/photo-1581413809628-98e3b3a5fe6f?w=800&q=80" },
+  { id: "kraft", label: "300 GSM Kraft Paper", gsm: 300, description: "Eco-friendly rustic brown", priceMultiplier: 1.3, image: "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800&q=80" },
+  { id: "velvet", label: "400 GSM Velvet Touch", gsm: 400, description: "Soft-touch laminated, ultra premium", priceMultiplier: 3, image: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=800&q=80" },
 ];
 
 const visitingCardFinishes: FinishType[] = [
-  { id: "none", label: "No Finish", description: "Standard uncoated", priceAdd: 0, image: "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=200&h=200&fit=crop" },
-  { id: "glossy-lam", label: "Glossy Lamination", description: "Shiny protective coating", priceAdd: 0.3, image: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=200&h=200&fit=crop" },
-  { id: "matte-lam", label: "Matte Lamination", description: "Smooth matte protective coating", priceAdd: 0.4, image: "https://images.unsplash.com/photo-1572502742898-d5e4a3e5e1b5?w=200&h=200&fit=crop" },
-  { id: "spot-uv", label: "Spot UV", description: "Raised glossy accent on specific areas", priceAdd: 0.8, image: "https://images.unsplash.com/photo-1589384267710-7a25bc5b4862?w=200&h=200&fit=crop" },
-  { id: "foil-gold", label: "Gold Foil Stamping", description: "Metallic gold emboss on text/logo", priceAdd: 1.5, image: "https://images.unsplash.com/photo-1589384267710-7a25bc5b4862?w=200&h=200&fit=crop" },
-  { id: "foil-silver", label: "Silver Foil Stamping", description: "Metallic silver emboss", priceAdd: 1.5, image: "https://images.unsplash.com/photo-1589384267710-7a25bc5b4862?w=200&h=200&fit=crop" },
-  { id: "emboss", label: "Embossing", description: "Raised 3D texture on design elements", priceAdd: 1.2, image: "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=200&h=200&fit=crop" },
-  { id: "deboss", label: "Debossing", description: "Pressed-in texture", priceAdd: 1.2, image: "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=200&h=200&fit=crop" },
-  { id: "edge-color", label: "Edge Coloring", description: "Painted card edges for premium look", priceAdd: 2, image: "https://images.unsplash.com/photo-1589384267710-7a25bc5b4862?w=200&h=200&fit=crop" },
+  { id: "none", label: "No Finish", description: "Standard uncoated", priceAdd: 0, image: "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=800&q=80" },
+  { id: "glossy-lam", label: "Glossy Lamination", description: "Shiny protective coating", priceAdd: 0.3, image: "https://images.unsplash.com/photo-1620121692029-d088224efc74?w=800&q=80" },
+  { id: "matte-lam", label: "Matte Lamination", description: "Smooth matte protective coating", priceAdd: 0.4, image: "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=800&q=80" },
+  { id: "spot-uv", label: "Spot UV", description: "Raised glossy accent on specific areas", priceAdd: 0.8, image: "https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=800&q=80" },
+  { id: "foil-gold", label: "Gold Foil Stamping", description: "Metallic gold emboss on text/logo", priceAdd: 1.5, image: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&q=80" },
+  { id: "foil-silver", label: "Silver Foil Stamping", description: "Metallic silver emboss", priceAdd: 1.5, image: "https://images.unsplash.com/photo-1531685351716-ef219ca66a20?w=800&q=80" },
+  { id: "emboss", label: "Embossing", description: "Raised 3D texture on design elements", priceAdd: 1.2, image: "https://images.unsplash.com/photo-1626785774625-ddc7c82a1e5e?w=800&q=80" },
+  { id: "deboss", label: "Debossing", description: "Pressed-in texture", priceAdd: 1.2, image: "https://images.unsplash.com/photo-1626785774625-ddc7c82a1e5e?w=800&q=80" },
+  { id: "edge-color", label: "Edge Coloring", description: "Painted card edges for premium look", priceAdd: 2, image: "https://images.unsplash.com/photo-1562975031-fb709cd941b3?w=800&q=80" },
 ];
 
 // ═══════════════════════════════════════════════

@@ -15,39 +15,37 @@ interface ProductCardV2Props {
 const CATEGORY_IMAGES: Record<string, string> = {
   "visiting-cards": "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=800&q=80",
   "Visiting Cards": "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=800&q=80",
-  "flyers": "https://images.unsplash.com/photo-1563298723-dcfebaa392e3?w=800&q=80",
+  "flyers-leaflets": "https://images.unsplash.com/photo-1563298723-dcfebaa392e3?w=800&q=80",
   "Flyers & Leaflets": "https://images.unsplash.com/photo-1563298723-dcfebaa392e3?w=800&q=80",
-  "brochures": "https://images.unsplash.com/photo-1544819667-9bfc1de23d4e?w=800&q=80",
+  "pamphlets-brochures": "https://images.unsplash.com/photo-1544819667-9bfc1de23d4e?w=800&q=80",
   "Pamphlets & Brochures": "https://images.unsplash.com/photo-1544819667-9bfc1de23d4e?w=800&q=80",
   "posters": "https://images.unsplash.com/photo-1558487661-9d4f01e2ad64?w=800&q=80",
   "Posters": "https://images.unsplash.com/photo-1558487661-9d4f01e2ad64?w=800&q=80",
-  "banners": "https://images.unsplash.com/photo-1603201667141-5a2d4c673378?w=800&q=80",
+  "banners-flex": "https://images.unsplash.com/photo-1603201667141-5a2d4c673378?w=800&q=80",
   "Banners & Flex": "https://images.unsplash.com/photo-1603201667141-5a2d4c673378?w=800&q=80",
-  "stickers": "https://images.unsplash.com/photo-1496096265110-f83ad7f96608?w=800&q=80",
+  "stickers-labels": "https://images.unsplash.com/photo-1496096265110-f83ad7f96608?w=800&q=80",
   "Stickers & Labels": "https://images.unsplash.com/photo-1496096265110-f83ad7f96608?w=800&q=80",
-  "id-cards": "https://images.unsplash.com/photo-1581413809628-98e3b3a5fe6f?w=800&q=80",
+  "id-cards-pvc": "https://images.unsplash.com/photo-1581413809628-98e3b3a5fe6f?w=800&q=80",
   "ID Cards & PVC": "https://images.unsplash.com/photo-1581413809628-98e3b3a5fe6f?w=800&q=80",
-  "standees": "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&q=80",
+  "standees-rollups": "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&q=80",
   "Standees & Roll-Ups": "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&q=80",
-  "invitations": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
+  "invitations-wedding": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
   "Invitations & Wedding Cards": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
-  "letterheads": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80",
+  "letterheads-envelopes": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80",
   "Letterheads & Envelopes": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80",
-  "packaging": "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800&q=80",
+  "packaging-boxes": "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800&q=80",
   "Packaging & Boxes": "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800&q=80",
-  "certificates": "https://images.unsplash.com/photo-1523050854058-8df90110c8f1?w=800&q=80",
+  "certificates-awards": "https://images.unsplash.com/photo-1523050854058-8df90110c8f1?w=800&q=80",
   "Certificates & Awards": "https://images.unsplash.com/photo-1523050854058-8df90110c8f1?w=800&q=80",
-  "tshirts": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80",
+  "tshirts-merchandise": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80",
   "T-Shirts & Merchandise": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80",
-  "notepads": "https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&q=80",
+  "notepads-diaries": "https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&q=80",
   "Notepads & Diaries": "https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&q=80",
-  "menus": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80",
+  "menu-cards": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80",
   "Menu Cards": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80",
-  "calendars": "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=800&q=80",
-  "Calendars": "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=800&q=80",
-  "hospital": "https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=800&q=80",
+  "hospital-medical": "https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=800&q=80",
   "Hospital & Medical": "https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=800&q=80",
-  "weddings": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
+  "luxury-weddings": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
   "Luxury Weddings": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
   "student-projects": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&q=80",
   "Student Projects & Binding": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&q=80",
@@ -91,7 +89,8 @@ const ProductCardV2 = ({ product }: ProductCardV2Props) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className="group relative bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-slate-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-500 flex flex-col h-full cursor-pointer"
-      onClick={() => navigate(`/customize/${product.id}`)}
+      onClick={() => navigate(`/product/${product.id}`)}
+
     >
       {/* Product Image Section */}
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-50">
@@ -148,7 +147,7 @@ const ProductCardV2 = ({ product }: ProductCardV2Props) => {
               {product.name}
             </h3>
             <p className="text-sm text-slate-500 flex items-center gap-1 mt-1 font-medium capitalize">
-              <Package className="w-3.5 h-3.5 text-[#FF7300]" /> {product.categoryName}
+              <Package className="w-3.5 h-3.5 text-[#FF7300]" /> {product.categoryName || product.category}
             </p>
           </div>
           <div className="flex items-center gap-0.5 bg-slate-50 px-2 py-1 rounded-lg text-xs font-bold text-slate-700">

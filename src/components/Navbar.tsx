@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Printer, Menu, X, ShoppingCart, User, LogOut, MapPin, Settings, ChevronDown } from "lucide-react";
+import { Printer, Menu, X, ShoppingCart, User, LogOut, MapPin, Settings, ChevronDown, Zap } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -72,7 +72,7 @@ const Navbar = () => {
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
         <Link to="/" className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-lg bg-gradient-coral flex items-center justify-center">
-            <Printer className="w-5 h-5 text-accent-foreground" />
+            <Zap className="w-5 h-5 text-accent-foreground" />
           </div>
           <span className="font-display text-xl font-bold text-foreground">PrintFlow</span>
         </Link>

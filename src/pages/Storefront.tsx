@@ -17,9 +17,9 @@ import WishlistButton from "@/components/WishlistButton";
 
 const SocialIcons = ({ shop, className = "" }: { shop: any, className?: string }) => {
   if (!shop) return null;
-  
+
   const links = [];
-  
+
   // New explicit columns
   if (shop.instagram_url) links.push({ type: 'instagram', url: shop.instagram_url });
   if (shop.facebook_url) links.push({ type: 'facebook', url: shop.facebook_url });
@@ -33,7 +33,7 @@ const SocialIcons = ({ shop, className = "" }: { shop: any, className?: string }
       const parts = s.split(":");
       const handle = parts.slice(2).join(":"); // Handle URLs with colons
       if (!handle) return;
-      
+
       if (s.includes("instagram")) links.push({ type: 'instagram', url: handle.startsWith('http') ? handle : `https://instagram.com/${handle}` });
       else if (s.includes("facebook")) links.push({ type: 'facebook', url: handle.startsWith('http') ? handle : `https://facebook.com/${handle}` });
       else if (s.includes("twitter")) links.push({ type: 'twitter', url: handle.startsWith('http') ? handle : `https://twitter.com/${handle}` });
@@ -46,15 +46,15 @@ const SocialIcons = ({ shop, className = "" }: { shop: any, className?: string }
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       {links.map((link, i) => {
-        const Icon = link.type === 'instagram' ? Instagram : 
-                     link.type === 'facebook' ? Facebook : 
-                     link.type === 'twitter' ? Twitter : Phone;
+        const Icon = link.type === 'instagram' ? Instagram :
+          link.type === 'facebook' ? Facebook :
+            link.type === 'twitter' ? Twitter : Phone;
         return (
-          <a 
-            key={`${link.type}-${i}`} 
-            href={link.url} 
-            target="_blank" 
-            rel="noreferrer" 
+          <a
+            key={`${link.type}-${i}`}
+            href={link.url}
+            target="_blank"
+            rel="noreferrer"
             className="text-muted-foreground hover:text-accent transition-colors"
           >
             <Icon className="w-3.5 h-3.5" />
@@ -110,6 +110,7 @@ const Storefront = () => {
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "All");
   const [sortBy, setSortBy] = useState<"price_low" | "price_high" | "rating" | "newest">("newest");
   const [showFilters, setShowFilters] = useState(false);
+  const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
 
   const shopFilter = searchParams.get("shop");
 
@@ -166,10 +167,30 @@ const Storefront = () => {
     setLoading(false);
   }, [selectedCategory, sortBy, shopFilter]);
 
+  const fetchRecentlyViewed = useCallback(async () => {
+    const storedIds = JSON.parse(localStorage.getItem("recentlyViewed") || "[]");
+    if (storedIds.length === 0) return;
+
+    const { data } = await supabase
+      .from("products")
+      .select("*, shop:shops(id, name, city, rating, is_verified)")
+      .in("id", storedIds)
+      .eq("is_active", true);
+
+    if (data) {
+      // Maintain the order of IDs from localStorage
+      const sorted = storedIds
+        .map((id: string) => data.find((p) => p.id === id))
+        .filter(Boolean) as unknown as Product[];
+      setRecentlyViewed(sorted);
+    }
+  }, []);
+
   // Re-fetch when view/category/sort/shop filter changes
   useEffect(() => {
     fetchData();
-  }, [selectedCategory, sortBy, shopFilter, fetchData]);
+    if (view === "products") fetchRecentlyViewed();
+  }, [selectedCategory, sortBy, shopFilter, fetchData, fetchRecentlyViewed, view]);
 
   // Sync view from URL
   useEffect(() => {
@@ -229,7 +250,7 @@ const Storefront = () => {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <ShareControl 
+                <ShareControl
                   title={`${activeShop.name} on PrintFlow`}
                   text={`Check out this amazing print shop: ${activeShop.name}!`}
                   url={`/store?view=products&shop=${activeShop.id}`}
@@ -266,17 +287,15 @@ const Storefront = () => {
               <div className="flex gap-2">
                 <button
                   onClick={() => setView("products")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    view === "products" ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
-                  }`}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${view === "products" ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
+                    }`}
                 >
                   Products
                 </button>
                 <button
                   onClick={() => setView("shops")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    view === "shops" ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
-                  }`}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${view === "shops" ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
+                    }`}
                 >
                   Shops
                 </button>
@@ -309,11 +328,10 @@ const Storefront = () => {
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                        selectedCategory === cat
-                          ? "bg-accent text-accent-foreground"
-                          : "bg-secondary text-muted-foreground hover:text-foreground"
-                      }`}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${selectedCategory === cat
+                        ? "bg-accent text-accent-foreground"
+                        : "bg-secondary text-muted-foreground hover:text-foreground"
+                        }`}
                     >
                       {cat}
                     </button>
@@ -329,9 +347,8 @@ const Storefront = () => {
                     <button
                       key={key}
                       onClick={() => setSortBy(key)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                        sortBy === key ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground"
-                      }`}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${sortBy === key ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground"
+                        }`}
                     >
                       {label}
                     </button>
@@ -340,6 +357,46 @@ const Storefront = () => {
               </motion.div>
             )}
           </motion.div>
+
+          {/* Recently Viewed - Horizontal Scroll */}
+          {!loading && view === "products" && recentlyViewed.length > 0 && !searchQuery && selectedCategory === "All" && !shopFilter && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="mb-12"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-display text-xl font-bold flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-accent" /> Recently Viewed
+                </h2>
+                <button
+                  onClick={() => { localStorage.removeItem("recentlyViewed"); setRecentlyViewed([]); }}
+                  className="text-xs font-bold text-muted-foreground hover:text-destructive uppercase tracking-wider"
+                >
+                  Clear History
+                </button>
+              </div>
+              <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 snap-x">
+                {recentlyViewed.map((product) => (
+                  <motion.div
+                    key={`recent-${product.id}`}
+                    whileHover={{ y: -5 }}
+                    className="min-w-[180px] sm:min-w-[220px] bg-card rounded-xl border border-border overflow-hidden snap-start shadow-sm"
+                  >
+                    <Link to={`/product/${product.id}`} className="block relative">
+                      <div className="aspect-[4/3] bg-secondary">
+                        <img src={product.images?.[0] || "https://images.unsplash.com/photo-1562654501-a0ccc0af3fb1?w=400"} className="w-full h-full object-cover" alt="" />
+                      </div>
+                      <div className="p-3">
+                        <h4 className="text-xs font-bold truncate mb-1">{product.name}</h4>
+                        <p className="text-accent font-bold text-sm">₹{product.base_price}</p>
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
 
           {/* Content */}
           {loading ? (
@@ -359,56 +416,60 @@ const Storefront = () => {
                     transition={{ delay: i * 0.05 }}
                     className="bg-card rounded-xl border border-border shadow-card hover:shadow-elevated transition-all group"
                   >
-                    <div className="aspect-[4/3] bg-secondary rounded-t-xl flex items-center justify-center overflow-hidden">
-                      {product.images?.length > 0 ? (
-                        <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                    <Link to={`/product/${product.id}`} className="block aspect-[4/3] bg-secondary rounded-t-xl overflow-hidden relative">
+                      {product.images?.[0] ? (
+                        <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                       ) : (
-                        <div className="text-muted-foreground text-center p-4">
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground text-center p-4">
                           <Store className="w-10 h-10 mx-auto mb-2 opacity-40" />
                           <p className="text-xs">{product.category}</p>
                         </div>
                       )}
-                    </div>
+                      <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <WishlistButton productId={product.id} variant="secondary" size="icon" />
+                      </div>
+                    </Link>
+
                     <div className="p-4 space-y-2">
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-display font-semibold text-foreground text-sm line-clamp-2">{product.name}</h3>
+                        <Link to={`/product/${product.id}`} className="hover:text-accent transition-colors">
+                          <h3 className="font-display font-semibold text-foreground text-sm line-clamp-2">{product.name}</h3>
+                        </Link>
                         <span className="text-lg font-display font-bold text-accent whitespace-nowrap">
                           ₹{product.base_price}
                         </span>
                       </div>
+
                       {(product.shop as any) && (
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                           <Store className="w-3 h-3" />
-                          <span>{(product.shop as any).name}</span>
+                          <span className="truncate">{(product.shop as any).name}</span>
                           <span>•</span>
                           <MapPin className="w-3 h-3" />
                           <span>{(product.shop as any).city}</span>
                         </div>
                       )}
+
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span>Min: {product.min_quantity}</span>
+                        <span>Min: {product.min_quantity} units</span>
                       </div>
+
                       <div className="flex gap-2 pt-2">
                         <Button
                           variant="coral"
                           size="sm"
-                          className="flex-1 gap-1"
-                          onClick={() => navigate(`/inkfinity/customize/standard-visiting-card?productId=${product.id}`)}
+                          className="flex-1 gap-1 font-bold"
+                          onClick={() => navigate(`/customize/${product.category.toLowerCase().replace(/\s+/g, '-') || 'generic'}?productId=${product.id}`)}
                         >
-                          <ShoppingCart className="w-3.5 h-3.5" /> Customize and Add
+                          <ShoppingCart className="w-3.5 h-3.5" /> Customize
                         </Button>
-                        <ShareControl 
+                        <ShareControl
                           title={product.name}
                           text={`Check out this ${product.name} on PrintFlow!`}
-                          url={`/customize/${product.id}`}
+                          url={window.location.origin + `/product/${product.id}`}
                           variant="secondary"
                           size="sm"
                           showLabel={false}
-                        />
-                        <WishlistButton 
-                          productId={product.id}
-                          variant="secondary"
-                          size="sm"
                         />
                       </div>
                     </div>
@@ -419,6 +480,7 @@ const Storefront = () => {
           ) : (
             /* Shops View */
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
               {filteredShops.length === 0 ? (
                 <div className="col-span-full text-center py-20">
                   <p className="text-muted-foreground">No shops found.</p>
@@ -456,7 +518,7 @@ const Storefront = () => {
                     )}
                     <div className="flex items-center justify-between mt-auto pt-3 border-t border-border/50">
                       <div className="flex items-center gap-4">
-                        <ShareControl 
+                        <ShareControl
                           title={shop.name}
                           text={`Check out this shop on PrintFlow: ${shop.name}`}
                           url={`/store?view=products&shop=${shop.id}`}
@@ -479,9 +541,9 @@ const Storefront = () => {
             </div>
           )}
         </div>
-      </div>
+      </div >
       <Footer />
-    </div>
+    </div >
   );
 };
 

@@ -9,7 +9,7 @@ import {
   Palette, RefreshCw,
   Crop, FileImage, IndianRupee, ChevronRight, Info,
   CheckCircle2, ArrowLeft, Clock, Share2, TrendingDown, Sparkles, TrendingUp,
-  Store, Star, Layers, MousePointer2, ChevronDown
+  Store, Star, Layers, MousePointer2, ChevronDown, ShoppingCart, ArrowRight
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -587,21 +587,20 @@ const ProductCustomize = () => {
                   )}
 
                   <Button
-                    disabled={uploading || (!frontPreview && !frontAiUrl)}
+                    className="w-full h-16 rounded-2xl bg-[#FF7300] hover:bg-[#E65100] font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-[#FF7300]/20 transition-all active:scale-95 group relative overflow-hidden"
                     onClick={handleProceedToCheckout}
-                    className="w-full h-16 bg-[#FF7300] hover:bg-[#E65100] text-white rounded-[1.25rem] font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-[#FF7300]/20 transition-all active:scale-95 group"
+                    disabled={uploading}
                   >
-                    {uploading ? (
-                      <div className="flex items-center gap-2">
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                        Processing...
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        Add to Cart
-                        <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    )}
+                    <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                    <div className="relative flex items-center justify-center gap-3">
+                      {uploading ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <ShoppingCart className="w-5 h-5" />
+                      )}
+                      <span>{(!frontPreview && !frontAiUrl) ? "Design Later & Add to Cart" : "Add to Cart"}</span>
+                      <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
                   </Button>
 
                   <p className="text-center text-[10px] font-bold text-gray-500 mt-6 uppercase tracking-widest">

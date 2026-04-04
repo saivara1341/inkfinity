@@ -15,12 +15,14 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { OrderMessages } from "@/components/OrderMessages";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ReviewSystem } from "@/components/ReviewSystem";
 
 export const OrderHistory = () => {
   const { user } = useAuth();
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [messagingOrderId, setMessagingOrderId] = useState<string | null>(null);
+  const [reviewOrderId, setReviewOrderId] = useState<string | null>(null);
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["user-orders", user?.id],
@@ -174,7 +176,12 @@ export const OrderHistory = () => {
                             <MessageSquare className="w-3 h-3" /> Discuss Order
                           </Button>
                           {order.status === 'delivered' && (
-                            <Button variant="coral" size="sm" className="gap-2 text-[10px] font-bold uppercase tracking-wider">
+                            <Button
+                              variant="coral"
+                              size="sm"
+                              className="gap-2 text-[10px] font-bold uppercase tracking-wider"
+                              onClick={() => setReviewOrderId(order.id)}
+                            >
                               Write Review <Star className="w-3 h-3" />
                             </Button>
                           )}
@@ -200,6 +207,38 @@ export const OrderHistory = () => {
               shopOwnerId={orders.find((o: any) => o.id === messagingOrderId)?.shop_id}
               onClose={() => setMessagingOrderId(null)}
             />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!reviewOrderId} onOpenChange={(open) => !open && setReviewOrderId(null)}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl font-bold flex items-center gap-2">
+              <Star className="w-6 h-6 text-warning fill-warning" /> Rate Your Purchase
+            </DialogTitle>
+          </DialogHeader>
+          {reviewOrderId && (
+            <div className="py-4">
+              <div className="mb-6 p-4 bg-secondary/30 rounded-xl border border-border flex items-center gap-4">
+                <div className="w-12 h-12 rounded bg-white flex items-center justify-center border border-border">
+                  <Package className="w-6 h-6 text-accent" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm">
+                    {orders.find((o: any) => o.id === reviewOrderId)?.product_name}
+                  </h4>
+                  <p className="text-xs text-muted-foreground">Order #{orders.find((o: any) => o.id === reviewOrderId)?.order_number}</p>
+                </div>
+              </div>
+              <ReviewSystem
+                orderId={reviewOrderId}
+                shopId={orders.find((o: any) => o.id === reviewOrderId)?.shop_id}
+                productId={orders.find((o: any) => o.id === reviewOrderId)?.product_id}
+                showForm={true}
+                onSuccess={() => setReviewOrderId(null)}
+              />
+            </div>
           )}
         </DialogContent>
       </Dialog>

@@ -39,6 +39,8 @@ const ForShops = lazy(() => import("./pages/ForShops"));
 const SelectRole = lazy(() => import("./pages/SelectRole"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const CanvaAuthCallback = lazy(() => import("./pages/CanvaAuthCallback"));
+const ProductDetails = lazy(() => import("./pages/ProductDetails"));
+
 
 const queryClient = new QueryClient();
 
@@ -47,11 +49,11 @@ const Loading = () => (
     {/* Animated background blobs */}
     <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/5 rounded-full blur-[100px] animate-pulse" />
     <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-accent/5 rounded-full blur-[100px] animate-pulse delay-700" />
-    
+
     <div className="relative z-10 flex flex-col items-center gap-10">
       <div className="relative w-32 h-32 flex items-center justify-center">
         {/* The Printer Machine */}
-        <motion.div 
+        <motion.div
           initial={{ y: 0 }}
           animate={{ y: [-2, 2, -2] }}
           transition={{ repeat: Infinity, duration: 0.5, ease: "linear" }}
@@ -61,15 +63,15 @@ const Loading = () => (
             {/* Printer Details */}
             <div className="absolute top-2 left-2 right-2 h-1 bg-border/50 rounded" />
             <div className="absolute top-5 left-2 right-2 h-3 bg-secondary rounded" />
-            
+
             {/* Moving Print Head */}
-            <motion.div 
+            <motion.div
               animate={{ x: [-30, 30, -30] }}
               transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
               className="absolute top-5 left-1/2 -ml-3 w-6 h-3 bg-primary rounded shadow-glow z-30"
             />
           </div>
-          
+
           {/* Printer Feet */}
           <div className="flex justify-between px-4 mt-[-2px]">
             <div className="w-3 h-2 bg-border rounded-b" />
@@ -81,9 +83,9 @@ const Loading = () => (
         <motion.div
           initial={{ y: -10, opacity: 0 }}
           animate={{ y: 40, opacity: [0, 1, 1, 0] }}
-          transition={{ 
-            repeat: Infinity, 
-            duration: 2, 
+          transition={{
+            repeat: Infinity,
+            duration: 2,
             ease: "easeInOut",
             times: [0, 0.2, 0.8, 1]
           }}
@@ -101,7 +103,7 @@ const Loading = () => (
       </div>
 
       <div className="text-center space-y-3">
-        <motion.h2 
+        <motion.h2
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ repeat: Infinity, duration: 2 }}
           className="text-3xl font-display font-black tracking-tight text-foreground"
@@ -113,7 +115,7 @@ const Loading = () => (
             Warming up the rollers...
           </p>
           <div className="w-32 h-1 bg-secondary rounded-full overflow-hidden">
-            <motion.div 
+            <motion.div
               animate={{ x: ["-100%", "100%"] }}
               transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
               className="w-full h-full bg-gradient-to-r from-transparent via-primary to-transparent"
@@ -148,17 +150,17 @@ const OnboardingChecker = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const checkRole = async () => {
       if (loading || !user) return;
-      
+
       const isSelectRolePage = location.pathname === "/select-role";
       const isOnboardingPage = location.pathname === "/onboarding";
       const isLandingPage = location.pathname === "/";
-      
+
       // Public paths that don't need a role check (except for landing page which needs it for logged-in users)
       const nonRedirectPaths = ["/login", "/signup", "/forgot-password", "/reset-password"];
       if (nonRedirectPaths.includes(location.pathname)) return;
 
       const metadataRole = user.user_metadata?.user_role;
-      
+
       // If we are on landing page or any other protected page and have no role, go to select-role
       if (!metadataRole && !isSelectRolePage && !isOnboardingPage) {
         console.log("No role found for user, redirecting to select-role...");
@@ -197,52 +199,54 @@ const App = () => {
                 <BrowserRouter basename="/inkfinity">
                   <ReferralTracker>
                     <OnboardingChecker>
-                    <Suspense fallback={<Loading />}>
-                      <MobileBottomNav />
-                      <Sonner position="top-center" richColors />
-                      <Routes>
-                        {/* Public routes */}
-                        <Route path="/" element={<Index />} />
-                        <Route path="/store" element={<Storefront />} />
-                        <Route path="/catalog" element={<Catalog />} />
-                        <Route path="/catalog/:category" element={<Catalog />} />
-                        <Route path="/customize/:category" element={<ProductCustomize />} />
-                        <Route path="/for-shops" element={<ForShops />} />
-                        <Route path="/track" element={<OrderTracking />} />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/signup" element={<Signup />} />
-                        <Route path="/select-role" element={<SelectRole />} />
-                        <Route path="/forgot-password" element={<ForgotPassword />} />
-                        <Route path="/reset-password" element={<ResetPassword />} />
-                        <Route path="/onboarding" element={<Onboarding />} />
-                        <Route path="/canva-auth" element={<CanvaAuthCallback />} />
+                      <Suspense fallback={<Loading />}>
+                        <MobileBottomNav />
+                        <Sonner position="top-center" richColors />
+                        <Routes>
+                          {/* Public routes */}
+                          <Route path="/" element={<Index />} />
+                          <Route path="/store" element={<Storefront />} />
+                          <Route path="/catalog" element={<Catalog />} />
+                          <Route path="/catalog/:category" element={<Catalog />} />
+                          <Route path="/product/:productId" element={<ProductDetails />} />
+                          <Route path="/customize/:category" element={<ProductCustomize />} />
 
-                        {/* Auth-required routes */}
-                        <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
-                        <Route path="/orders" element={<ProtectedRoute><OrderHistory /></ProtectedRoute>} />
-                        <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-                        <Route path="/order-success" element={<ProtectedRoute><OrderSuccess /></ProtectedRoute>} />
+                          <Route path="/for-shops" element={<ForShops />} />
+                          <Route path="/track" element={<OrderTracking />} />
+                          <Route path="/login" element={<Login />} />
+                          <Route path="/signup" element={<Signup />} />
+                          <Route path="/select-role" element={<SelectRole />} />
+                          <Route path="/forgot-password" element={<ForgotPassword />} />
+                          <Route path="/reset-password" element={<ResetPassword />} />
+                          <Route path="/onboarding" element={<Onboarding />} />
+                          <Route path="/canva-auth" element={<CanvaAuthCallback />} />
 
-                        {/* Role-based dashboards */}
-                        <Route path="/dashboard" element={<ProtectedRoute requiredRole="customer"><CustomerDashboard /></ProtectedRoute>} />
-                        <Route path="/shop" element={<ProtectedRoute requiredRole="shop_owner"><ShopDashboard /></ProtectedRoute>} />
-                        <Route path="/sourcing" element={<ProtectedRoute requiredRole="shop_owner"><SourcingPortal /></ProtectedRoute>} />
-                        <Route path="/supplier" element={<ProtectedRoute requiredRole={["manufacturer", "distributor", "supplier"]}><SupplierDashboard /></ProtectedRoute>} />
-                        <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+                          {/* Auth-required routes */}
+                          <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
+                          <Route path="/orders" element={<ProtectedRoute><OrderHistory /></ProtectedRoute>} />
+                          <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+                          <Route path="/order-success" element={<ProtectedRoute><OrderSuccess /></ProtectedRoute>} />
 
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </Suspense>
-                  </OnboardingChecker>
-                </ReferralTracker>
-              </BrowserRouter>
-            </TooltipProvider>
-          </LocationProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </HelmetProvider>
-  </ErrorBoundary>
-);
+                          {/* Role-based dashboards */}
+                          <Route path="/dashboard" element={<ProtectedRoute requiredRole="customer"><CustomerDashboard /></ProtectedRoute>} />
+                          <Route path="/shop" element={<ProtectedRoute requiredRole="shop_owner"><ShopDashboard /></ProtectedRoute>} />
+                          <Route path="/sourcing" element={<ProtectedRoute requiredRole="shop_owner"><SourcingPortal /></ProtectedRoute>} />
+                          <Route path="/supplier" element={<ProtectedRoute requiredRole={["manufacturer", "distributor", "supplier"]}><SupplierDashboard /></ProtectedRoute>} />
+                          <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </Suspense>
+                    </OnboardingChecker>
+                  </ReferralTracker>
+                </BrowserRouter>
+              </TooltipProvider>
+            </LocationProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      </HelmetProvider>
+    </ErrorBoundary>
+  );
 };
 
 export default App;

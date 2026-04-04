@@ -102,7 +102,7 @@ const OrderTracking = () => {
 
   const handleReorder = () => {
     if (!order) return;
-    
+
     // Expert Move: Restore order context for 1-click reordering
     sessionStorage.setItem("customize_product", JSON.stringify({
       name: order.product_name,
@@ -117,7 +117,7 @@ const OrderTracking = () => {
       shopId: order.shop_id,
       reorder: true
     }));
-    
+
     // Navigate back to product catalog or specific product if we had the ID
     // Since we only have category/name, we navigate to the design tool with a prompt
     const productSlug = order.product_name.toLowerCase().replace(/\s+/g, "-");
@@ -170,8 +170,8 @@ const OrderTracking = () => {
                     className="w-full pl-12 pr-4 py-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
-                <AnimatedButton 
-                  onClick={() => handleTrack()} 
+                <AnimatedButton
+                  onClick={() => handleTrack()}
                   disabled={loading}
                   width={140}
                   height={50}
@@ -200,13 +200,12 @@ const OrderTracking = () => {
                       <p className="font-display text-2xl font-bold text-foreground">{order.order_number}</p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className={`px-3 py-1.5 rounded-full text-sm font-medium inline-flex items-center gap-1 ${
-                        statusSteps[currentStepIndex]
+                      <span className={`px-3 py-1.5 rounded-full text-sm font-medium inline-flex items-center gap-1 ${statusSteps[currentStepIndex]
                           ? currentStepIndex < statusSteps.length - 1
                             ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
                             : "bg-success/20 text-success"
                           : "bg-secondary text-muted-foreground"
-                      }`}>
+                        }`}>
                         <Clock className="w-4 h-4" /> {statusSteps[currentStepIndex]?.label || order.status}
                       </span>
                       {order.status === "delivered" && (
@@ -246,59 +245,95 @@ const OrderTracking = () => {
                   </div>
                 </motion.div>
 
-                {/* Timeline */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-card rounded-xl border border-border p-6 shadow-card mb-6">
-                  <h3 className="font-display font-semibold text-foreground mb-6">Order Progress</h3>
-                  <div className="space-y-0">
-                    {statusSteps.map((step, i) => {
-                      const isCompleted = i <= currentStepIndex;
-                      const isCurrent = i === currentStepIndex;
-                      const Icon = step.icon;
-                      
-                      // Customize labels for pickup
-                      let label = step.label;
-                      let description = step.description;
-                      
-                      if (isPickup) {
-                        if (step.id === "shipped") label = "Ready for Pickup";
-                        if (step.id === "shipped") description = "Your order is ready at the shop";
-                        if (step.id === "delivered") label = "Picked Up";
-                      }
+                {/* Progress Timeline */}
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-card rounded-2xl border border-border p-8 shadow-card mb-6">
+                  <div className="flex items-center justify-between mb-10">
+                    <h3 className="font-display font-bold text-xl text-foreground italic flex items-center gap-2">
+                      <Package className="w-5 h-5 text-accent" /> Track Progress
+                    </h3>
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Real-time Updates <div className="w-1.5 h-1.5 rounded-full bg-success animate-ping" />
+                    </div>
+                  </div>
 
-                      return (
-                        <div key={step.id} className="flex gap-4">
-                          <div className="flex flex-col items-center">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                              isCompleted ? "bg-success text-accent-foreground" :
-                              isCurrent ? "bg-accent text-accent-foreground ring-4 ring-accent/20" :
-                              "bg-secondary text-muted-foreground"
-                            }`}>
-                              {isCompleted && !isCurrent ? (
-                                <CheckCircle2 className="w-5 h-5" />
-                              ) : (
-                                <Icon className="w-5 h-5" />
+                  <div className="relative">
+                    {/* Vertical Line Background */}
+                    <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-secondary" />
+
+                    <div className="space-y-0">
+                      {statusSteps.map((step, i) => {
+                        const isCompleted = i <= currentStepIndex;
+                        const isCurrent = i === currentStepIndex;
+                        const Icon = step.icon;
+
+                        let label = step.label;
+                        let description = step.description;
+
+                        if (isPickup) {
+                          if (step.id === "shipped") label = "Ready for Pickup";
+                          if (step.id === "shipped") description = "Your order is ready at the shop";
+                          if (step.id === "delivered") label = "Picked Up";
+                        }
+
+                        return (
+                          <div key={step.id} className="flex gap-6 group relative">
+                            <div className="flex flex-col items-center relative z-10">
+                              <motion.div
+                                initial={false}
+                                animate={{
+                                  scale: isCurrent ? 1.2 : 1,
+                                  backgroundColor: isCompleted ? "var(--success)" : isCurrent ? "var(--accent)" : "var(--secondary)"
+                                }}
+                                className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-lg ${isCompleted ? "text-white" : isCurrent ? "text-white shadow-accent/40" : "text-muted-foreground"
+                                  }`}
+                              >
+                                {isCompleted && !isCurrent ? (
+                                  <CheckCircle2 className="w-5 h-5" />
+                                ) : (
+                                  <Icon className="w-5 h-5" />
+                                )}
+                              </motion.div>
+                              {/* Connector line overlay for completed state */}
+                              {i < statusSteps.length - 1 && (
+                                <motion.div
+                                  initial={false}
+                                  animate={{ backgroundColor: isCompleted && i < currentStepIndex ? "var(--success)" : "var(--secondary)" }}
+                                  className="w-0.5 h-12"
+                                />
                               )}
                             </div>
-                            {i < statusSteps.length - 1 && (
-                              <div className={`w-0.5 h-16 ${isCompleted ? "bg-success" : "bg-border"}`} />
-                            )}
+                            <div className="pb-10 pt-1">
+                              <div className="flex items-center gap-2">
+                                <p className={`font-bold tracking-tight ${isCompleted || isCurrent ? "text-foreground" : "text-muted-foreground/60"}`}>
+                                  {label}
+                                </p>
+                                {isCurrent && (
+                                  <Badge className="bg-accent/10 text-accent font-bold text-[9px] uppercase border-none py-0 px-2 h-4">
+                                    In Progress
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className={`text-xs mt-0.5 font-medium leading-relaxed ${isCurrent ? "text-accent" : "text-muted-foreground"}`}>
+                                {description}
+                              </p>
+                              {isCurrent && (
+                                <motion.div
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  className="mt-3 p-3 bg-secondary/30 rounded-xl border border-border flex items-center gap-3"
+                                >
+                                  <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                                  <span className="text-[10px] font-bold uppercase text-foreground tracking-wider italic">Technicians are working on your request...</span>
+                                </motion.div>
+                              )}
+                            </div>
                           </div>
-                          <div className="pb-12">
-                            <p className={`font-medium ${isCompleted || isCurrent ? "text-foreground" : "text-muted-foreground"}`}>
-                              {label}
-                            </p>
-                            <p className={`text-sm ${isCurrent ? "text-accent" : "text-muted-foreground"}`}>
-                              {description}
-                            </p>
-                            {isCurrent && (
-                              <p className="text-sm text-accent mt-1 animate-pulse">● Currently in progress...</p>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
                 </motion.div>
+
 
                 {/* Shop Contact */}
                 {shop && (
@@ -343,7 +378,7 @@ const OrderTracking = () => {
                     <h3 className="font-display font-semibold text-foreground mb-6 flex items-center gap-2 italic">
                       <Truck className="w-5 h-5 text-coral" /> Track with Official Partners
                     </h3>
-                    
+
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       {[
                         { name: "Delhivery", url: `https://www.delhivery.com/track/package/${specs.tracking_number || ""}`, color: "bg-[#2D3134]" },
@@ -353,7 +388,7 @@ const OrderTracking = () => {
                         { name: "Rapido", url: "https://rapido.xyz/", color: "bg-[#F7E11E] text-black" },
                         { name: "Porter", url: "https://porter.in/track", color: "bg-[#002D62]" },
                       ].map((partner) => (
-                        <Button 
+                        <Button
                           key={partner.name}
                           variant="outline"
                           onClick={() => window.open(partner.url, "_blank")}
@@ -363,7 +398,7 @@ const OrderTracking = () => {
                         </Button>
                       ))}
                     </div>
-                    
+
                     {trackingDetails && (
                       <div className="mt-8 pt-8 border-t border-border relative pl-6 space-y-6 before:absolute before:left-[11px] before:top-10 before:bottom-2 before:w-[2px] before:bg-border">
                         {trackingDetails.events.map((event, idx) => (

@@ -15,7 +15,7 @@ const ShopShowcase = () => {
         .eq("is_active", true)
         .order("rating", { ascending: false })
         .limit(4);
-      
+
       if (error) throw error;
       return data || [];
     },
@@ -36,7 +36,12 @@ const ShopShowcase = () => {
     );
   }
 
-  if (!shops || shops.length === 0) return null;
+  const displayedShops = shops && shops.length > 0 ? shops : [
+    { id: "dummy-1", name: "PrintHub Express", city: "Mumbai", state: "MH", rating: 4.9, is_active: true, logo_url: null },
+    { id: "dummy-2", name: "Digital Prints Pro", city: "Delhi", state: "DL", rating: 4.8, is_active: true, logo_url: null },
+    { id: "dummy-3", name: "QuickPrint Studio", city: "Bangalore", state: "KA", rating: 4.7, is_active: true, logo_url: null },
+    { id: "dummy-4", name: "Elite Graphics", city: "Hyderabad", state: "TS", rating: 4.9, is_active: true, logo_url: null },
+  ];
 
   return (
     <section className="py-20 bg-secondary/30 overflow-hidden">
@@ -58,7 +63,7 @@ const ShopShowcase = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {shops.map((shop, i) => (
+          {displayedShops.map((shop, i) => (
             <motion.div
               key={shop.id}
               initial={{ opacity: 0, y: 20 }}

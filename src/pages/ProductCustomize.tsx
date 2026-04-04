@@ -4,8 +4,8 @@ import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { 
-  Upload, X, Check, AlertTriangle, ZoomIn, RotateCcw, 
+import {
+  Upload, X, Check, AlertTriangle, ZoomIn, RotateCcw,
   Palette, RefreshCw,
   Crop, FileImage, IndianRupee, ChevronRight, Info,
   CheckCircle2, ArrowLeft, Clock, Share2, TrendingDown, Sparkles, TrendingUp,
@@ -49,13 +49,13 @@ const ProductCustomize = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  
+
   const queryParams = new URLSearchParams(location.search);
   const shopId = queryParams.get("shopId");
   const [uploading, setUploading] = useState(false);
-  
+
   const { addToCart } = useCart(user?.id);
-  
+
   const [dbProduct, setDbProduct] = useState<any>(null);
   const [dbLoading, setDbLoading] = useState(true);
 
@@ -71,7 +71,7 @@ const ProductCustomize = () => {
       setDbLoading(true);
       try {
         const query = supabase.from("products").select("*");
-        if (isUuid) { query.eq("id", category); } 
+        if (isUuid) { query.eq("id", category); }
         else { query.eq("category", category); }
 
         const { data, error } = await query.maybeSingle();
@@ -93,7 +93,7 @@ const ProductCustomize = () => {
           };
           setDbProduct(mapped);
         }
-      } catch (err) { console.error("Error fetching db product:", err); } 
+      } catch (err) { console.error("Error fetching db product:", err); }
       finally { setDbLoading(false); }
     };
     fetchDbProduct();
@@ -112,18 +112,18 @@ const ProductCustomize = () => {
   const [selectedPaper, setSelectedPaper] = useState<PaperType>(product?.papers[0] || {} as PaperType);
   const [selectedFinish, setSelectedFinish] = useState<FinishType>(product?.finishes[0] || {} as FinishType);
   const [quantity, setQuantity] = useState(product?.minQty || 100);
-  
+
   // Design State
   const [frontFile, setFrontFile] = useState<File | null>(null);
   const [frontPreview, setFrontPreview] = useState<string | null>(null);
   const [frontAiUrl, setFrontAiUrl] = useState<string | null>(null);
   const [frontValidation, setFrontValidation] = useState<FileValidation | null>(null);
-  
+
   const [backFile, setBackFile] = useState<File | null>(null);
   const [backPreview, setBackPreview] = useState<string | null>(null);
   const [backAiUrl, setBackAiUrl] = useState<string | null>(null);
   const [backValidation, setBackValidation] = useState<FileValidation | null>(null);
-  
+
   const [useSameImage, setUseSameImage] = useState(false);
   const [printSides, setPrintSides] = useState<"single" | "double">("single");
   const [showAdobeEditor, setShowAdobeEditor] = useState(false);
@@ -144,7 +144,7 @@ const ProductCustomize = () => {
       if (!selectedSize.id) setSelectedSize(product.sizes[0] || {} as PrintSize);
       if (!selectedPaper.id) setSelectedPaper(product.papers[0] || {} as PaperType);
       if (!selectedFinish.id) setSelectedFinish(product.finishes[0] || {} as FinishType);
-      
+
       const fetchMatchingShops = async () => {
         setLoadingShops(true);
         try {
@@ -171,21 +171,21 @@ const ProductCustomize = () => {
     const tier = [...product.quantityTiers]
       .sort((a: any, b: any) => (b.min_qty || b.min) - (a.min_qty || a.min))
       .find((t: any) => quantity >= (t.min_qty || t.min));
-    
+
     if (tier) basePricePerUnit = tier.price || tier.pricePerUnit;
-    
+
     const paperPrice = basePricePerUnit * (selectedPaper.priceMultiplier || 1);
     const finishPrice = paperPrice + (selectedFinish.priceAdd || 0);
     const sidesMultiplier = printSides === "double" ? 1.4 : 1;
-    
+
     const selectedShop = matchingShops.find(s => s.id === selectedShopId);
     const shopMultiplier = selectedShop?.price_multiplier || 1.0;
-    
+
     const unitPrice = finishPrice * sidesMultiplier * shopMultiplier;
     const totalPrice = unitPrice * quantity;
-    
-    return { 
-      perUnit: unitPrice.toFixed(2), 
+
+    return {
+      perUnit: unitPrice.toFixed(2),
       total: totalPrice.toFixed(0),
       discount: (tier?.min >= 1000 ? (tier.min >= 5000 ? "25%" : (tier.min >= 2000 ? "15%" : "10%")) : "0%")
     };
@@ -195,8 +195,22 @@ const ProductCustomize = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     const preview = URL.createObjectURL(file);
-    if (side === "front") { setFrontFile(file); setFrontPreview(preview); if (useSameImage) { setBackFile(file); setBackPreview(preview); } } 
+    if (side === "front") { setFrontFile(file); setFrontPreview(preview); if (useSameImage) { setBackFile(file); setBackPreview(preview); } }
     else { setBackFile(file); setBackPreview(preview); }
+  };
+
+  const handleAdobeDesignSave = (url: string) => {
+    if (adobeTargetSide === "front") {
+      setFrontAiUrl(url);
+      setFrontPreview(url);
+      if (useSameImage) {
+        setBackAiUrl(url);
+        setBackPreview(url);
+      }
+    } else {
+      setBackAiUrl(url);
+      setBackPreview(url);
+    }
   };
 
   const price = calculatePrice();
@@ -210,7 +224,7 @@ const ProductCustomize = () => {
         frontDesign: frontPreview || frontAiUrl, backDesign: backPreview || backAiUrl
       }, product.name, product.categoryName);
       navigate("/checkout");
-    } catch (err: any) { toast.error(err.message); } 
+    } catch (err: any) { toast.error(err.message); }
     finally { setUploading(false); }
   };
 
@@ -231,12 +245,12 @@ const ProductCustomize = () => {
       <Navbar />
       <div className="pt-24 pb-20">
         <div className="container mx-auto px-4 max-w-7xl">
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            
+
             {/* Left Side: Configuration Stepper */}
             <div className="lg:col-span-12 space-y-4 mb-2">
-               <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
                 <Link to="/catalog">Catalog</Link>
                 <ChevronRight className="w-3 h-3" />
                 <span className="text-black">{product.categoryName}</span>
@@ -246,16 +260,15 @@ const ProductCustomize = () => {
             </div>
 
             <div className="lg:col-span-7 space-y-16">
-              
+
               <CanvaStep number={1} title="Select Size">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {product.sizes.map((size) => (
                     <button
                       key={size.id}
                       onClick={() => setSelectedSize(size)}
-                      className={`p-6 rounded-2xl border-2 transition-all text-left flex items-center justify-between group relative overflow-hidden ${
-                        selectedSize.id === size.id ? "border-[#FF7300] bg-[#FF7300]/5 shadow-sm" : "border-gray-100 hover:border-gray-300"
-                      }`}
+                      className={`p-6 rounded-2xl border-2 transition-all text-left flex items-center justify-between group relative overflow-hidden ${selectedSize.id === size.id ? "border-[#FF7300] bg-[#FF7300]/5 shadow-sm" : "border-gray-100 hover:border-gray-300"
+                        }`}
                     >
                       <div>
                         <p className="font-bold text-black text-lg">{size.label}</p>
@@ -275,9 +288,8 @@ const ProductCustomize = () => {
                     <button
                       key={paper.id}
                       onClick={() => setSelectedPaper(paper)}
-                      className={`w-full p-2 rounded-[2rem] border-2 transition-all text-left flex items-center gap-6 group relative ${
-                        selectedPaper.id === paper.id ? "border-[#FF7300] bg-[#FF7300]/5" : "border-gray-100 hover:border-gray-200"
-                      }`}
+                      className={`w-full p-2 rounded-[2rem] border-2 transition-all text-left flex items-center gap-6 group relative ${selectedPaper.id === paper.id ? "border-[#FF7300] bg-[#FF7300]/5" : "border-gray-100 hover:border-gray-200"
+                        }`}
                     >
                       <div className="w-24 h-24 rounded-[1.5rem] overflow-hidden flex-shrink-0 bg-gray-50">
                         {paper.image ? (
@@ -309,9 +321,8 @@ const ProductCustomize = () => {
                     <button
                       key={finish.id}
                       onClick={() => setSelectedFinish(finish)}
-                      className={`p-4 rounded-3xl border-2 transition-all flex flex-col items-center text-center gap-4 group relative ${
-                        selectedFinish.id === finish.id ? "border-[#FF7300] bg-[#FF7300]/5" : "border-gray-100 hover:border-gray-200"
-                      }`}
+                      className={`p-4 rounded-3xl border-2 transition-all flex flex-col items-center text-center gap-4 group relative ${selectedFinish.id === finish.id ? "border-[#FF7300] bg-[#FF7300]/5" : "border-gray-100 hover:border-gray-200"
+                        }`}
                     >
                       <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gray-50">
                         {finish.image ? (
@@ -338,19 +349,17 @@ const ProductCustomize = () => {
                 <div className="flex bg-gray-50 p-2 rounded-2xl border border-gray-100">
                   <button
                     onClick={() => setPrintSides("single")}
-                    className={`flex-1 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                      printSides === "single" ? "bg-white text-[#FF7300] shadow-md" : "text-gray-400 hover:text-black"
-                    }`}
+                    className={`flex-1 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${printSides === "single" ? "bg-white text-[#FF7300] shadow-md" : "text-gray-400 hover:text-black"
+                      }`}
                   >
                     Single-Sided
                   </button>
                   <button
                     onClick={() => setPrintSides("double")}
-                    className={`flex-1 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
-                      printSides === "double" ? "bg-white text-[#FF7300] shadow-md" : "text-gray-400 hover:text-black"
-                    }`}
+                    className={`flex-1 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${printSides === "double" ? "bg-white text-[#FF7300] shadow-md" : "text-gray-400 hover:text-black"
+                      }`}
                   >
-                    Double-Sided 
+                    Double-Sided
                     <Badge className="bg-green-500 text-white border-none py-0 px-2 text-[8px]">+40%</Badge>
                   </button>
                 </div>
@@ -363,9 +372,8 @@ const ProductCustomize = () => {
                       <button
                         key={qty}
                         onClick={() => setQuantity(qty)}
-                        className={`py-3 rounded-xl text-xs font-black transition-all border-2 ${
-                          quantity === qty ? "border-[#FF7300] bg-[#FF7300] text-white shadow-lg" : "border-gray-100 bg-white text-gray-400 hover:border-gray-300"
-                        }`}
+                        className={`py-3 rounded-xl text-xs font-black transition-all border-2 ${quantity === qty ? "border-[#FF7300] bg-[#FF7300] text-white shadow-lg" : "border-gray-100 bg-white text-gray-400 hover:border-gray-300"
+                          }`}
                       >
                         {qty}
                       </button>
@@ -373,7 +381,7 @@ const ProductCustomize = () => {
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="flex-1 relative">
-                       <Input
+                      <Input
                         type="number"
                         min={100}
                         value={quantity}
@@ -394,9 +402,9 @@ const ProductCustomize = () => {
                         <h3 className="text-2xl font-display font-black text-black italic">How would you like to design?</h3>
                         <p className="text-xs font-bold text-gray-400 mt-2 uppercase tracking-widest">Select a source to start your masterpiece</p>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-lg">
-                        <button 
+                        <button
                           onClick={() => { setDesignMode('upload'); setShowDesignOptions(true); }}
                           className="group p-6 bg-white rounded-3xl border border-gray-100 hover:border-[#FF7300] hover:shadow-xl hover:shadow-[#FF7300]/10 transition-all text-left space-y-4"
                         >
@@ -409,7 +417,7 @@ const ProductCustomize = () => {
                           </div>
                         </button>
 
-                        <button 
+                        <button
                           onClick={() => { setDesignMode('canva'); setShowDesignOptions(true); }}
                           className="group p-6 bg-white rounded-3xl border border-gray-100 hover:border-[#00C4CC] hover:shadow-xl hover:shadow-[#00C4CC]/10 transition-all text-left space-y-4"
                         >
@@ -422,7 +430,7 @@ const ProductCustomize = () => {
                           </div>
                         </button>
 
-                        <button 
+                        <button
                           onClick={() => { setDesignMode('adobe'); setShowDesignOptions(true); }}
                           className="group p-6 bg-white rounded-3xl border border-gray-100 hover:border-[#FA0F00] hover:shadow-xl hover:shadow-[#FA0F00]/10 transition-all text-left space-y-4"
                         >
@@ -434,40 +442,26 @@ const ProductCustomize = () => {
                             <p className="text-[10px] font-bold text-gray-400 uppercase leading-relaxed">Expert Design Tools</p>
                           </div>
                         </button>
-
-                        <button 
-                          onClick={() => { setDesignMode('upload'); setShowDesignOptions(true); }}
-                          className="group p-6 bg-black rounded-3xl border border-black hover:shadow-xl hover:shadow-black/10 transition-all text-left space-y-4 overflow-hidden relative"
-                        >
-                          <div className="absolute top-0 right-0 p-2"><Sparkles className="w-4 h-4 text-[#FF7300]" /></div>
-                          <div className="w-12 h-12 rounded-2xl bg-white/10 text-white flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <Zap className="w-6 h-6" />
-                          </div>
-                          <div>
-                            <p className="font-black text-white">AI Generator</p>
-                            <p className="text-[10px] font-bold text-gray-500 uppercase leading-relaxed">Prompt to Print</p>
-                          </div>
-                        </button>
                       </div>
                     </div>
                   ) : (
                     <>
                       <div className="flex items-center justify-between mb-8">
                         <DesignHubSelector activeMode={designMode} onSelectorChange={setDesignMode} />
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => setShowDesignOptions(false)}
                           className="text-[10px] font-black uppercase text-gray-400 hover:text-black tracking-widest"
                         >
                           Change Source
                         </Button>
                       </div>
-                      
+
                       <div className="flex-1">
                         {designMode === 'upload' && (
                           <div className="space-y-6">
-                            <div 
+                            <div
                               onClick={() => fileInputRef.current?.click()}
                               className="group relative h-[300px] bg-white rounded-3xl border-2 border-dashed border-gray-200 hover:border-[#FF7300] hover:bg-[#FF7300]/5 transition-all flex flex-col items-center justify-center cursor-pointer overflow-hidden"
                             >
@@ -490,29 +484,29 @@ const ProductCustomize = () => {
 
                         {designMode === 'canva' && (
                           <div className="h-[300px] flex flex-col items-center justify-center text-center p-8 bg-white rounded-3xl shadow-sm border border-gray-100">
-                             <div className="w-16 h-16 bg-[#00C4CC] rounded-2xl flex items-center justify-center text-white font-black text-2xl mb-4 shadow-lg shadow-[#00C4CC]/20">C</div>
-                             <h4 className="font-black text-lg text-black italic">Canva Integration</h4>
-                             <p className="text-xs text-gray-500 mt-2 max-w-xs leading-relaxed">Design with Canva's professional tools and sync back to PrintFlow automatically.</p>
-                             <Button 
-                                onClick={() => window.location.href = CanvaService.getAuthUrl()}
-                                className="mt-8 bg-[#00C4CC] hover:bg-[#00B4BB] text-white rounded-2xl px-10 h-14 font-black uppercase text-[10px] tracking-widest shadow-lg shadow-[#00C4CC]/20"
-                             >
-                                Open Canva Designer
-                             </Button>
+                            <div className="w-16 h-16 bg-[#00C4CC] rounded-2xl flex items-center justify-center text-white font-black text-2xl mb-4 shadow-lg shadow-[#00C4CC]/20">C</div>
+                            <h4 className="font-black text-lg text-black italic">Canva Integration</h4>
+                            <p className="text-xs text-gray-500 mt-2 max-w-xs leading-relaxed">Design with Canva's professional tools and sync back to PrintFlow automatically.</p>
+                            <Button
+                              onClick={() => window.location.href = CanvaService.getAuthUrl()}
+                              className="mt-8 bg-[#00C4CC] hover:bg-[#00B4BB] text-white rounded-2xl px-10 h-14 font-black uppercase text-[10px] tracking-widest shadow-lg shadow-[#00C4CC]/20"
+                            >
+                              Open Canva Designer
+                            </Button>
                           </div>
                         )}
 
                         {designMode === 'adobe' && (
                           <div className="h-[300px] flex flex-col items-center justify-center text-center p-8 bg-white rounded-3xl shadow-sm border border-gray-100">
-                             <div className="w-16 h-16 bg-[#FA0F00] rounded-2xl flex items-center justify-center text-white font-black text-2xl mb-4 shadow-lg shadow-[#FA0F00]/20">A</div>
-                             <h4 className="font-black text-lg text-black italic">Adobe Express Suite</h4>
-                             <p className="text-xs text-gray-500 mt-2 max-w-xs leading-relaxed">Use professional templates and high-end creative tools for your designs.</p>
-                             <Button 
+                            <div className="w-16 h-16 bg-[#FA0F00] rounded-2xl flex items-center justify-center text-white font-black text-2xl mb-4 shadow-lg shadow-[#FA0F00]/20">A</div>
+                            <h4 className="font-black text-lg text-black italic">Adobe Express Suite</h4>
+                            <p className="text-xs text-gray-500 mt-2 max-w-xs leading-relaxed">Use professional templates and high-end creative tools for your designs.</p>
+                            <Button
                               onClick={() => { setAdobeTargetSide("front"); setShowAdobeEditor(true); }}
                               className="mt-8 bg-[#FA0F00] hover:bg-[#E00E00] text-white rounded-2xl px-10 h-14 font-black uppercase text-[10px] tracking-widest shadow-lg shadow-[#FA0F00]/20"
-                             >
-                                Open Adobe Express
-                             </Button>
+                            >
+                              Open Adobe Express
+                            </Button>
                           </div>
                         )}
                       </div>
@@ -525,20 +519,20 @@ const ProductCustomize = () => {
             {/* Right Side: Sticky Summary & Preview */}
             <div className="lg:col-span-5">
               <div className="sticky top-28 space-y-8">
-                
+
                 {/* 3D Preview Card */}
                 <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl overflow-hidden relative group">
                   <div className="aspect-[4/3] bg-gray-50 relative">
-                     <Suspense fallback={<div className="p-20 text-center text-[10px] font-black text-gray-300 animate-pulse uppercase tracking-[0.2em]">Initializing 3D Engine...</div>}>
-                        <ProductPreview3D
-                          productType="card"
-                          width={selectedSize.widthMM}
-                          height={selectedSize.heightMM}
-                          imageUrl={frontPreview || frontAiUrl || ""}
-                          label={product.name}
-                          finishId={selectedFinish.id}
-                        />
-                      </Suspense>
+                    <Suspense fallback={<div className="p-20 text-center text-[10px] font-black text-gray-300 animate-pulse uppercase tracking-[0.2em]">Initializing 3D Engine...</div>}>
+                      <ProductPreview3D
+                        productType="card"
+                        width={selectedSize.widthMM}
+                        height={selectedSize.heightMM}
+                        imageUrl={frontPreview || frontAiUrl || ""}
+                        label={product.name}
+                        finishId={selectedFinish.id}
+                      />
+                    </Suspense>
                   </div>
                   <div className="p-6 border-t border-gray-50 flex items-center justify-between">
                     <div>
@@ -554,88 +548,88 @@ const ProductCustomize = () => {
 
                 {/* Pricing & Checkout Summary */}
                 <div className="bg-black rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden">
-                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#FF7300]/20 to-transparent rounded-full -mr-16 -mt-16 blur-2xl" />
-                   
-                   <div className="flex justify-between items-start mb-10">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#FF7300]/20 to-transparent rounded-full -mr-16 -mt-16 blur-2xl" />
+
+                  <div className="flex justify-between items-start mb-10">
+                    <div>
+                      <Badge className="bg-[#FF7300] text-white border-none py-1 px-4 text-[10px] font-black uppercase tracking-widest mb-3">Order Summary</Badge>
+                      <h4 className="text-3xl font-display font-black text-white">{quantity} Units</h4>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Pricing Model</p>
+                      <p className="text-sm font-bold text-gray-300 mt-1">B2B Standard</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 mb-10">
+                    <div className="flex justify-between items-center text-sm font-medium text-gray-400">
+                      <span>Base Price</span>
+                      <span className="text-white font-black">₹{price.perUnit} /pc</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm font-medium text-gray-400">
+                      <span>Material Adjust</span>
+                      <span className="text-white font-black">+{Math.round((selectedPaper.priceMultiplier - 1) * 100)}%</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm font-medium text-gray-400">
+                      <span>Custom Finish</span>
+                      <span className="text-white font-black">₹{selectedFinish.priceAdd} /pc</span>
+                    </div>
+                    <div className="pt-4 border-t border-white/10 flex justify-between items-center">
                       <div>
-                        <Badge className="bg-[#FF7300] text-white border-none py-1 px-4 text-[10px] font-black uppercase tracking-widest mb-3">Order Summary</Badge>
-                        <h4 className="text-3xl font-display font-black text-white">{quantity} Units</h4>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Pricing Model</p>
-                        <p className="text-sm font-bold text-gray-300 mt-1">B2B Standard</p>
-                      </div>
-                   </div>
-
-                   <div className="space-y-4 mb-10">
-                      <div className="flex justify-between items-center text-sm font-medium text-gray-400">
-                        <span>Base Price</span>
-                        <span className="text-white font-black">₹{price.perUnit} /pc</span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm font-medium text-gray-400">
-                        <span>Material Adjust</span>
-                        <span className="text-white font-black">+{Math.round((selectedPaper.priceMultiplier - 1) * 100)}%</span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm font-medium text-gray-400">
-                        <span>Custom Finish</span>
-                        <span className="text-white font-black">₹{selectedFinish.priceAdd} /pc</span>
-                      </div>
-                      <div className="pt-4 border-t border-white/10 flex justify-between items-center">
-                        <div>
-                          <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Total Payable</p>
-                          <div className="flex items-baseline gap-1">
-                             <span className="text-4xl font-display font-black text-white">₹{price.total}</span>
-                             <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">+GST</span>
-                          </div>
+                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Total Payable</p>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-4xl font-display font-black text-white">₹{price.total}</span>
+                          <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">+GST</span>
                         </div>
-                        {price.discount !== "0%" && (
-                          <div className="bg-green-500/20 text-green-400 px-4 py-2 rounded-2xl border border-green-500/20 text-center">
-                            <p className="text-[9px] font-black uppercase tracking-tighter">Savings</p>
-                            <p className="text-xs font-black leading-none mt-0.5">{price.discount}</p>
-                          </div>
-                        )}
                       </div>
-                   </div>
+                      {price.discount !== "0%" && (
+                        <div className="bg-green-500/20 text-green-400 px-4 py-2 rounded-2xl border border-green-500/20 text-center">
+                          <p className="text-[9px] font-black uppercase tracking-tighter">Savings</p>
+                          <p className="text-xs font-black leading-none mt-0.5">{price.discount}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-                   {frontPreview && (
-                     <div className="mb-6 pt-4 border-t border-white/5">
-                        <PDFProofViewer designUrl={frontPreview} onProofGenerated={(url) => setPrintReadyPdfUrl(url)} />
-                     </div>
-                   )}
+                  {frontPreview && (
+                    <div className="mb-6 pt-4 border-t border-white/5">
+                      <PDFProofViewer designUrl={frontPreview} onProofGenerated={(url) => setPrintReadyPdfUrl(url)} />
+                    </div>
+                  )}
 
-                   <Button 
+                  <Button
                     disabled={uploading || (!frontPreview && !frontAiUrl)}
                     onClick={handleProceedToCheckout}
                     className="w-full h-16 bg-[#FF7300] hover:bg-[#E65100] text-white rounded-[1.25rem] font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-[#FF7300]/20 transition-all active:scale-95 group"
-                   >
-                     {uploading ? (
-                        <div className="flex items-center gap-2">
-                           <RefreshCw className="w-4 h-4 animate-spin" />
-                           Processing...
-                        </div>
-                     ) : (
-                        <div className="flex items-center gap-2">
-                           Add to Cart
-                           <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                     )}
-                   </Button>
-                   
-                   <p className="text-center text-[10px] font-bold text-gray-500 mt-6 uppercase tracking-widest">
-                      Free delivery within 3-5 business days 🚚
-                   </p>
+                  >
+                    {uploading ? (
+                      <div className="flex items-center gap-2">
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        Processing...
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        Add to Cart
+                        <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    )}
+                  </Button>
+
+                  <p className="text-center text-[10px] font-bold text-gray-500 mt-6 uppercase tracking-widest">
+                    Free delivery within 3-5 business days 🚚
+                  </p>
                 </div>
 
                 {/* Trust Badges */}
                 <div className="grid grid-cols-2 gap-4">
-                   <div className="p-4 rounded-2xl border border-gray-100 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center"><CheckCircle2 className="w-4 h-4 text-black" /></div>
-                      <p className="text-[10px] font-black uppercase text-gray-500 leading-tight">ISO 9001<br/>Certified</p>
-                   </div>
-                   <div className="p-4 rounded-2xl border border-gray-100 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center"><Clock className="w-4 h-4 text-black" /></div>
-                      <p className="text-[10px] font-black uppercase text-gray-500 leading-tight">24-Hr Print<br/>Support</p>
-                   </div>
+                  <div className="p-4 rounded-2xl border border-gray-100 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center"><CheckCircle2 className="w-4 h-4 text-black" /></div>
+                    <p className="text-[10px] font-black uppercase text-gray-500 leading-tight">ISO 9001<br />Certified</p>
+                  </div>
+                  <div className="p-4 rounded-2xl border border-gray-100 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center"><Clock className="w-4 h-4 text-black" /></div>
+                    <p className="text-[10px] font-black uppercase text-gray-500 leading-tight">24-Hr Print<br />Support</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -647,7 +641,7 @@ const ProductCustomize = () => {
       <QuickOrderBot />
 
       {showAdobeEditor && (
-        <AdobeExpressEditor 
+        <AdobeExpressEditor
           onSave={handleAdobeDesignSave}
           onClose={() => setShowAdobeEditor(false)}
           initialImage={adobeTargetSide === "front" ? frontPreview || frontAiUrl : backPreview || backAiUrl}

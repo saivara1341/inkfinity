@@ -19,7 +19,7 @@ const AIDesignGenerator = ({ productType, onDesignSelected }: AIDesignGeneratorP
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [isPremiumLocked, setIsPremiumLocked] = useState(true);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     businessName: "",
     tagline: "",
@@ -43,28 +43,28 @@ const AIDesignGenerator = ({ productType, onDesignSelected }: AIDesignGeneratorP
     try {
       // Simulate large scale generation for "Insane" mode
       const count = generationMode === "insane" ? 45 : 4;
-      
+
       const { data, error } = await supabase.functions.invoke("generate-design", {
         body: { ...formData, productType, count },
       });
 
       if (error) throw error;
-      
+
       // If the function only returns a few, we supplement with placeholders for the "Insane" effect
       const baseImages = data?.images || [];
       let finalImages = [...baseImages];
-      
+
       if (generationMode === "insane" && finalImages.length < 45) {
-        const placeholders = Array(45 - finalImages.length).fill(null).map((_, i) => 
+        const placeholders = Array(45 - finalImages.length).fill(null).map((_, i) =>
           `https://images.unsplash.com/photo-1586075010633-de982cd26f1c?w=400&h=250&fit=crop&q=${i}`
         );
         finalImages = [...finalImages, ...placeholders];
       }
 
       setGeneratedImages(finalImages);
-      toast({ 
-        title: generationMode === "insane" ? "45 Designs Created!" : "Design generated!", 
-        description: "Select your favorite design to continue." 
+      toast({
+        title: generationMode === "insane" ? "45 Designs Created!" : "Design generated!",
+        description: "Select your favorite design to continue."
       });
     } catch (err: any) {
       console.error("Design generation error:", err);
@@ -97,27 +97,26 @@ const AIDesignGenerator = ({ productType, onDesignSelected }: AIDesignGeneratorP
     <div className="bg-card rounded-xl border border-border p-5 shadow-card overflow-hidden">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-accent" />
           <h3 className="font-display font-semibold text-foreground">AI Design Hub</h3>
         </div>
         <div className="flex bg-secondary/50 p-1 rounded-lg">
-          <button 
+          <button
             onClick={() => setGenerationMode("standard")}
             className={`px-3 py-1 text-xs rounded-md transition-all ${generationMode === "standard" ? "bg-background shadow-sm font-bold" : "text-muted-foreground"}`}
           >
             Standard
           </button>
-          <button 
+          <button
             onClick={() => setGenerationMode("insane")}
             className={`px-3 py-1 text-xs rounded-md transition-all flex items-center gap-1 ${generationMode === "insane" ? "bg-accent text-accent-foreground font-bold shadow-sm" : "text-muted-foreground"}`}
           >
-            <Zap className="w-3 h-3" /> Insane (45+)
+            <Sparkles className="w-3 h-3" /> Insane (45+)
           </button>
         </div>
       </div>
 
       <p className="text-sm text-muted-foreground mb-4 italic">
-        {generationMode === "insane" 
+        {generationMode === "insane"
           ? "Our AI will generate 45+ unique variations to ensure you find the absolute best look."
           : "Quickly generate 4 professional designs based on your brand details."}
       </p>
@@ -134,7 +133,7 @@ const AIDesignGenerator = ({ productType, onDesignSelected }: AIDesignGeneratorP
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
             <label className="text-xs font-medium text-muted-foreground">Brand Color</label>
-            <Input 
+            <Input
               placeholder="e.g., Royal Blue"
               value={formData.colors}
               onChange={(e) => setFormData({ ...formData, colors: e.target.value })}
@@ -143,7 +142,7 @@ const AIDesignGenerator = ({ productType, onDesignSelected }: AIDesignGeneratorP
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-muted-foreground">Style</label>
-            <Input 
+            <Input
               placeholder="e.g., Luxury"
               value={formData.style}
               onChange={(e) => setFormData({ ...formData, style: e.target.value })}
@@ -161,12 +160,12 @@ const AIDesignGenerator = ({ productType, onDesignSelected }: AIDesignGeneratorP
       >
         {isGenerating ? (
           <>
-            <Loader2 className="w-4 h-4 animate-spin" /> 
+            <Loader2 className="w-4 h-4 animate-spin" />
             {generationMode === "insane" ? "Synthesizing 45 Variations..." : "Generating..."}
           </>
         ) : (
           <>
-            <Sparkles className="w-4 h-4 group-hover:animate-pulse" /> 
+            <Sparkles className="w-4 h-4 group-hover:animate-pulse" />
             {generationMode === "insane" ? "Run Insane Generation (45+)" : "Generate Standard Designs"}
           </>
         )}
@@ -182,15 +181,14 @@ const AIDesignGenerator = ({ productType, onDesignSelected }: AIDesignGeneratorP
               <Badge variant="outline" className="text-[10px] text-accent border-accent/30">Premium Pack</Badge>
             )}
           </div>
-          
+
           <div className={`grid gap-3 ${generationMode === "insane" ? "grid-cols-3 sm:grid-cols-5 md:grid-cols-9 h-64 overflow-y-auto pr-2 custom-scrollbar" : "grid-cols-1 sm:grid-cols-2"}`}>
             {generatedImages.map((img, i) => (
               <button
                 key={i}
                 onClick={() => handleSelect(i)}
-                className={`relative rounded-md overflow-hidden border-2 transition-all ${
-                  selectedIndex === i ? "border-accent ring-2 ring-accent/30 scale-95" : "border-border hover:border-accent/40"
-                } ${generationMode === "insane" ? "aspect-square" : "aspect-video"}`}
+                className={`relative rounded-md overflow-hidden border-2 transition-all ${selectedIndex === i ? "border-accent ring-2 ring-accent/30 scale-95" : "border-border hover:border-accent/40"
+                  } ${generationMode === "insane" ? "aspect-square" : "aspect-video"}`}
               >
                 <img src={img} alt={`Design ${i + 1}`} className="w-full h-full object-cover bg-white" />
                 {selectedIndex === i && (
@@ -209,12 +207,12 @@ const AIDesignGenerator = ({ productType, onDesignSelected }: AIDesignGeneratorP
                 <span className="font-bold text-sm">Premium Design Selected</span>
               </div>
               <p className="text-xs text-muted-foreground mb-4">
-                This high-quality AI design requires a small export fee of <strong>₹49</strong>. 
-                <br/>(Free for shops with <b>Elite</b> subscription)
+                This high-quality AI design requires a small export fee of <strong>₹49</strong>.
+                <br />(Free for shops with <b>Elite</b> subscription)
               </p>
-              <Button 
-                size="sm" 
-                variant="coral" 
+              <Button
+                size="sm"
+                variant="coral"
                 className="w-full gap-2"
                 onClick={handleUnlockPremium}
                 disabled={isProcessingPayment}

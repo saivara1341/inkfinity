@@ -179,25 +179,13 @@ const ProductCardV2 = ({ product }: ProductCardV2Props) => {
           {product.description}
         </p>
 
-        {/* Footer Section */}
-        <div className="flex items-center justify-between pt-4 border-t border-slate-100 mt-auto">
-          <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Starting from</p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl font-bold text-slate-950 flex items-center tracking-tight">
-                <IndianRupee className="w-4 h-4" />{product.startingPrice.replace('₹', '')}
-              </span>
-              <span className="text-xs text-slate-400 font-medium normal-case">/ {product.unit.includes('100') ? '100 pcs' : product.unit.replace('per ', '')}</span>
-            </div>
-          </div>
-
+        <div className="pt-2 mt-auto">
           <Button
-            variant="ghost"
-            className="p-0 h-auto hover:bg-transparent group/btn"
+            variant="default"
+            className="w-full bg-[#FF7300] hover:bg-[#E66700] text-white font-bold rounded-xl py-6 shadow-md hover:shadow-lg transition-all group/btn gap-2"
           >
-            <div className="w-10 h-10 rounded-full bg-slate-50 text-slate-900 flex items-center justify-center group-hover/btn:bg-[#FF7300] group-hover/btn:text-white transition-all duration-300 shadow-sm border border-slate-100">
-              <ChevronRight className="w-5 h-5" />
-            </div>
+            <span>Customize & Add</span>
+            <ChevronRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
           </Button>
         </div>
       </div>

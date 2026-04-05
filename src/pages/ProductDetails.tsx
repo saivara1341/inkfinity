@@ -17,6 +17,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ShareControl from "@/components/ShareControl";
 import { ReviewSystem } from "@/components/ReviewSystem";
+import { getSubcategoryById } from "@/data/printingProducts";
+
 
 interface Product {
     id: string;
@@ -72,12 +74,72 @@ const ProductDetails = () => {
                 .eq("id", productId)
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                // Check static data as fallback
+                const staticProduct = getSubcategoryById(productId!);
+                if (staticProduct) {
+                    setProduct({
+                        id: staticProduct.id,
+                        name: staticProduct.name,
+                        description: staticProduct.description,
+                        category: staticProduct.categoryName,
+                        base_price: parseInt(staticProduct.startingPrice.replace(/[^0-9]/g, "")) || 0,
+                        min_quantity: staticProduct.minQty,
+                        images: staticProduct.image ? [staticProduct.image] : null,
+                        turnaround_days: parseInt(staticProduct.turnaroundDays) || 3,
+                        shop_id: "static-shop",
+                        specifications: {
+                            sizes: staticProduct.sizes,
+                            papers: staticProduct.papers,
+                            finishes: staticProduct.finishes
+                        },
+                        shop: {
+                            id: "static-shop",
+                            name: "PrintFlow Premium Partner",
+                            city: "National Delivery",
+                            rating: 4.9,
+                            is_verified: true,
+                            logo_url: null
+                        }
+                    } as any);
+                    return;
+                }
+                throw error;
+            }
             setProduct(data as unknown as Product);
         } catch (error) {
             console.error("Error fetching product:", error);
-            toast.error("Product not found");
-            navigate("/store");
+            // One last check for static data if it wasn't caught in the error block
+            const staticProduct = getSubcategoryById(productId!);
+            if (staticProduct) {
+                setProduct({
+                    id: staticProduct.id,
+                    name: staticProduct.name,
+                    description: staticProduct.description,
+                    category: staticProduct.categoryName,
+                    base_price: parseInt(staticProduct.startingPrice.replace(/[^0-9]/g, "")) || 0,
+                    min_quantity: staticProduct.minQty,
+                    images: staticProduct.image ? [staticProduct.image] : null,
+                    turnaround_days: parseInt(staticProduct.turnaroundDays.split('-')[0]) || 3,
+                    shop_id: "static-shop",
+                    specifications: {
+                        sizes: staticProduct.sizes,
+                        papers: staticProduct.papers,
+                        finishes: staticProduct.finishes
+                    },
+                    shop: {
+                        id: "static-shop",
+                        name: "PrintFlow Premium Partner",
+                        city: "National Delivery",
+                        rating: 4.9,
+                        is_verified: true,
+                        logo_url: null
+                    }
+                } as any);
+            } else {
+                toast.error("Product not found");
+                navigate("/catalog");
+            }
         } finally {
             setLoading(false);
         }

@@ -419,7 +419,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "transparent-visiting-card", name: "Transparent PVC Card", description: "Modern see-through plastic cards",
-        image: "https://images.unsplash.com/photo-1598214817158-ab355a6d96f4?auto=format&fit=crop&w=800&q=80",
+        image: "/inkfinity/assets/products/glossy_finish_visiting_card_mockup_1775247440849.png",
         startingPrice: "₹10", unit: "per card", minQty: 50,
         sizes: [visitingCardSizes[0]], papers: [visitingCardPapers[5]], finishes: [visitingCardFinishes[0]],
         quantityTiers: [
@@ -454,7 +454,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "door-hanger", name: "Door Hanger", description: "Die-cut flyers for door handles",
-        image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=800&q=80",
+        image: "https://images.unsplash.com/photo-1620121692029-d088224efc74?auto=format&fit=crop&w=400&q=80",
         startingPrice: "₹5", unit: "per piece", minQty: 100,
         sizes: [{ id: "dh-std", label: "Standard", dimensions: "89 × 216 mm", widthMM: 89, heightMM: 216, widthInch: "3.5", heightInch: "8.5", basePrice: 5 }],
         papers: flyerPapers.slice(1, 4), finishes: flyerFinishes,
@@ -486,7 +486,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "trifold-brochure", name: "Tri-Fold Brochure", description: "6-panel folded brochure, most popular",
-        image: "/inkfinity/assets/products/pamphlet_branded.png",
+        image: "https://images.unsplash.com/photo-1517487881594-2787fef5ebf7?auto=format&fit=crop&w=400&q=80",
         startingPrice: "₹7", unit: "per piece", minQty: 50, popular: true,
         sizes: pamphletSizes.filter(s => s.id.includes("trifold") || s.id.includes("z-fold")),
         papers: flyerPapers.slice(1, 6), finishes: flyerFinishes,
@@ -937,7 +937,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "medical-bill-book", name: "Medical Bill Book", description: "Carbonless duplicate or triplicate bill books",
-        image: "https://images.unsplash.com/photo-1576091160550-217359f4ecf8?auto=format&fit=crop&w=800&q=80",
+        image: "https://images.unsplash.com/photo-1583912267670-65355b8db5b8?w=800&q=80",
         startingPrice: "₹90", unit: "per book", minQty: 10,
         sizes: hospitalSizes.filter(s => s.id.includes("bill")),
         papers: hospitalPapers.filter(p => p.id.includes("ncr")),
@@ -950,7 +950,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "patient-file", name: "Patient Record File", description: "Durable folders for medical history",
-        image: "https://images.unsplash.com/photo-1576091160550-217359f4ecf8?auto=format&fit=crop&w=800&q=80",
+        image: "https://images.unsplash.com/photo-1584432830680-aa983b2c4d9d?w=800&q=80",
         startingPrice: "₹15", unit: "each", minQty: 100,
         sizes: [hospitalSizes[2]],
         papers: [visitingCardPapers[1], visitingCardPapers[2]],
@@ -971,7 +971,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "laser-cut-wedding", name: "Laser-Cut Invitation", description: "Intricate laser-cut designs on premium paper",
-        image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
+        image: "https://images.unsplash.com/photo-1517487881594-2787fef5ebf7?w=800&q=80",
         startingPrice: "₹85", unit: "per card", minQty: 50, popular: true,
         sizes: invitationSizes.slice(0, 4),
         papers: [visitingCardPapers[3], visitingCardPapers[4], visitingCardPapers[7]],

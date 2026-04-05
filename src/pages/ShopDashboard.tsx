@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingCart, BarChart3, Settings,
   ChevronDown, Printer, Bell, LogOut, Package, Sparkles, Megaphone, FileWarning, ShoppingBag, X, Menu,
-  ArrowRight, Store, Tag, Award, PanelLeftClose, PanelLeftOpen, ArrowLeft, Home as HomeIcon
+  ArrowRight, Store, Tag, Award, PanelLeftClose, PanelLeftOpen, ArrowLeft, Home as HomeIcon,
+  Activity, Database, Users, IndianRupee
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

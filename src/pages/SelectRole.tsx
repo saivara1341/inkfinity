@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,7 +7,13 @@ import { RoleSelection } from "@/components/auth/RoleSelection";
 
 const SelectRole = () => {
   const navigate = useNavigate();
-  const { user, setUserRole } = useAuth();
+  const { user, loading, setUserRole } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/signup");
+    }
+  }, [user, loading, navigate]);
 
   const handleRoleSelect = async (roleId: string) => {
     // Map 'shop' back to 'shop_owner' for the database/metadata if needed, 
@@ -22,10 +29,12 @@ const SelectRole = () => {
       }
       toast.success(`Role set to ${backendRole.replace("_", " ")}!`);
       navigate("/onboarding");
-    } else {
-      navigate("/signup", { state: { selectedRole: roleId } });
     }
   };
+
+  if (loading || !user) {
+    return null; // or a loading spinner
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden">
@@ -61,16 +70,6 @@ const SelectRole = () => {
 
         <RoleSelection onSelect={handleRoleSelect} />
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="mt-12 text-center"
-        >
-          <p className="text-muted-foreground text-sm">
-            Already have an account? <span className="text-primary font-bold cursor-pointer hover:underline" onClick={() => navigate("/login")}>Log in</span>
-          </p>
-        </motion.div>
       </div>
     </div>
   );

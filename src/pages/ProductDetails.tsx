@@ -255,11 +255,6 @@ const ProductDetails = () => {
                                 <Badge variant="outline" className="text-accent border-accent/30 bg-accent/5">
                                     #{product.category}
                                 </Badge>
-                                {product.turnaround_days && product.turnaround_days <= 2 && (
-                                    <Badge className="bg-success/10 text-success border-none flex items-center gap-1">
-                                        <Zap className="w-3 h-3 fill-success" /> Fast Track Delivery
-                                    </Badge>
-                                )}
                             </div>
 
                             <h1 className="font-display text-3xl md:text-4xl font-bold leading-tight decoration-accent/30 group">

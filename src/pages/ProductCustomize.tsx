@@ -604,7 +604,7 @@ const ProductCustomize = () => {
                   </Button>
 
                   <p className="text-center text-[10px] font-bold text-gray-500 mt-6 uppercase tracking-widest">
-                    Free delivery within 3-5 business days 🚚
+                    Quality Guaranteed 🚚
                   </p>
                 </div>
 

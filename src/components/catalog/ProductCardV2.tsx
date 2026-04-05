@@ -110,7 +110,6 @@ const ProductCardV2 = ({ product }: ProductCardV2Props) => {
       onMouseLeave={() => setIsHovered(false)}
       className="group relative bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-slate-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-500 flex flex-col h-full cursor-pointer"
       onClick={() => navigate(`/product/${product.id}`)}
-
     >
       {/* Product Image Section */}
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-50">
@@ -153,9 +152,6 @@ const ProductCardV2 = ({ product }: ProductCardV2Props) => {
               <Star className="w-3 h-3 fill-current" /> Bestseller
             </div>
           )}
-          <div className="px-2.5 py-1 bg-white/90 text-slate-900 text-[10px] font-bold uppercase tracking-wider rounded-md shadow-sm border border-black/5 backdrop-blur-sm">
-            {product.turnaroundDays ? `${product.turnaroundDays}-Day Delivery` : "Fast Delivery"}
-          </div>
         </div>
       </div>
 

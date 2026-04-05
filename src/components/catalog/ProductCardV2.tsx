@@ -13,44 +13,64 @@ interface ProductCardV2Props {
 
 // Category-based fallback images — ensures every product has a stunning, relevant photo
 const CATEGORY_IMAGES: Record<string, string> = {
-  "visiting-cards": "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=800&q=80",
-  "Visiting Cards": "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=800&q=80",
-  "flyers-leaflets": "https://images.unsplash.com/photo-1563298723-dcfebaa392e3?w=800&q=80",
-  "Flyers & Leaflets": "https://images.unsplash.com/photo-1563298723-dcfebaa392e3?w=800&q=80",
-  "pamphlets-brochures": "https://images.unsplash.com/photo-1544819667-9bfc1de23d4e?w=800&q=80",
-  "Pamphlets & Brochures": "https://images.unsplash.com/photo-1544819667-9bfc1de23d4e?w=800&q=80",
-  "posters": "https://images.unsplash.com/photo-1558487661-9d4f01e2ad64?w=800&q=80",
-  "Posters": "https://images.unsplash.com/photo-1558487661-9d4f01e2ad64?w=800&q=80",
-  "banners-flex": "https://images.unsplash.com/photo-1603201667141-5a2d4c673378?w=800&q=80",
-  "Banners & Flex": "https://images.unsplash.com/photo-1603201667141-5a2d4c673378?w=800&q=80",
-  "stickers-labels": "https://images.unsplash.com/photo-1496096265110-f83ad7f96608?w=800&q=80",
-  "Stickers & Labels": "https://images.unsplash.com/photo-1496096265110-f83ad7f96608?w=800&q=80",
-  "id-cards-pvc": "https://images.unsplash.com/photo-1581413809628-98e3b3a5fe6f?w=800&q=80",
-  "ID Cards & PVC": "https://images.unsplash.com/photo-1581413809628-98e3b3a5fe6f?w=800&q=80",
-  "standees-rollups": "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&q=80",
-  "Standees & Roll-Ups": "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&q=80",
-  "invitations-wedding": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
-  "Invitations & Wedding Cards": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
-  "letterheads-envelopes": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80",
+  // Common Category IDs from printingProducts.ts
+  "visiting-cards": "/inkfinity/assets/products/premium_visiting_cards_mockup_1775247422194.png",
+  "Visiting Cards": "/inkfinity/assets/products/premium_visiting_cards_mockup_1775247422194.png",
+
+  "flyers": "/inkfinity/assets/products/flyer_branded.png",
+  "Flyers & Leaflets": "/inkfinity/assets/products/flyer_branded.png",
+
+  "pamphlets": "/inkfinity/assets/products/pamphlet_branded.png",
+  "Pamphlets & Brochures": "/inkfinity/assets/products/pamphlet_branded.png",
+
+  "posters": "/inkfinity/assets/products/poster_branded.png",
+  "Posters": "/inkfinity/assets/products/poster_branded.png",
+
+  "banners": "/inkfinity/assets/products/banner_branded.png",
+  "Banners & Flex": "/inkfinity/assets/products/banner_branded.png",
+
+  "stickers": "/inkfinity/assets/products/sticker_mockup_canva_style_1775247512635.png",
+  "Stickers & Labels": "/inkfinity/assets/products/sticker_mockup_canva_style_1775247512635.png",
+
+  "id-cards": "/inkfinity/assets/products/id_card_branded.png",
+  "ID Cards": "/inkfinity/assets/products/id_card_branded.png",
+
+  "merchandise": "/inkfinity/assets/products/tshirt_branded.png",
+  "T-Shirts & Merchandise": "/inkfinity/assets/products/tshirt_branded.png",
+
+  "standees": "https://images.unsplash.com/photo-1596524430615-b46475ddff6e?w=800&q=80",
+  "Standees & Roll-Ups": "https://images.unsplash.com/photo-1596524430615-b46475ddff6e?w=800&q=80",
+
+  "invitations": "https://images.unsplash.com/photo-1607344645866-009c320b63e0?w=800&q=80",
+  "Invitations & Wedding Cards": "https://images.unsplash.com/photo-1607344645866-009c320b63e0?w=800&q=80",
+
+  "letterheads": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80",
   "Letterheads & Envelopes": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80",
-  "packaging-boxes": "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800&q=80",
+
+  "packaging": "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800&q=80",
   "Packaging & Boxes": "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800&q=80",
-  "certificates-awards": "https://images.unsplash.com/photo-1523050854058-8df90110c8f1?w=800&q=80",
+
+  "certificates": "https://images.unsplash.com/photo-1523050854058-8df90110c8f1?w=800&q=80",
   "Certificates & Awards": "https://images.unsplash.com/photo-1523050854058-8df90110c8f1?w=800&q=80",
-  "tshirts-merchandise": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80",
-  "T-Shirts & Merchandise": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80",
-  "notepads-diaries": "https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&q=80",
+
+  "notepads": "https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&q=80",
   "Notepads & Diaries": "https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&q=80",
+
   "menu-cards": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80",
   "Menu Cards": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80",
-  "hospital-medical": "https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=800&q=80",
-  "Hospital & Medical": "https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=800&q=80",
-  "luxury-weddings": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
-  "Luxury Weddings": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
+
+  "hospital-management": "https://images.unsplash.com/photo-1576091160550-217359f4ecf8?w=800&q=80",
+  "Hospital & Medical": "https://images.unsplash.com/photo-1576091160550-217359f4ecf8?w=800&q=80",
+
+  "premium-weddings": "https://images.unsplash.com/photo-1510076857177-7470076d4098?w=800&q=80",
+  "Luxury Weddings": "https://images.unsplash.com/photo-1510076857177-7470076d4098?w=800&q=80",
+
   "student-projects": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&q=80",
   "Student Projects & Binding": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&q=80",
+
   "instagram-trending": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800&q=80",
   "Instagram Trending": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800&q=80",
+
   "custom": "https://images.unsplash.com/photo-1623013898240-dc50ec9588b3?w=800&q=80",
 };
 

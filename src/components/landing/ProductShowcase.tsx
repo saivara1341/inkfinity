@@ -4,12 +4,12 @@ import { ContactRound, FileText, GalleryVerticalEnd, RectangleHorizontal, Sticke
 import { type LucideIcon } from "lucide-react";
 
 const products: { name: string; description: string; Icon: LucideIcon; slug: string; image: string }[] = [
-  { name: "Visiting Cards", description: "Premium business cards from ₹1.50/card", Icon: ContactRound, slug: "visiting-cards", image: "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=800&q=80" },
-  { name: "Flyers", description: "Eye-catching flyers from ₹3/piece", Icon: FileText, slug: "flyers", image: "https://images.unsplash.com/photo-1563298723-dcfebaa392e3?w=800&q=80" },
-  { name: "Posters", description: "High-quality posters from ₹49", Icon: GalleryVerticalEnd, slug: "posters", image: "https://images.unsplash.com/photo-1558487661-9d4f01e2ad64?w=800&q=80" },
-  { name: "Banners", description: "Large format banners from ₹199", Icon: RectangleHorizontal, slug: "banners", image: "https://plus.unsplash.com/premium_photo-1661603504177-3e8df3be3f39?w=800&q=80" },
-  { name: "Stickers", description: "Custom stickers from ₹2/piece", Icon: Sticker, slug: "stickers", image: "https://images.unsplash.com/photo-1496096265110-f83ad7f96608?w=800&q=80" },
-  { name: "ID Cards", description: "Professional ID cards from ₹25", Icon: IdCard, slug: "id-cards", image: "https://images.unsplash.com/photo-1581413809628-98e3b3a5fe6f?w=800&q=80" },
+  { name: "Visiting Cards", description: "Premium business cards from ₹1.50/card", Icon: ContactRound, slug: "visiting-cards", image: "/inkfinity/assets/products/premium_visiting_cards_mockup_1775247422194.png" },
+  { name: "Flyers", description: "Eye-catching flyers from ₹3/piece", Icon: FileText, slug: "flyers", image: "/inkfinity/assets/products/flyer_branded.png" },
+  { name: "Posters", description: "High-quality posters from ₹49", Icon: GalleryVerticalEnd, slug: "posters", image: "/inkfinity/assets/products/poster_branded.png" },
+  { name: "Banners", description: "Large format banners from ₹199", Icon: RectangleHorizontal, slug: "banners", image: "/inkfinity/assets/products/banner_branded.png" },
+  { name: "Stickers", description: "Custom stickers from ₹2/piece", Icon: Sticker, slug: "stickers", image: "/inkfinity/assets/products/sticker_mockup_canva_style_1775247512635.png" },
+  { name: "ID Cards", description: "Professional ID cards from ₹25", Icon: IdCard, slug: "id-cards", image: "/inkfinity/assets/products/id_card_branded.png" },
   { name: "Custom Prints", description: "Any custom print job you need", Icon: Paintbrush, slug: "custom", image: "https://images.unsplash.com/photo-1623013898240-dc50ec9588b3?w=800&q=80" },
 ];
 

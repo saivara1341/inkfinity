@@ -72,8 +72,8 @@ const ShopDashboard = () => {
         ${mobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}
       `}>
         <div className="h-16 flex items-center px-4 border-b border-border gap-3">
-          <div className="w-9 h-9 rounded-lg bg-gradient-coral flex items-center justify-center shrink-0">
-            <Printer className="w-5 h-5 text-accent-foreground" />
+          <div className="w-10 h-10 rounded-xl bg-[#FF7300] flex items-center justify-center shadow-lg shrink-0">
+            <Printer className="w-6 h-6 text-white" />
           </div>
           {(sidebarOpen || mobileMenuOpen) && (
             <span className="font-display font-bold text-foreground truncate">
@@ -84,7 +84,7 @@ const ShopDashboard = () => {
           <button onClick={(e) => { e.stopPropagation(); setMobileMenuOpen(false); }} className="md:hidden ml-auto p-2 text-muted-foreground">
             <X className="w-5 h-5" />
           </button>
-          
+
           {/* Desktop Toggle Button */}
           {!mobileMenuOpen && (
             <button
@@ -103,11 +103,10 @@ const ShopDashboard = () => {
             <button
               key={item.id}
               onClick={() => { setActiveTab(item.id); setMobileMenuOpen(false); }}
-              className={`w-full flex items-center gap-4 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === item.id
+              className={`w-full flex items-center gap-4 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === item.id
                   ? "bg-accent/10 text-accent"
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
+                }`}
             >
               <item.icon className="w-5 h-5 shrink-0" />
               {(sidebarOpen || mobileMenuOpen) && <span>{item.label}</span>}
@@ -124,7 +123,7 @@ const ShopDashboard = () => {
             <LogOut className="w-4 h-4 shrink-0" />
             {(sidebarOpen || mobileMenuOpen) && <span>Log Out</span>}
           </button>
-          
+
           <button
             onClick={() => navigate("/")}
             className="w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors shrink-0"
@@ -137,9 +136,9 @@ const ShopDashboard = () => {
 
       {/* Mobile Overlay */}
       {mobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-30 md:hidden" 
-          onClick={() => setMobileMenuOpen(false)} 
+        <div
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
@@ -147,7 +146,7 @@ const ShopDashboard = () => {
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <header className="h-16 border-b border-border flex items-center justify-between px-4 md:pl-10 md:pr-6 bg-background/80 backdrop-blur-sm z-20 shrink-0">
           <div className="flex items-center gap-6">
-            <button 
+            <button
               onClick={() => setMobileMenuOpen(true)}
               className="md:hidden p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-transform"
               aria-label="Open menu"
@@ -158,7 +157,7 @@ const ShopDashboard = () => {
           </div>
           <div className="flex items-center gap-3">
             <NotificationBell />
-            <button 
+            <button
               onClick={() => setActiveTab("settings")}
               className="w-9 h-9 rounded-full bg-accent/20 flex items-center justify-center hover:bg-accent/30 transition-colors"
             >
@@ -172,8 +171,8 @@ const ShopDashboard = () => {
         <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar">
           {!shop ? (
             <div className="bg-card rounded-[2.5rem] border border-border p-12 text-center space-y-8 animate-in fade-in zoom-in duration-500 shadow-xl max-w-2xl mx-auto mt-12">
-              <div className="w-24 h-24 rounded-[2rem] bg-gradient-coral flex items-center justify-center mx-auto shadow-glow">
-                <Store className="w-12 h-12 text-accent-foreground" />
+              <div className="w-24 h-24 rounded-[2rem] bg-[#FF7300] flex items-center justify-center mx-auto shadow-xl">
+                <Store className="w-12 h-12 text-white" />
               </div>
               <div className="space-y-3">
                 <h2 className="text-4xl font-display font-bold text-foreground italic">Register your shop first</h2>
@@ -182,9 +181,9 @@ const ShopDashboard = () => {
                 </p>
               </div>
               <div className="pt-4">
-                <Button 
-                  variant="coral" 
-                  size="lg" 
+                <Button
+                  variant="coral"
+                  size="lg"
                   className="h-16 px-10 rounded-2xl text-xl font-bold shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]"
                   onClick={() => navigate("/register-shop")}
                 >
@@ -203,9 +202,9 @@ const ShopDashboard = () => {
               )}
               {activeTab === "products" && <ShopProducts shop={shop} />}
               {activeTab === "orders" && (
-                <ShopOrders 
-                  orders={orders} 
-                  onUpdateStatus={updateOrderStatus} 
+                <ShopOrders
+                  orders={orders}
+                  onUpdateStatus={updateOrderStatus}
                 />
               )}
               {activeTab === "wallet" && <ShopWallet shopId={shop.id} />}

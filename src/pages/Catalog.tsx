@@ -68,8 +68,12 @@ const Catalog = () => {
       const staticProducts = getAllSubcategories();
       const filteredStatic = staticProducts.filter(p => {
         const matchCat = activeCategory === "all" || p.categoryId === activeCategory;
-        const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) ||
-          p.description.toLowerCase().includes(search.toLowerCase());
+        const searchTerm = search.toLowerCase();
+        const matchSearch = !search ||
+          p.name.toLowerCase().includes(searchTerm) ||
+          p.description.toLowerCase().includes(searchTerm) ||
+          p.categoryName.toLowerCase().includes(searchTerm) ||
+          p.categoryId.toLowerCase().includes(searchTerm);
         return matchCat && matchSearch;
       });
 

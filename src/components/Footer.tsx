@@ -8,8 +8,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 rounded-lg bg-gradient-coral flex items-center justify-center">
-                <Printer className="w-5 h-5 text-accent-foreground" />
+              <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center">
+                <Printer className="w-5 h-5 text-white" />
               </div>
               <span className="font-display text-xl font-bold">PrintFlow</span>
             </div>

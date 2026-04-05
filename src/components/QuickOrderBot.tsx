@@ -336,8 +336,8 @@ export const QuickOrderBot = () => {
             {/* Header */}
             <div className="px-5 py-4 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-                  <Bot className="w-5 h-5 text-primary" />
+                <div className="w-10 h-10 rounded-xl bg-[#FF7300] flex items-center justify-center shadow-lg">
+                  <Bot className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <h3 className="font-bold text-sm">PrintFlow Assistant</h3>

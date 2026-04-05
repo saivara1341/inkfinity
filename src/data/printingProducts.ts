@@ -394,7 +394,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "standard-visiting-card", name: "Standard Visiting Card", description: "Classic business card, most popular in India",
-        image: "/assets/products/premium_visiting_cards_mockup_1775247422194.png",
+        image: "/inkfinity/assets/products/premium_visiting_cards_mockup_1775247422194.png",
         startingPrice: "₹249", unit: "per 100 cards", minQty: 100, popular: true,
         sizes: visitingCardSizes.filter(s => ["vc-standard", "vc-indian"].includes(s.id)),
         papers: visitingCardPapers.slice(0, 4), finishes: visitingCardFinishes.slice(0, 5),
@@ -408,7 +408,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "premium-visiting-card", name: "Premium Visiting Card", description: "Luxury cards with special finishes",
-        image: "/assets/products/gold_foil_visiting_card_mockup_1775247458938.png",
+        image: "/inkfinity/assets/products/gold_foil_visiting_card_mockup_1775247458938.png",
         startingPrice: "₹5", unit: "per card", minQty: 50, popular: true,
         sizes: visitingCardSizes, papers: visitingCardPapers, finishes: visitingCardFinishes,
         quantityTiers: [
@@ -419,6 +419,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "transparent-visiting-card", name: "Transparent PVC Card", description: "Modern see-through plastic cards",
+        image: "https://images.unsplash.com/photo-1598214817158-ab355a6d96f4?auto=format&fit=crop&w=800&q=80",
         startingPrice: "₹10", unit: "per card", minQty: 50,
         sizes: [visitingCardSizes[0]], papers: [visitingCardPapers[5]], finishes: [visitingCardFinishes[0]],
         quantityTiers: [
@@ -438,17 +439,22 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "standard-flyer", name: "Standard Flyer", description: "Single or double-sided promotional flyers",
-        image: "/assets/products/flyer_branded.png",
+        image: "/inkfinity/assets/products/flyer_branded.png",
         startingPrice: "₹2", unit: "per piece", minQty: 50, popular: true,
         sizes: flyerSizes, papers: flyerPapers, finishes: flyerFinishes,
         quantityTiers: [
-          { min: 50, max: 99, pricePerUnit: 3 }, { min: 100, max: 249, pricePerUnit: 2.5 },
-          { min: 250, max: 499, pricePerUnit: 2 }, { min: 500, max: 9999, pricePerUnit: 1.5 },
+          { min: 50, max: 99, pricePerUnit: 3 },
+          { min: 100, max: 499, pricePerUnit: 2.5 },
+          { min: 500, max: 999, pricePerUnit: 2 },
+          { min: 1000, max: 1999, pricePerUnit: 0.95 },   // Offset range starts
+          { min: 2000, max: 4999, pricePerUnit: 0.75 },   // Bulk offset
+          { min: 5000, max: 99999, pricePerUnit: 0.55 },  // Wholesale industrial
         ],
         printingMethods: printingMethodsDigital, turnaroundDays: "2-3",
       },
       {
         id: "door-hanger", name: "Door Hanger", description: "Die-cut flyers for door handles",
+        image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=800&q=80",
         startingPrice: "₹5", unit: "per piece", minQty: 100,
         sizes: [{ id: "dh-std", label: "Standard", dimensions: "89 × 216 mm", widthMM: 89, heightMM: 216, widthInch: "3.5", heightInch: "8.5", basePrice: 5 }],
         papers: flyerPapers.slice(1, 4), finishes: flyerFinishes,
@@ -468,7 +474,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "bifold-brochure", name: "Bi-Fold Brochure", description: "4-panel folded brochure",
-        image: "/assets/products/pamphlet_branded.png",
+        image: "/inkfinity/assets/products/pamphlet_branded.png",
         startingPrice: "₹6", unit: "per piece", minQty: 50, popular: true,
         sizes: pamphletSizes.filter(s => s.id.includes("bifold")),
         papers: flyerPapers.slice(1, 6), finishes: flyerFinishes,
@@ -480,7 +486,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "trifold-brochure", name: "Tri-Fold Brochure", description: "6-panel folded brochure, most popular",
-        image: "/assets/products/pamphlet_branded.png",
+        image: "/inkfinity/assets/products/pamphlet_branded.png",
         startingPrice: "₹7", unit: "per piece", minQty: 50, popular: true,
         sizes: pamphletSizes.filter(s => s.id.includes("trifold") || s.id.includes("z-fold")),
         papers: flyerPapers.slice(1, 6), finishes: flyerFinishes,
@@ -500,7 +506,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "standard-poster", name: "Standard Poster", description: "Vibrant posters from A4 to A0",
-        image: "/assets/products/poster_branded.png",
+        image: "/inkfinity/assets/products/poster_branded.png",
         startingPrice: "₹25", unit: "each", minQty: 1, popular: true,
         sizes: posterSizes, papers: posterPapers, finishes: commonFinishes,
         quantityTiers: [
@@ -511,6 +517,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "photo-poster", name: "Photo Poster", description: "High-quality photo prints",
+        image: "https://images.unsplash.com/photo-1562654501-a0ccc0af3fb1?w=800&q=80",
         startingPrice: "₹99", unit: "each", minQty: 1,
         sizes: posterSizes.slice(0, 5), papers: posterPapers.filter(p => p.id.includes("photo") || p.id === "canvas"),
         finishes: [{ id: "none", label: "No Finish", description: "Standard", priceAdd: 0 }, { id: "matte-lam", label: "Matte Lamination", description: "Anti-glare", priceAdd: 20 }],
@@ -531,6 +538,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "flex-banner", name: "Flex Banner", description: "Standard outdoor flex printing",
+        image: "/inkfinity/assets/products/banner_branded.png",
         startingPrice: "₹12", unit: "per sq ft", minQty: 1, popular: true,
         sizes: bannerSizes, papers: bannerPapers.slice(0, 4), finishes: bannerFinishes,
         quantityTiers: [
@@ -541,7 +549,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "vinyl-banner", name: "Vinyl Banner", description: "Premium durable vinyl banners",
-        image: "/assets/products/banner_branded.png",
+        image: "/inkfinity/assets/products/banner_branded.png",
         startingPrice: "₹25", unit: "per sq ft", minQty: 1,
         sizes: bannerSizes.slice(0, 6), papers: [bannerPapers[3], bannerPapers[6]], finishes: bannerFinishes,
         quantityTiers: [
@@ -560,7 +568,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "die-cut-sticker", name: "Die-Cut Sticker", description: "Custom shaped stickers",
-        image: "/assets/products/sticker_mockup_canva_style_1775247512635.png",
+        image: "/inkfinity/assets/products/sticker_mockup_canva_style_1775247512635.png",
         startingPrice: "₹2", unit: "per piece", minQty: 50, popular: true,
         sizes: stickerSizes, papers: stickerPapers, finishes: commonFinishes,
         quantityTiers: [
@@ -571,6 +579,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "sheet-sticker", name: "Sheet Stickers", description: "A4 sheets with multiple stickers",
+        image: "https://images.unsplash.com/photo-1496096265110-f83ad7f96608?w=800&q=80",
         startingPrice: "₹15", unit: "per sheet", minQty: 10,
         sizes: [stickerSizes[3]], papers: stickerPapers.slice(0, 4), finishes: commonFinishes,
         quantityTiers: [
@@ -581,6 +590,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "product-label", name: "Product Labels", description: "Packaging and product labels",
+        image: "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800&q=80",
         startingPrice: "₹1", unit: "per label", minQty: 100,
         sizes: stickerSizes.slice(0, 4), papers: stickerPapers.slice(0, 5), finishes: commonFinishes,
         quantityTiers: [
@@ -611,6 +621,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "smart-card", name: "Smart / NFC Card", description: "NFC-enabled digital business cards",
+        image: "/inkfinity/assets/products/id_card_branded.png",
         startingPrice: "₹150", unit: "per card", minQty: 10,
         sizes: [idCardSizes[0]], papers: [idCardPapers[0]], finishes: [{ id: "none", label: "Standard", description: "With NFC chip", priceAdd: 0 }],
         quantityTiers: [
@@ -630,6 +641,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "rollup-standee", name: "Roll-Up Standee", description: "Retractable banner stands",
+        image: "https://images.unsplash.com/photo-1596524430615-b46475ddff6e?w=800&q=80",
         startingPrice: "₹899", unit: "each", minQty: 1, popular: true,
         sizes: standeeSizes.filter(s => s.id.includes("rollup")),
         papers: [bannerPapers[3], { id: "pp-synthetic", label: "PP Synthetic Paper", gsm: 0, description: "Smooth, tear-resistant", priceMultiplier: 1 }],
@@ -642,6 +654,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "cutout-standee", name: "Custom Cutout", description: "Life-size or custom shape standees",
+        image: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&q=80",
         startingPrice: "₹1999", unit: "each", minQty: 1,
         sizes: [standeeSizes[3]],
         papers: [{ id: "sunboard-5mm", label: "5mm Sunboard", gsm: 0, description: "Rigid foam board", priceMultiplier: 1 }],
@@ -663,6 +676,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "wedding-card", name: "Wedding Invitation", description: "Traditional and modern wedding cards",
+        image: "https://images.unsplash.com/photo-1607344645866-009c320b63e0?auto=format&fit=crop&w=800&q=80",
         startingPrice: "₹15", unit: "per card", minQty: 50, popular: true,
         sizes: invitationSizes, papers: [visitingCardPapers[2], visitingCardPapers[3], visitingCardPapers[4], visitingCardPapers[7]],
         finishes: visitingCardFinishes,
@@ -674,6 +688,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "event-invite", name: "Event Invitation", description: "Corporate and party invitations",
+        image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
         startingPrice: "₹10", unit: "per card", minQty: 25,
         sizes: invitationSizes.slice(0, 4), papers: visitingCardPapers.slice(0, 4), finishes: visitingCardFinishes.slice(0, 5),
         quantityTiers: [
@@ -692,6 +707,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "letterhead", name: "Letterhead", description: "Branded company letterheads",
+        image: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=800&q=80",
         startingPrice: "₹5", unit: "per sheet", minQty: 100, popular: true,
         sizes: letterheadSizes,
         papers: [
@@ -708,6 +724,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "envelope", name: "Envelope", description: "Printed envelopes for mailings",
+        image: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80",
         startingPrice: "₹4", unit: "per envelope", minQty: 100,
         sizes: [
           { id: "env-dl", label: "DL Envelope", dimensions: "110 × 220 mm", widthMM: 110, heightMM: 220, widthInch: "4.3", heightInch: "8.7", basePrice: 4 },
@@ -732,6 +749,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "product-box", name: "Product Box", description: "Custom printed packaging boxes",
+        image: "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800&q=80",
         startingPrice: "₹25", unit: "per box", minQty: 50,
         sizes: packagingSizes.slice(0, 3),
         papers: [
@@ -753,6 +771,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "paper-bag", name: "Paper Bag", description: "Branded carry bags",
+        image: "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800&q=80",
         startingPrice: "₹15", unit: "per bag", minQty: 100,
         sizes: packagingSizes.slice(3),
         papers: [
@@ -820,6 +839,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "mug-print", name: "Mug Printing", description: "Custom printed ceramic mugs",
+        image: "https://images.unsplash.com/photo-1521119908359-99fcbc33ed07?w=800&q=80",
         startingPrice: "₹120", unit: "per mug", minQty: 1,
         sizes: [{ id: "mug-11oz", label: "11 oz Standard", dimensions: "Standard coffee mug", widthMM: 0, heightMM: 0, widthInch: "11oz", heightInch: "Standard", basePrice: 120 }],
         papers: [{ id: "ceramic-white", label: "White Ceramic", gsm: 0, description: "Standard ceramic mug", priceMultiplier: 1 }, { id: "ceramic-magic", label: "Magic Mug (Color Change)", gsm: 0, description: "Changes color with heat", priceMultiplier: 2 }],
@@ -841,6 +861,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "notepad", name: "Branded Notepad", description: "Custom printed notepads with logo",
+        image: "https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&q=80",
         startingPrice: "₹25", unit: "per pad", minQty: 25,
         sizes: notepadSizes.slice(0, 3),
         papers: [
@@ -864,6 +885,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "restaurant-menu", name: "Restaurant Menu", description: "Laminated or synthetic menu cards",
+        image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80",
         startingPrice: "₹45", unit: "per menu", minQty: 10, popular: true,
         sizes: menuCardSizes, papers: menuPapers, finishes: commonFinishes,
         quantityTiers: [
@@ -882,6 +904,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "desk-calendar", name: "Desk Calendar", description: "Personalized tent calendars",
+        image: "https://images.unsplash.com/photo-1586075010620-687cd7a3297a?w=800&q=80",
         startingPrice: "₹199", unit: "per unit", minQty: 5, popular: true,
         sizes: [calendarSizes[0]],
         papers: [visitingCardPapers[1], visitingCardPapers[2]],
@@ -914,6 +937,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "medical-bill-book", name: "Medical Bill Book", description: "Carbonless duplicate or triplicate bill books",
+        image: "https://images.unsplash.com/photo-1576091160550-217359f4ecf8?auto=format&fit=crop&w=800&q=80",
         startingPrice: "₹90", unit: "per book", minQty: 10,
         sizes: hospitalSizes.filter(s => s.id.includes("bill")),
         papers: hospitalPapers.filter(p => p.id.includes("ncr")),
@@ -926,6 +950,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "patient-file", name: "Patient Record File", description: "Durable folders for medical history",
+        image: "https://images.unsplash.com/photo-1576091160550-217359f4ecf8?auto=format&fit=crop&w=800&q=80",
         startingPrice: "₹15", unit: "each", minQty: 100,
         sizes: [hospitalSizes[2]],
         papers: [visitingCardPapers[1], visitingCardPapers[2]],
@@ -946,6 +971,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "laser-cut-wedding", name: "Laser-Cut Invitation", description: "Intricate laser-cut designs on premium paper",
+        image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80",
         startingPrice: "₹85", unit: "per card", minQty: 50, popular: true,
         sizes: invitationSizes.slice(0, 4),
         papers: [visitingCardPapers[3], visitingCardPapers[4], visitingCardPapers[7]],
@@ -969,6 +995,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "spiral-binding", name: "Spiral Binding", description: "Durable plastic spiral binding for reports and presentations",
+        image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&q=80",
         startingPrice: "₹30", unit: "per copy", minQty: 1, popular: true,
         sizes: [
           { id: "sp-a4", label: "A4", dimensions: "210 × 297 mm", widthMM: 210, heightMM: 297, widthInch: "8.3", heightInch: "11.7", basePrice: 30 },
@@ -992,6 +1019,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "hardcover-binding", name: "Hardcover Binding", description: "Professional hardbound thesis and project reports with gold/silver embossing",
+        image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=800&q=80",
         startingPrice: "₹150", unit: "per copy", minQty: 1, popular: true,
         sizes: [
           { id: "hb-a4", label: "A4 Hardbound", dimensions: "210 × 297 mm", widthMM: 210, heightMM: 297, widthInch: "8.3", heightInch: "11.7", basePrice: 150 },
@@ -1014,6 +1042,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "softcover-binding", name: "Softcover / Perfect Binding", description: "Glue-bound soft cover reports and manuals",
+        image: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=800&q=80",
         startingPrice: "₹60", unit: "per copy", minQty: 1,
         sizes: [
           { id: "sc-a4", label: "A4", dimensions: "210 × 297 mm", widthMM: 210, heightMM: 297, widthInch: "8.3", heightInch: "11.7", basePrice: 60 },
@@ -1092,6 +1121,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "acrylic-photo-frame", name: "Acrylic Photo Frame", description: "UV printed photo on crystal-clear acrylic with LED base — #1 trending reel product",
+        image: "https://images.unsplash.com/photo-1623013898240-dc50ec9588b3?w=800&q=80",
         startingPrice: "₹299", unit: "per piece", minQty: 1, popular: true,
         sizes: [
           { id: "acr-6x6", label: "6×6 inch", dimensions: "152 × 152 mm", widthMM: 152, heightMM: 152, widthInch: "6", heightInch: "6", basePrice: 299 },
@@ -1309,14 +1339,13 @@ export const getPopularProducts = () => {
 
 // Printing types reference data
 export const printingTypes = [
-  { id: "digital", name: "Digital Printing", description: "Ideal for short runs (1-500 copies). Quick turnaround, variable data printing.", bestFor: "Visiting cards, small flyers, test prints" },
-  { id: "offset", name: "Offset Printing", description: "Best for large runs (500+). Superior color consistency, cost-effective at scale.", bestFor: "Bulk flyers, brochures, magazines, packaging" },
-  { id: "screen", name: "Screen Printing", description: "Vibrant colors on various substrates. Great for fabrics and merchandise.", bestFor: "T-shirts, bags, promotional items" },
-  { id: "uv", name: "UV Printing", description: "Instant drying with UV light. Prints on rigid and flexible materials.", bestFor: "Acrylic, wood, glass, rigid signage" },
-  { id: "large-format", name: "Large Format Printing", description: "Banners, hoardings, vehicle wraps. Uses eco-solvent or latex inks.", bestFor: "Flex banners, vinyl signage, wall graphics" },
-  { id: "sublimation", name: "Sublimation Printing", description: "Dye-transfer for polyester fabrics and coated surfaces.", bestFor: "Mugs, t-shirts, phone cases, photo gifts" },
-  { id: "dtg", name: "DTG (Direct to Garment)", description: "Full-color prints directly on cotton garments.", bestFor: "Custom t-shirts, small batch apparel" },
-  { id: "letterpress", name: "Letterpress Printing", description: "Traditional pressed-in printing with tactile feel.", bestFor: "Premium business cards, wedding invitations" },
-  { id: "foil-stamping", name: "Foil Stamping", description: "Metallic foil transfer for luxurious accents.", bestFor: "Business cards, certificates, packaging" },
-  { id: "embossing", name: "Embossing/Debossing", description: "Raised or recessed designs for textured feel.", bestFor: "Letterheads, cards, packaging" },
+  { id: "digital", name: "Digital Printing", description: "Direct-to-paper toner/ink technology. No plates required. Best for CMYK short runs (1-500 copies). Supports Variable Data Printing (VDP) for personalization.", bestFor: "Visiting cards, small flyers, test prints" },
+  { id: "offset", name: "Offset Lithography", description: "Inked image transferred from a plate to a rubber blanket. Industrial standard for CMYK + Spot Pantone (PMS) colors. Superior sharpness and color consistency. High-speed, high-volume efficiency.", bestFor: "Bulk flyers, brochures, magazines, packaging" },
+  { id: "screen", name: "Screen Printing", description: "Ink forced through a mesh stencil. Exceptional color vibrancy and opacity. Ideal for single/multiple flat colors on diverse substrates (fabrics, wood, metal).", bestFor: "T-shirts, tote bags, promotional items" },
+  { id: "uv", name: "UV Flatbed Printing", description: "Instant ink curing via high-intensity UV lamps. Prints on almost any rigid or flexible substrate (glass, acrylic, plastic) with scratch-resistant results.", bestFor: "Acrylic signage, wooden plaques, phone cases" },
+  { id: "large-format", name: "Large Format Printing", description: "Wide-carriage inkjet technology using Eco-Solvent, Latex, or Aqueous inks. Weather-resistant and UV-stable for outdoor longevity. Resolution optimized for viewing distance.", bestFor: "Flex banners, vinyl signage, wall graphics" },
+  { id: "sublimation", name: "Sublimation", description: "Heat-activated dye gas infusion. Permanent bond with polyester fabrics and polymer-coated surfaces. Full-wrap, photo-quality results that won't peel or crack.", bestFor: "Ceramic mugs, polyester apparel, photo gifts" },
+  { id: "letterpress", name: "Letterpress Printing", description: "Receding relief technology creating a deep tactile impression. Traditional craftsmanship using premium thick cotton papers. Ideal for luxurious, minimalist aesthetic.", bestFor: "Luxury business cards, premium wedding invitations" },
+  { id: "foil-stamping", name: "Hot Foil Stamping", description: "Metallic or pigmented foil transferred via heated die. Provides mirror-like metallic brilliance (Gold, Silver, Copper) impossible with standard inks.", bestFor: "Certificates, premium packaging, brand accents" },
+  { id: "embossing", name: "Embossing/Debossing", description: "Pressure-formed 3D texture using male/female dies. Elevates specific design elements for a high-end tactile experience without ink.", bestFor: "Letterhead logos, card textures, luxury packaging" },
 ];

@@ -115,7 +115,7 @@ const ForShops = () => {
                 <span className="text-gradient">Online</span>
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Join India's fastest-growing print ordering platform. Get online orders, manage your workflow, 
+                Join India's fastest-growing print ordering platform. Get online orders, manage your workflow,
                 and scale your business — all from one dashboard.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -219,8 +219,8 @@ const ForShops = () => {
                 className="flex gap-6"
               >
                 <div className="flex flex-col items-center">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-coral flex items-center justify-center shrink-0 shadow-glow">
-                    <item.icon className="w-7 h-7 text-accent-foreground" />
+                  <div className="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center shrink-0 shadow-lg">
+                    <item.icon className="w-7 h-7 text-white" />
                   </div>
                   {i < howItWorks.length - 1 && (
                     <div className="w-0.5 h-16 bg-border my-2" />

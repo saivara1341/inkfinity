@@ -33,9 +33,9 @@ const ForgotPassword = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6 py-12">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
-        <Link to="/" className="flex items-center gap-2 mb-8">
-          <div className="w-10 h-10 rounded-lg bg-gradient-coral flex items-center justify-center">
-            <Printer className="w-5 h-5 text-accent-foreground" />
+        <Link to="/" className="flex items-center gap-2 mb-8 group">
+          <div className="w-10 h-10 rounded-xl bg-[#FF7300] flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+            <Printer className="w-6 h-6 text-white" />
           </div>
           <span className="font-display text-2xl font-bold text-foreground">PrintFlow</span>
         </Link>

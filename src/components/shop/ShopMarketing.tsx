@@ -77,7 +77,7 @@ const ShopMarketing = () => {
           <p className="text-muted-foreground">Boost your shop's visibility and attract more customers.</p>
         </div>
         <Badge variant="outline" className="px-3 py-1 gap-1 border-accent/30 text-accent">
-          <TrendingUp className="w-3 H-3" /> Shop Visibility: +24% this week
+          <TrendingUp className="w-3 H-3" /> Beta: Performance Analytics Active
         </Badge>
       </div>
 
@@ -138,7 +138,7 @@ const ShopMarketing = () => {
           </div>
           <div>
             <h3 className="text-xl font-display font-bold text-foreground">Regional Promotion Hub</h3>
-            <p className="text-sm text-muted-foreground underline decoration-dotted underline-offset-4 cursor-help" title="Based on current market trends and your shop's performance">Your current regional rank: <span className="text-foreground font-bold italic">#12 in Hyderabad</span></p>
+            <p className="text-sm text-muted-foreground underline decoration-dotted underline-offset-4 cursor-help" title="Based on current market trends and your shop's performance">Visibility: <span className="text-foreground font-bold italic">Standard Discovery Mode</span></p>
           </div>
         </div>
 

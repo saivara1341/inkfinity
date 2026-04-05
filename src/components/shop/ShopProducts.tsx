@@ -14,10 +14,20 @@ import {
 } from "@/components/ui/dialog";
 
 const STOCK_IMAGES = [
-  { id: 'tshirt', name: 'Premium T-Shirt', url: '/assets/products/tshirt_branded.png', category: 'T-Shirts' },
-  { id: 'banner', name: 'Professional Banner', url: '/assets/products/banner_branded.png', category: 'Banners' },
-  { id: 'flyer', name: 'Marketing Flyer', url: '/assets/products/flyer_branded.png', category: 'Flyers' },
-  { id: 'poster', name: 'Vibrant Poster', url: '/assets/products/poster_branded.png', category: 'Posters' },
+  { id: 'vc-1', name: 'Standard Business Card', url: '/inkfinity/assets/products/standard-visiting-card.png', category: 'Visiting Cards' },
+  { id: 'vc-2', name: 'Premium Business Card', url: '/inkfinity/assets/products/premium-visiting-card.png', category: 'Visiting Cards' },
+  { id: 'vc-3', name: 'Transparent PVC Card', url: '/inkfinity/assets/products/transparent-pvc-card.png', category: 'Visiting Cards' },
+  { id: 'flyer-1', name: 'Marketing Flyer', url: '/inkfinity/assets/products/flyer_branded.png', category: 'Flyers & Leaflets' },
+  { id: 'flyer-2', name: 'Promotional Flyer', url: '/inkfinity/assets/products/flyer_mockup_canva_style_1775247481252.png', category: 'Flyers & Leaflets' },
+  { id: 'brochure-1', name: 'Tri-Fold Brochure', url: '/inkfinity/assets/products/trifold-brochure.png', category: 'Pamphlets & Brochures' },
+  { id: 'brochure-2', name: 'Bi-Fold Brochure', url: '/inkfinity/assets/products/pamphlet_branded.png', category: 'Pamphlets & Brochures' },
+  { id: 'poster-1', name: 'Vibrant Poster', url: '/inkfinity/assets/products/poster_branded.png', category: 'Posters' },
+  { id: 'poster-2', name: 'Cinema Poster', url: '/inkfinity/assets/products/photo-poster.png', category: 'Posters' },
+  { id: 'banner-1', name: 'Professional Banner', url: '/inkfinity/assets/products/banner_branded.png', category: 'Banners & Flex' },
+  { id: 'sticker-1', name: 'Die-Cut Sticker', url: '/inkfinity/assets/products/sticker_mockup_canva_style_1775247512635.png', category: 'Stickers & Labels' },
+  { id: 'sticker-2', name: 'Sheet Stickers', url: '/inkfinity/assets/products/sheet-stickers.png', category: 'Stickers & Labels' },
+  { id: 'id-1', name: 'Employee ID Card', url: '/inkfinity/assets/products/id_card_branded.png', category: 'ID Cards' },
+  { id: 'merch-1', name: 'Premium T-Shirt', url: '/inkfinity/assets/products/tshirt_branded.png', category: 'T-Shirts & Merchandise' },
 ];
 
 type Shop = Tables<"shops">;
@@ -52,6 +62,28 @@ const CATEGORIES = [
   "Notepads & Diaries", "Menu Cards", "Calendars", "Hospital & Medical",
   "Luxury Weddings", "Other"
 ];
+
+const PRODUCT_TEMPLATES: Record<string, string[]> = {
+  "Visiting Cards": ["Standard Business Card", "Premium Business Card", "Transparent PVC Card", "Rounded Corner Card", "Square Business Card"],
+  "Flyers & Leaflets": ["Standard Flyer", "Premium Flyer", "Door Hanger", "Folded Leaflet", "Pamphlet"],
+  "Pamphlets & Brochures": ["Tri-Fold Brochure", "Bi-Fold Brochure", "A4 Catalog", "Booklet"],
+  "Posters": ["Photo Poster", "Bulk Poster", "A3 Poster", "A4 Poster"],
+  "Banners & Flex": ["Vinyl Banner", "Outdoor Flex Banner", "Fabric Banner", "Mesh Banner"],
+  "Stickers & Labels": ["Sheet Stickers", "Die-Cut Stickers", "Product Labels", "Mailing Labels"],
+  "ID Cards": ["Employee ID Card", "Student ID Card", "Visitor Pass", "Lanyard Card"],
+  "Standees & Roll-Ups": ["Roll-up Standee (3x6 ft)", "X-Standee (2x5 ft)", "L-Standee"],
+  "Invitations & Wedding Cards": ["Wedding Card", "Party Invitation", "Save the Date", "Greeting Card"],
+  "Letterheads & Envelopes": ["Standard Letterhead", "Premium Letterhead", "DL Envelope", "C4 Envelope"],
+  "Packaging & Boxes": ["Custom Cardboard Box", "Product Packaging", "Mailbox Sticker", "Gift Box"],
+  "Certificates & Awards": ["Achievement Certificate", "Student Award", "Participation Certificate"],
+  "T-Shirts & Merchandise": ["Round Neck T-Shirt", "Polo T-Shirt", "Sports T-Shirt", "Hoodie", "Coffee Mug"],
+  "Notepads & Diaries": ["A5 Notepad", "Premium Diary", "Spiral Notebook"],
+  "Menu Cards": ["Restaurant Menu (Single)", "Restaurant Menu (Multiple)", "Cafe Table Menu"],
+  "Calendars": ["Wall Calendar", "Desk Calendar", "Pocket Calendar"],
+  "Hospital & Medical": ["Prescription Pad", "Patient File Folder", "Medical Report Cover"],
+  "Luxury Weddings": ["Acrylic Invitation", "Gold Foil Wedding Set", "Velvet Invitation Box"],
+  "Other": []
+};
 
 const emptyForm = {
   name: "",
@@ -310,13 +342,36 @@ export const ShopProducts = ({ shop }: Props) => {
               <div className="space-y-4">
                 <div>
                   <label className="text-sm font-semibold text-foreground mb-1.5 block">Product Name *</label>
-                  <input
-                    type="text"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder="e.g. Visiting cards"
-                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all"
-                  />
+                  <select
+                    value={PRODUCT_TEMPLATES[form.category]?.includes(form.name) ? form.name : "custom"}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "custom") {
+                        setForm({ ...form, name: "" });
+                      } else {
+                        setForm({ ...form, name: val });
+                      }
+                    }}
+                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all mb-2"
+                  >
+                    <option value="" disabled>Select a product...</option>
+                    {(PRODUCT_TEMPLATES[form.category] || []).map((template) => (
+                      <option key={template} value={template}>{template}</option>
+                    ))}
+                    <option value="custom">Other / Custom Name</option>
+                  </select>
+                  
+                  {(!PRODUCT_TEMPLATES[form.category]?.includes(form.name) || form.name === "") && (
+                    <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}>
+                      <input
+                        type="text"
+                        value={form.name}
+                        onChange={(e) => setForm({ ...form, name: e.target.value })}
+                        placeholder="Enter custom product name..."
+                        className="w-full px-4 py-2.5 rounded-xl border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+                      />
+                    </motion.div>
+                  )}
                 </div>
                 <div>
                   <label className="text-sm font-semibold text-foreground mb-1.5 block">Category *</label>
@@ -334,7 +389,7 @@ export const ShopProducts = ({ shop }: Props) => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-semibold text-foreground mb-1.5 block">Base Price (₹) *</label>
+                  <label className="text-sm font-semibold text-foreground mb-1.5 block">Base Price (₹ per single piece or unit) *</label>
                   <div className="relative">
                     <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input
@@ -401,25 +456,40 @@ export const ShopProducts = ({ shop }: Props) => {
                     </DialogTrigger>
                     <DialogContent className="max-w-2xl">
                       <DialogHeader>
-                        <DialogTitle>Professional Stock Gallery</DialogTitle>
+                        <DialogTitle className="flex items-center gap-2">
+                          Professional Stock Gallery
+                          <span className="text-sm font-normal text-muted-foreground">({form.category})</span>
+                        </DialogTitle>
                       </DialogHeader>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4">
-                        {STOCK_IMAGES.map((img) => (
+                      <div className="grid grid-cols-2 sm:grid-cols-2 gap-6 pt-4 max-h-[60vh] overflow-y-auto pr-2">
+                        {STOCK_IMAGES.filter(img => img.category === form.category).length > 0 ? (
+                          STOCK_IMAGES.filter(img => img.category === form.category).map((img) => (
                           <div
                             key={img.id}
-                            className="group relative aspect-video rounded-xl overflow-hidden border border-border cursor-pointer hover:border-[#FF7300] transition-all"
+                            className="group relative aspect-video rounded-2xl overflow-hidden border-2 border-border cursor-pointer hover:border-[#FF7300] shadow-card hover:shadow-elevated transition-all"
                             onClick={() => {
                               setForm({ ...form, imagePreview: img.url, imageFile: null });
                               setGalleryOpen(false);
                             }}
                           >
-                            <img src={img.url} alt={img.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white">
-                              <span className="text-xs font-bold">{img.name}</span>
-                              <span className="text-[10px] opacity-80">{img.category}</span>
+                            <img src={img.url} alt={img.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-100 flex flex-col items-start justify-end p-4 text-white">
+                              <span className="text-sm font-bold truncate w-full">{img.name}</span>
+                              <span className="text-[10px] uppercase tracking-wider opacity-90">{img.category}</span>
                             </div>
                           </div>
-                        ))}
+                        ))
+                        ) : (
+                          <div className="col-span-full py-20 text-center space-y-4">
+                            <div className="bg-secondary/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto text-muted-foreground">
+                              <ImagePlus className="w-8 h-8" />
+                            </div>
+                            <div className="max-w-xs mx-auto">
+                              <p className="text-sm font-semibold text-foreground">No stock images for this category yet</p>
+                              <p className="text-xs text-muted-foreground mt-1">Try using the AI Generator above or upload your own high-quality mockup.</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </DialogContent>
                   </Dialog>

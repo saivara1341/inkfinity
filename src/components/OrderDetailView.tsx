@@ -159,27 +159,43 @@ export const OrderDetailView = ({ order, onClose, onStatusUpdate, isAdmin }: Pro
           </h3>
           <div className="bg-secondary/10 rounded-xl p-6 border border-border space-y-3">
             <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Unit Price</span>
-                <span className="text-foreground font-medium">₹{order.unit_price}</span>
+                <span className="text-muted-foreground">Subtotal</span>
+                <span className="text-foreground font-medium">₹{order.total_price || (Number(order.unit_price) * order.quantity)}</span>
             </div>
-            <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Quantity</span>
-                <span className="text-foreground font-medium">x {order.quantity}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">GST (12%)</span>
-                <span className="text-foreground font-medium">₹{order.gst_amount}</span>
-            </div>
+            {Number(order.gst_amount) > 0 && (
+              <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">GST (12%)</span>
+                  <span className="text-foreground font-medium">₹{order.gst_amount}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Delivery Charge</span>
                 <span className="text-foreground font-medium">₹{order.delivery_charge}</span>
             </div>
+            
             <div className="pt-3 border-t border-border flex justify-between items-baseline font-display">
-                <span className="font-bold text-foreground">Grand Total</span>
-                <span className="text-2xl font-bold text-accent">₹{order.grand_total.toLocaleString("en-IN")}</span>
+                <span className="text-sm font-bold text-foreground">Customer Paid</span>
+                <span className="text-lg font-bold text-foreground opacity-60">₹{order.grand_total.toLocaleString("en-IN")}</span>
             </div>
-            <div className="flex items-center gap-2 text-[10px] text-success mt-2 font-medium">
-               <CheckCircle2 className="w-3 h-3" /> Paid via Online Transfer
+
+            <div className={`p-4 rounded-xl mt-2 border ${Number(order.platform_fee || 0) > 0 ? "bg-accent/5 border-accent/10" : "bg-success/5 border-success/10"}`}>
+              <div className="flex justify-between items-center mb-1">
+                <span className={`text-[10px] font-bold uppercase tracking-widest ${Number(order.platform_fee || 0) > 0 ? "text-accent" : "text-success"}`}>
+                  {Number(order.platform_fee || 0) > 0 ? "Your Earning" : "Gross Earning (Full)"}
+                </span>
+                <span className={`text-xl font-bold ${Number(order.platform_fee || 0) > 0 ? "text-accent" : "text-success"}`}>
+                  ₹{(order.merchant_earning || order.grand_total).toLocaleString("en-IN")}
+                </span>
+              </div>
+              {Number(order.platform_fee || 0) > 0 && (
+                <p className="text-[9px] text-muted-foreground leading-tight italic">
+                  * Net payout after platform commission and customer service fees.
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 text-[10px] text-success mt-1 font-medium">
+               <CheckCircle2 className="w-3 h-3" /> Payment Secured by PrintFlow
             </div>
           </div>
         </section>

@@ -3,7 +3,7 @@ import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Search, Star, Clock, ShoppingCart, MapPin, Store, ChevronRight, SlidersHorizontal, X,
-  Instagram, Facebook, Twitter, Phone
+  Instagram, Facebook, Twitter, Phone, Flame
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ShareControl from "@/components/ShareControl";
 import WishlistButton from "@/components/WishlistButton";
+import { PerformanceAnalytics } from "@/utils/PerformanceAnalytics";
 
 const SocialIcons = ({ shop, className = "" }: { shop: any, className?: string }) => {
   if (!shop) return null;
@@ -104,13 +105,18 @@ const Storefront = () => {
   const [shops, setShops] = useState<ShopWithProducts[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"products" | "shops">(
-    searchParams.get("view") === "shops" ? "shops" : "products"
+    searchParams.get("view") === "shops" ? "shops" : "shops" // Defaulting to shops for market fit
   );
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "All");
   const [sortBy, setSortBy] = useState<"price_low" | "price_high" | "rating" | "newest">("newest");
   const [showFilters, setShowFilters] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    PerformanceAnalytics.trackMount("Storefront");
+  }, []);
 
   const shopFilter = searchParams.get("shop");
 
@@ -160,6 +166,8 @@ const Storefront = () => {
         shopData.map((s: any) => ({
           ...s,
           product_count: countMap[s.id] || 0,
+          estimated_delivery: "3-4 Days", // Dynamic fallback
+          min_order: "₹99"
         }))
       );
     }
@@ -264,99 +272,184 @@ const Storefront = () => {
             </motion.div>
           )}
 
-          {/* Search Bar */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-            <div className="relative max-w-2xl mx-auto mb-6">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search products, shops, categories..."
-                className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring shadow-card"
-              />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  <X className="w-4 h-4" />
-                </button>
+          {/* Top Rated Shops Carousel - Swiggy Style */}
+          {view === "shops" && searchQuery === "" && selectedCategory === "All" && !shopFilter && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-12"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+                  <Flame className="w-7 h-7 text-[#FF7300] fill-[#FF7300]" />
+                  Top Rated Shops
+                </h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {shops.slice(0, 3).map((shop) => (
+                  <motion.div
+                    key={`top-${shop.id}`}
+                    whileHover={{ y: -8 }}
+                    className="group relative cursor-pointer overflow-hidden rounded-3xl h-64 shadow-lg shadow-black/5"
+                    onClick={() => navigate(`/shop/${shop.id}`)}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
+                    <img 
+                      src={`https://images.unsplash.com/photo-1504215680145-505bb1df7017?w=800&q=80`} 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      alt={shop.name}
+                    />
+                    <div className="absolute bottom-6 left-6 right-6 z-20 text-white">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="px-2 py-0.5 bg-[#FF7300] text-white text-[10px] font-black rounded uppercase">Premium</span>
+                        <div className="h-4 w-[1px] bg-white/30" />
+                        <span className="text-xs font-bold opacity-90">{shop.city}</span>
+                      </div>
+                      <h3 className="text-2xl font-black">{shop.name}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-1 bg-green-500 text-white px-1.5 py-0.5 rounded text-[10px] font-black">
+                         {shop.rating || "5.0"} <Star className="w-2.5 h-2.5 fill-current" />
+                        </div>
+                        <span className="text-xs font-medium opacity-80">• {shop.product_count}+ Products</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Premium Search Experience - Swiggy/Diginaat Style */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="sticky top-20 z-40 mb-12 -mx-4 px-4 py-6 bg-slate-50/80 backdrop-blur-xl border-b border-white/20"
+          >
+            <div className="relative max-w-3xl mx-auto group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#FF7300] to-[#FF9D00] rounded-[28px] blur opacity-20 group-focus-within:opacity-40 transition-opacity duration-500" />
+              <div className="relative flex items-center bg-white rounded-3xl shadow-[0_8px_40px_rgb(0,0,0,0.06)] border border-slate-100 overflow-hidden">
+                <div className="pl-6 text-slate-400 group-focus-within:text-[#FF7300] transition-colors">
+                  <Search className="w-6 h-6 stroke-[2.5px]" />
+                </div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Design anything? Visiting Cards, Banners, or Custom Prints..."
+                  className="w-full pl-4 pr-12 py-5 bg-transparent border-none focus:ring-0 text-slate-900 text-lg font-bold placeholder:text-slate-300 placeholder:font-medium"
+                />
+                <div className="absolute right-4 flex items-center gap-2">
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-all"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  )}
+                  <div className="h-8 w-[1px] bg-slate-100 mx-1" />
+                  <button className="bg-slate-900 text-white px-6 py-2.5 rounded-2xl text-sm font-black hover:bg-slate-800 transition-colors shadow-lg active:scale-95">
+                    Search
+                  </button>
+                </div>
+              </div>
+              <div className="mt-3 flex items-center gap-4 px-4 overflow-x-auto no-scrollbar">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Suggested:</span>
+                {["Visiting Cards", "ID Cards", "Banners", "Stickers"].map(tag => (
+                  <button
+                    key={tag}
+                    onClick={() => setSearchQuery(tag)}
+                    className="text-xs font-bold text-slate-600 hover:text-[#FF7300] transition-colors whitespace-nowrap"
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+            {/* View Toggle (Traditional Swiggy Filter Style) */}
+            <div className="flex items-center gap-4 overflow-x-auto pb-2 no-scrollbar">
+              <button
+                onClick={() => setView("shops")}
+                className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all whitespace-nowrap shadow-sm border ${view === "shops"
+                  ? "bg-slate-900 text-white border-slate-900"
+                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+                  }`}
+              >
+                Nearby Shops
+              </button>
+              <button
+                onClick={() => setView("products")}
+                className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all whitespace-nowrap shadow-sm border ${view === "products"
+                  ? "bg-slate-900 text-white border-slate-900"
+                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+                  }`}
+              >
+                Quick Items
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm border ${showFilters
+                  ? "bg-slate-100 border-slate-200 text-slate-900"
+                  : "bg-white border-slate-100 text-slate-500 hover:border-slate-200"
+                  }`}
+              >
+                <SlidersHorizontal className="w-4 h-4" /> Filters
+              </button>
+              {user && (
+                <Link to="/cart" className="relative flex items-center justify-center w-11 h-11 rounded-xl bg-white border border-slate-100 text-slate-600 hover:border-slate-200 shadow-sm transition-all">
+                  <ShoppingCart className="w-5 h-5" />
+                  {totalItems > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-[#FF7300] text-white text-[10px] font-black flex items-center justify-center border-2 border-slate-50 shadow-sm">
+                      {totalItems}
+                    </span>
+                  )}
+                </Link>
               )}
             </div>
+          </div>
 
-            {/* View Toggle */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setView("products")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${view === "products" ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
-                    }`}
-                >
-                  Products
-                </button>
-                <button
-                  onClick={() => setView("shops")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${view === "shops" ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
-                    }`}
-                >
-                  Shops
-                </button>
+          {/* Filters */}
+          {showFilters && (
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="mb-6 space-y-4">
+              <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${selectedCategory === cat
+                      ? "bg-accent text-accent-foreground"
+                      : "bg-secondary text-muted-foreground hover:text-foreground"
+                      }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
               </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground bg-secondary"
-                >
-                  <SlidersHorizontal className="w-4 h-4" /> Filters
-                </button>
-                {user && (
-                  <Link to="/cart" className="relative flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-accent text-accent-foreground">
-                    <ShoppingCart className="w-4 h-4" />
-                    {totalItems > 0 && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
-                        {totalItems}
-                      </span>
-                    )}
-                  </Link>
-                )}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Sort:</span>
+                {([
+                  ["newest", "Newest"],
+                  ["price_low", "Price: Low to High"],
+                  ["price_high", "Price: High to Low"],
+                ] as const).map(([key, label]) => (
+                  <button
+                    key={key}
+                    onClick={() => setSortBy(key)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${sortBy === key ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground"
+                      }`}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
-            </div>
-
-            {/* Filters */}
-            {showFilters && (
-              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="mb-6 space-y-4">
-                <div className="flex flex-wrap gap-2">
-                  {CATEGORIES.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${selectedCategory === cat
-                        ? "bg-accent text-accent-foreground"
-                        : "bg-secondary text-muted-foreground hover:text-foreground"
-                        }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Sort:</span>
-                  {([
-                    ["newest", "Newest"],
-                    ["price_low", "Price: Low to High"],
-                    ["price_high", "Price: High to Low"],
-                  ] as const).map(([key, label]) => (
-                    <button
-                      key={key}
-                      onClick={() => setSortBy(key)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${sortBy === key ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground"
-                        }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </motion.div>
+            </motion.div>
+          )}
 
           {/* Recently Viewed - Horizontal Scroll */}
           {!loading && view === "products" && recentlyViewed.length > 0 && !searchQuery && selectedCategory === "All" && !shopFilter && (

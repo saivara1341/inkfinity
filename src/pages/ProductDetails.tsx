@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     Star, Truck, ShieldCheck, Store, ChevronRight, ShoppingCart,
     Heart, Share2, Info, CheckCircle2, MessageSquare, AlertCircle,
-    ArrowLeft, Copy, Zap, Flame, Award, MapPin
+    ArrowLeft, Copy, Zap, Flame, Award, MapPin, Package, Minus, Plus
 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,8 @@ import Footer from "@/components/Footer";
 import ShareControl from "@/components/ShareControl";
 import { ReviewSystem } from "@/components/ReviewSystem";
 import { getSubcategoryById } from "@/data/printingProducts";
+import { calculateShopScore } from "@/utils/algorithms";
+import { PerformanceAnalytics } from "@/utils/PerformanceAnalytics";
 
 
 interface Product {
@@ -50,6 +52,7 @@ const ProductDetails = () => {
     const [loading, setLoading] = useState(true);
     const [activeImage, setActiveImage] = useState(0);
     const [selectedTab, setSelectedTab] = useState<"details" | "reviews" | "seller">("details");
+    const [quantity, setQuantity] = useState(1);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -59,6 +62,9 @@ const ProductDetails = () => {
             const recentlyViewed = JSON.parse(localStorage.getItem("recentlyViewed") || "[]");
             const updated = [productId, ...recentlyViewed.filter((id: string) => id !== productId)].slice(0, 10);
             localStorage.setItem("recentlyViewed", JSON.stringify(updated));
+            
+            // Track product view performance
+            PerformanceAnalytics.trackMount(`ProductDetails-${productId}`);
         }
     }, [productId]);
 
@@ -73,6 +79,10 @@ const ProductDetails = () => {
         `)
                 .eq("id", productId)
                 .single();
+            
+            if (data?.min_quantity) {
+                setQuantity(data.min_quantity);
+            }
 
             if (error) {
                 // Check static data as fallback
@@ -109,7 +119,7 @@ const ProductDetails = () => {
             setProduct(data as unknown as Product);
         } catch (error) {
             console.error("Error fetching product:", error);
-            // One last check for static data if it wasn't caught in the error block
+            // One last check for static data
             const staticProduct = getSubcategoryById(productId!);
             if (staticProduct) {
                 setProduct({
@@ -120,7 +130,7 @@ const ProductDetails = () => {
                     base_price: parseInt(staticProduct.startingPrice.replace(/[^0-9]/g, "")) || 0,
                     min_quantity: staticProduct.minQty,
                     images: staticProduct.image ? [staticProduct.image] : null,
-                    turnaround_days: parseInt(staticProduct.turnaroundDays.split('-')[0]) || 3,
+                    turnaround_days: 3,
                     shop_id: "static-shop",
                     specifications: {
                         sizes: staticProduct.sizes,
@@ -138,7 +148,7 @@ const ProductDetails = () => {
                 } as any);
             } else {
                 toast.error("Product not found");
-                navigate("/catalog");
+                navigate("/store");
             }
         } finally {
             setLoading(false);
@@ -155,7 +165,7 @@ const ProductDetails = () => {
         if (!product) return;
 
         try {
-            await addToCart(product.id, product.shop_id, product.min_quantity);
+            await addToCart(product.id, product.shop_id, quantity);
             toast.success("Added to cart! Proceeding to customize...");
             navigate(`/customize/${product.category.toLowerCase().replace(/\s+/g, '-') || 'generic'}?productId=${product.id}`);
         } catch (error) {
@@ -187,159 +197,168 @@ const ProductDetails = () => {
             <main className="pt-24 pb-20 container mx-auto px-4">
                 {/* Breadcrumbs */}
                 <nav className="flex items-center gap-2 text-xs text-muted-foreground mb-8 overflow-x-auto whitespace-nowrap pb-2">
-                    <Link to="/" className="hover:text-accent">Home</Link>
+                    <Link to="/" className="hover:text-accent font-bold">Home</Link>
                     <ChevronRight className="w-3 h-3" />
-                    <Link to="/store" className="hover:text-accent">Store</Link>
+                    <Link to="/store" className="hover:text-accent font-bold">Store</Link>
                     <ChevronRight className="w-3 h-3" />
-                    <Link to={`/store?category=${product.category}`} className="hover:text-accent">{product.category}</Link>
+                    <Link to={`/store?category=${product.category}`} className="hover:text-accent font-bold">{product.category}</Link>
                     <ChevronRight className="w-3 h-3" />
-                    <span className="text-foreground font-medium truncate">{product.name}</span>
+                    <span className="text-foreground font-black truncate">{product.name}</span>
                 </nav>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-
+                <div className="lg:col-span-12 grid grid-cols-1 lg:grid-cols-12 gap-10">
                     {/* Left Column: Image Gallery */}
-                    <div className="lg:col-span-7 space-y-4">
-                        <div className="relative aspect-square bg-card border border-border rounded-2xl overflow-hidden group shadow-card">
-                            <motion.img
-                                key={activeImage}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                src={productImages[activeImage]}
-                                alt={product.name}
-                                className="w-full h-full object-contain p-8 transition-transform duration-700 group-hover:scale-110"
-                            />
-                            <div className="absolute top-4 right-4 flex flex-col gap-2">
-                                <Button size="icon" variant="secondary" className="rounded-full shadow-lg">
-                                    <Heart className="w-5 h-5 text-muted-foreground" />
-                                </Button>
-                                <ShareControl
-                                    title={product.name}
-                                    text={`Check out ${product.name} on PrintFlow`}
-                                    url={window.location.href}
-                                    variant="secondary"
-                                    size="icon"
+                    <div className="lg:col-span-7 space-y-6">
+                        <div className="relative group">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="aspect-[4/3] bg-slate-50 rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-2xl shadow-black/5"
+                            >
+                                <img
+                                    src={productImages[activeImage]}
+                                    alt={product.name}
+                                    className="w-full h-full object-contain p-8 mix-blend-multiply"
                                 />
-                            </div>
-
-                            {/* Trust Badge Overlay */}
-                            <div className="absolute bottom-6 left-6">
-                                <Badge className="bg-background/80 backdrop-blur-md text-foreground border-border py-1.5 px-3 flex items-center gap-2">
-                                    <ShieldCheck className="w-4 h-4 text-success" />
-                                    <span className="text-[10px] font-bold uppercase tracking-wider">Quality Inspected</span>
-                                </Badge>
+                            </motion.div>
+                            
+                            {/* Premium Floating Badge */}
+                            <div className="absolute top-6 left-6 flex flex-col gap-2">
+                                <span className="px-4 py-2 bg-slate-900 text-white text-[10px] font-black rounded-full uppercase tracking-widest shadow-xl flex items-center gap-2">
+                                   <Flame className="w-3 h-3 text-[#FF7300] fill-[#FF7300]" /> Best Seller
+                                </span>
+                                {product.shop.is_verified && (
+                                    <span className="px-4 py-2 bg-white/80 backdrop-blur-md text-[#00B8D9] text-[10px] font-black rounded-full uppercase tracking-widest shadow-lg border border-white/50 flex items-center gap-2">
+                                       <Award className="w-3.5 h-3.5" /> Verified Shop
+                                    </span>
+                                )}
                             </div>
                         </div>
 
-                        {/* Thumbnails */}
+                        {/* Thumbnail Strip */}
                         {productImages.length > 1 && (
-                            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                                {productImages.map((img, idx) => (
+                            <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+                                {productImages.map((img, i) => (
                                     <button
-                                        key={idx}
-                                        onClick={() => setActiveImage(idx)}
-                                        className={`relative w-20 h-20 rounded-lg border-2 overflow-hidden shrink-0 transition-all ${activeImage === idx ? "border-accent ring-2 ring-accent/20" : "border-border hover:border-accent/40"
+                                        key={i}
+                                        onClick={() => setActiveImage(i)}
+                                        className={`w-24 h-24 rounded-3xl overflow-hidden border-2 transition-all shrink-0 ${activeImage === i ? "border-[#FF7300] scale-105 shadow-lg" : "border-slate-100 hover:border-slate-300 opacity-60"
                                             }`}
                                     >
-                                        <img src={img} alt="" className="w-full h-full object-cover" />
+                                        <img src={img} className="w-full h-full object-cover" alt="" />
                                     </button>
                                 ))}
                             </div>
                         )}
                     </div>
 
-                    {/* Right Column: Information & Actions */}
+                    {/* Right: Info */}
                     <div className="lg:col-span-5 space-y-8">
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="text-accent border-accent/30 bg-accent/5">
-                                    #{product.category}
-                                </Badge>
+                        <div>
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="text-[10px] font-black text-[#FF7300] uppercase tracking-widest px-2.5 py-1 bg-[#FF7300]/10 rounded-lg">
+                                    {product.category}
+                                </span>
                             </div>
-
-                            <h1 className="font-display text-3xl md:text-4xl font-bold leading-tight decoration-accent/30 group">
-                                {product.name}
-                            </h1>
-
-                            <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-1">
-                                    {[1, 2, 3, 4, 5].map((s) => (
-                                        <Star
-                                            key={s}
-                                            className={`w-4 h-4 ${s <= (product.shop.rating || 5) ? "text-warning fill-warning" : "text-muted-foreground"}`}
-                                        />
-                                    ))}
-                                    <span className="text-sm font-bold ml-1">{product.shop.rating || "5.0"}</span>
+                            <h1 className="text-4xl font-black text-slate-900 leading-tight mb-4">{product.name}</h1>
+                            
+                            <div className="flex items-center gap-6 text-sm">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-0.5 bg-green-500 text-white px-2 py-0.5 rounded font-black text-xs">
+                                        {product.shop.rating} <Star className="w-3 h-3 fill-current" />
+                                    </div>
+                                    <span className="text-slate-400 font-bold underline cursor-pointer">150+ Reviews</span>
                                 </div>
-                                <span className="text-muted-foreground text-sm">|</span>
-                                <button
-                                    className="text-sm text-accent font-medium hover:underline flex items-center gap-1"
-                                    onClick={() => setSelectedTab("reviews")}
-                                >
-                                    Browse Customer Feedback
-                                </button>
-                            </div>
-
-                            <div className="py-6 border-y border-border flex flex-col gap-1">
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-4xl font-display font-black text-foreground">₹{product.base_price}</span>
-                                    <span className="text-muted-foreground line-through text-sm">₹{Math.round(product.base_price * 1.3)}</span>
-                                    <Badge className="bg-success text-white font-bold ml-2">30% OFF</Badge>
+                                <div className="h-4 w-[1px] bg-slate-200" />
+                                <div className="flex items-center gap-2 text-slate-500 font-bold">
+                                    <Truck className="w-4 h-4" /> 3-4 Day Delivery
                                 </div>
-                                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Price inclusive of all taxes</p>
                             </div>
                         </div>
 
-                        {/* Selection/Order Box */}
-                        <div className="bg-card rounded-2xl border border-border p-6 shadow-elevated space-y-6">
-                            <div className="space-y-4">
-                                <div className="flex items-start gap-3">
-                                    <Truck className="w-5 h-5 text-accent shrink-0 mt-0.5" />
-                                    <div>
-                                        <p className="text-sm font-bold">Standard Delivery</p>
-                                        <p className="text-xs text-muted-foreground">Arrives in {product.turnaround_days || 3}-5 Business Days</p>
+                        <div className="p-8 bg-slate-900 rounded-[2.5rem] text-white shadow-2xl shadow-slate-900/40 relative overflow-hidden group">
+                           <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                               <Package className="w-32 h-32" />
+                           </div>
+                           <div className="relative z-10">
+                                <p className="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Price Breakdown</p>
+                                <div className="flex items-baseline gap-2 mb-2">
+                                    <span className="text-5xl font-black">₹{product.base_price}</span>
+                                    <span className="text-slate-400 font-bold text-sm">/ unit</span>
+                                </div>
+                                <p className="text-slate-500 text-xs font-bold mb-6 italic">* GST extra as applicable</p>
+                                
+                                <div className="flex items-center justify-between bg-white/10 p-4 rounded-2xl mb-6 border border-white/10">
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-[#FF7300]">Select Quantity</p>
+                                        <p className="text-[10px] text-white/40 font-bold uppercase truncate">Min: {product.min_quantity} Units</p>
+                                    </div>
+                                    <div className="flex items-center gap-3 bg-white/5 p-1 rounded-xl border border-white/10">
+                                        <button
+                                            onClick={() => setQuantity(Math.max(product.min_quantity, quantity - 1))}
+                                            className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-white/10 transition-all disabled:opacity-30"
+                                            disabled={quantity <= product.min_quantity}
+                                        >
+                                            <Minus className="w-4 h-4 text-white" />
+                                        </button>
+                                        <input 
+                                            type="number" 
+                                            value={quantity}
+                                            onChange={(e) => {
+                                                const val = parseInt(e.target.value);
+                                                if (!isNaN(val)) setQuantity(val);
+                                            }}
+                                            onBlur={(e) => {
+                                                const val = parseInt(e.target.value);
+                                                if (isNaN(val) || val < product.min_quantity) setQuantity(product.min_quantity);
+                                            }}
+                                            className="w-16 text-center font-black text-white text-sm bg-transparent border-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                        />
+                                        <button
+                                            onClick={() => setQuantity(quantity + 1)}
+                                            className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-white/10 transition-all"
+                                        >
+                                            <Plus className="w-4 h-4 text-white" />
+                                        </button>
                                     </div>
                                 </div>
 
-                                <div className="flex items-start gap-3">
-                                    <Store className="w-5 h-5 text-accent shrink-0 mt-0.5" />
-                                    <div>
-                                        <p className="text-sm font-bold">Sold by {product.shop.name}</p>
-                                        <div className="flex items-center gap-1.5 mt-0.5">
-                                            <p className="text-xs text-muted-foreground">{product.shop.city}</p>
-                                            {product.shop.is_verified && (
-                                                <div className="flex items-center gap-1 text-[10px] font-bold text-success uppercase">
-                                                    <CheckCircle2 className="w-3 h-3" /> Verified Seller
-                                                </div>
-                                            )}
-                                        </div>
+                                <div className="space-y-4">
+                                    <Button
+                                        size="lg"
+                                        className="w-full h-16 bg-[#FF7300] hover:bg-[#FF8500] text-white rounded-2xl text-lg font-black shadow-xl shadow-[#FF7300]/20 gap-3 group/btn hover:-translate-y-1 transition-all"
+                                        onClick={handleAddToCart}
+                                    >
+                                        <Zap className="w-5 h-5 fill-current group-hover/btn:scale-125 transition-transform" />
+                                        Customize Now
+                                    </Button>
+                                    <p className="text-center text-[10px] text-slate-400 font-black uppercase tracking-widest">
+                                        Secure Marketplace Purchase
+                                    </p>
+                                </div>
+                           </div>
+                        </div>
+
+                        {/* Shop Card - Swiggy Style */}
+                        <div 
+                            className="p-6 bg-white border border-slate-100 rounded-[2rem] shadow-xl shadow-black/[0.02] flex items-center justify-between group cursor-pointer hover:border-slate-200 transition-all"
+                            onClick={() => navigate(`/shop/${product.shop_id}`)}
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-[#FF7300]/5 group-hover:border-[#FF7300]/20 transition-colors">
+                                    <Store className="w-7 h-7 text-slate-400 group-hover:text-[#FF7300]" />
+                                </div>
+                                <div>
+                                    <h4 className="font-black text-slate-900 flex items-center gap-1.5">
+                                        {product.shop.name}
+                                        {product.shop.is_verified && <CheckCircle2 className="w-3.5 h-3.5 text-[#00B8D9] fill-[#00B8D9]/10" />}
+                                    </h4>
+                                    <div className="flex items-center gap-2 text-xs text-slate-400 font-bold">
+                                        <MapPin className="w-3 h-3" /> {product.shop.city}
                                     </div>
                                 </div>
                             </div>
-
-                            <div className="space-y-3">
-                                <Button
-                                    variant="coral"
-                                    size="lg"
-                                    className="w-full text-base font-bold h-14 shadow-lg shadow-accent/20 gap-3"
-                                    onClick={handleAddToCart}
-                                >
-                                    <Award className="w-5 h-5" /> Customize & Order Now
-                                </Button>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <Button variant="outline" size="lg" className="gap-2 h-12">
-                                        <Info className="w-4 h-4" /> Get Quote
-                                    </Button>
-                                    <Button variant="outline" size="lg" className="gap-2 h-12">
-                                        <MessageSquare className="w-4 h-4" /> Contact Shop
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-center gap-4 py-2 opacity-60">
-                                <ShieldCheck className="w-4 h-4" />
-                                <span className="text-[10px] font-bold uppercase tracking-widest">Escrow Protected Payments</span>
-                            </div>
+                            <ChevronRight className="w-6 h-6 text-slate-200 group-hover:text-slate-400 group-hover:translate-x-1 transition-all" />
                         </div>
                     </div>
                 </div>
@@ -389,16 +408,16 @@ const ProductDetails = () => {
                                                 { label: "Paper/Finish", value: "Customizable in designer" },
                                             ].map((spec) => (
                                                 <div key={spec.label} className="flex justify-between py-2 border-b border-border/50 text-sm">
-                                                    <span className="text-muted-foreground">{spec.label}</span>
-                                                    <span className="font-semibold">{spec.value}</span>
+                                                    <span className="text-muted-foreground font-bold">{spec.label}</span>
+                                                    <span className="font-black">{spec.value}</span>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
 
-                                    <div className="bg-secondary/20 rounded-xl p-6 border border-border">
-                                        <h3 className="font-display font-bold text-lg mb-4">Key Features</h3>
-                                        <ul className="space-y-3">
+                                    <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100">
+                                        <h3 className="font-black text-slate-900 text-lg mb-6">Key Highlights</h3>
+                                        <ul className="space-y-4">
                                             {[
                                                 "Premium quality materials",
                                                 "High-resolution professional printing",
@@ -406,8 +425,8 @@ const ProductDetails = () => {
                                                 "Fully customizable online",
                                                 "Bulk order discounts available"
                                             ].map((item, i) => (
-                                                <li key={i} className="flex items-center gap-3 text-sm">
-                                                    <CheckCircle2 className="w-4 h-4 text-success" />
+                                                <li key={i} className="flex items-center gap-3 text-sm font-bold text-slate-600">
+                                                    <CheckCircle2 className="w-4 h-4 text-green-500" />
                                                     {item}
                                                 </li>
                                             ))}
@@ -426,26 +445,26 @@ const ProductDetails = () => {
                         {selectedTab === "seller" && (
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-3 gap-10">
                                 <div className="md:col-span-1 space-y-6">
-                                    <div className="flex flex-col items-center text-center space-y-4 p-8 bg-card rounded-2xl border border-border shadow-card">
-                                        <div className="w-24 h-24 rounded-2xl bg-accent/5 flex items-center justify-center border border-accent/10">
-                                            <Store className="w-12 h-12 text-accent" />
+                                    <div className="flex flex-col items-center text-center space-y-4 p-8 bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-black/[0.02]">
+                                        <div className="w-24 h-24 rounded-3xl bg-slate-50 flex items-center justify-center border border-slate-100">
+                                            <Store className="w-12 h-12 text-slate-300" />
                                         </div>
                                         <div>
-                                            <h3 className="text-xl font-bold text-foreground">{product.shop.name}</h3>
-                                            <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
+                                            <h3 className="text-xl font-black text-slate-900">{product.shop.name}</h3>
+                                            <p className="text-sm text-slate-400 font-bold flex items-center justify-center gap-1">
                                                 <MapPin className="w-3.5 h-3.5" /> {product.shop.city}
                                             </p>
                                         </div>
                                         <div className="flex flex-col items-center gap-1">
                                             <div className="flex items-center gap-1">
-                                                <Star className="w-5 h-5 text-warning fill-warning" />
-                                                <span className="text-xl font-black">{product.shop.rating || "5.0"}</span>
+                                                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                                                <span className="text-2xl font-black text-slate-900">{product.shop.rating || "5.0"}</span>
                                             </div>
-                                            <p className="text-[10px] font-bold text-muted-foreground uppercase">Seller Rating</p>
+                                            <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Store Rating</p>
                                         </div>
-                                        <Button variant="outline" className="w-full group" asChild>
-                                            <Link to={`/store?shop=${product.shop.id}`}>
-                                                Visit Shop Storefront <ChevronRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                                        <Button variant="outline" className="w-full h-12 rounded-xl font-black border-slate-200 text-slate-600 group" asChild>
+                                            <Link to={`/shop/${product.shop.id}`}>
+                                                Shop Profile <ChevronRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
                                             </Link>
                                         </Button>
                                     </div>
@@ -454,31 +473,29 @@ const ProductDetails = () => {
                                 <div className="md:col-span-2 space-y-8">
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                                         {[
-                                            { label: "Orders Completed", value: "2.4k+", icon: CheckCircle2 },
-                                            { label: "Positive Feedback", value: "98%", icon: Flame },
-                                            { label: "Service Years", value: "4 Years", icon: Award },
+                                            { label: "Orders Done", value: "2.4k+", icon: CheckCircle2 },
+                                            { label: "Success Rate", value: "98%", icon: Flame },
+                                            { label: "Heritage", value: "4 Years", icon: Award },
                                         ].map((stat) => (
-                                            <div key={stat.label} className="p-4 bg-secondary/10 rounded-xl border border-border text-center">
-                                                <stat.icon className="w-5 h-5 text-accent mx-auto mb-2" />
-                                                <p className="text-xl font-bold">{stat.value}</p>
-                                                <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">{stat.label}</p>
+                                            <div key={stat.label} className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 text-center group hover:bg-white hover:shadow-xl hover:shadow-black/[0.02] transition-all">
+                                                <stat.icon className="w-6 h-6 text-[#FF7300] mx-auto mb-3" />
+                                                <p className="text-2xl font-black text-slate-900">{stat.value}</p>
+                                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{stat.label}</p>
                                             </div>
                                         ))}
                                     </div>
 
                                     <div className="space-y-4">
-                                        <h4 className="font-bold text-lg flex items-center gap-2">
-                                            About the Seller
-                                        </h4>
-                                        <p className="text-muted-foreground leading-relaxed">
+                                        <h4 className="font-black text-slate-900 text-lg">About the Store</h4>
+                                        <p className="text-slate-500 font-bold leading-relaxed">
                                             {product.shop.name} is a verified premium printing partner in {product.shop.city}. They specialize in high-end business stationary and large format prints since 2020.
                                         </p>
-                                        <div className="flex items-center gap-6 pt-4">
-                                            <div className="flex items-center gap-2 text-xs font-bold text-success uppercase">
-                                                <ShieldCheck className="w-4 h-4" /> Secure Fulfillment
+                                        <div className="flex flex-wrap items-center gap-6 pt-4">
+                                            <div className="flex items-center gap-2 text-[10px] font-black text-green-500 uppercase tracking-widest">
+                                                <ShieldCheck className="w-4 h-4" /> Qualifed Partner
                                             </div>
-                                            <div className="flex items-center gap-2 text-xs font-bold text-accent uppercase">
-                                                <Zap className="w-4 h-4" /> Priority Production
+                                            <div className="flex items-center gap-2 text-[10px] font-black text-[#FF7300] uppercase tracking-widest">
+                                                <Zap className="w-4 h-4" /> System Optimized
                                             </div>
                                         </div>
                                     </div>
@@ -489,19 +506,21 @@ const ProductDetails = () => {
                 </section>
             </main>
 
-            {/* Sticky Mobile Bar */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-xl border-t border-border lg:hidden z-50 flex gap-4">
-                <div className="flex-1">
-                    <p className="text-lg font-black text-foreground">₹{product.base_price}</p>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Inc. GST</p>
+            {/* Sticky Mobile Bar - Swiggy Style */}
+            <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 backdrop-blur-2xl border-t border-slate-100 lg:hidden z-50 flex items-center justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+                <div>
+                    <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-black text-slate-900">₹{product.base_price}</span>
+                        <span className="text-slate-400 text-[10px] font-black">/ unit</span>
+                    </div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tax Included</p>
                 </div>
                 <Button
-                    variant="coral"
                     size="lg"
-                    className="flex-[2] font-bold gap-2 shadow-lg shadow-accent/20"
+                    className="h-14 px-8 bg-[#FF7300] hover:bg-[#FF8500] text-white rounded-2xl font-black shadow-xl shadow-[#FF7300]/20 flex items-center gap-2"
                     onClick={handleAddToCart}
                 >
-                    Customize & Order <ChevronRight className="w-4 h-4" />
+                    Customize <Zap className="w-4 h-4 fill-current" />
                 </Button>
             </div>
 

@@ -40,6 +40,7 @@ const SelectRole = lazy(() => import("./pages/SelectRole"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const CanvaAuthCallback = lazy(() => import("./pages/CanvaAuthCallback"));
 const ProductDetails = lazy(() => import("./pages/ProductDetails"));
+const ShopMenu = lazy(() => import("./pages/ShopMenu"));
 
 
 const queryClient = new QueryClient();
@@ -205,7 +206,8 @@ const App = () => {
                         <Routes>
                           {/* Public routes */}
                           <Route path="/" element={<Index />} />
-                          <Route path="/store" element={<Storefront />} />
+                          <Route path="/shop/:shopId" element={<ShopMenu />} />
+                <Route path="/store" element={<Storefront />} />
                           <Route path="/catalog" element={<Catalog />} />
                           <Route path="/catalog/:category" element={<Catalog />} />
                           <Route path="/product/:productId" element={<ProductDetails />} />

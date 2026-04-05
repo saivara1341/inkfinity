@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { OrderMessages } from "@/components/OrderMessages";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ReviewSystem } from "@/components/ReviewSystem";
+import LiveTracker from "@/components/orders/LiveTracker";
 
 export const OrderHistory = () => {
   const { user } = useAuth();
@@ -109,7 +110,7 @@ export const OrderHistory = () => {
                         </div>
                         <div>
                           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Order #{order.order_number || order.id.slice(0, 8)}</p>
-                          <p className="text-sm font-bold text-foreground">Plated on {new Date(order.created_at).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                          <p className="text-sm font-bold text-foreground">Placed on {new Date(order.created_at).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                         </div>
                       </div>
 
@@ -123,6 +124,13 @@ export const OrderHistory = () => {
                         </Badge>
                       </div>
                     </div>
+
+                    {/* LIVE TRACKER INTEGRATION */}
+                    {order.status !== 'delivered' && order.status !== 'cancelled' && (
+                      <div className="mb-8">
+                        <LiveTracker currentStatus={order.status} />
+                      </div>
+                    )}
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                       <div className="md:col-span-1">

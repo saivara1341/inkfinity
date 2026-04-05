@@ -19,6 +19,7 @@ import ProductCardV2 from "@/components/catalog/ProductCardV2";
 import MiniCart from "@/components/catalog/MiniCart";
 import { QuickOrderBot } from "@/components/QuickOrderBot";
 import * as LucideIcons from "lucide-react";
+import { calculateShopScore } from "@/utils/algorithms";
 
 const Catalog = () => {
   const { category } = useParams();
@@ -45,7 +46,11 @@ const Catalog = () => {
       } else {
         const query = supabase.from("products").select("*").eq("is_active", true);
         if (activeCategory !== "all") query.eq("category", activeCategory);
-        const { data, error } = await query;
+
+        const { data, error } = await query.select(`
+          *,
+          shop:shops(id, name, city, rating, is_verified)
+        `);
         if (error) throw error;
         dbProducts = data || [];
       }
@@ -61,8 +66,10 @@ const Catalog = () => {
         sizes: (p.specifications as any)?.sizes || [],
         papers: (p.specifications as any)?.papers || [],
         minQty: p.min_quantity,
-        popular: (p as any).popular,
-        image: p.images && p.images.length > 0 ? p.images[0] : null
+        popular: (p as any).popular || (p.shop ? (p.shop as any).is_verified : false),
+        image: p.images && p.images.length > 0 ? p.images[0] : null,
+        pieScore: p.shop ? calculateShopScore(p.shop as any) : 0,
+        city: p.shop ? (p.shop as any).city : null
       }));
 
       const staticProducts = getAllSubcategories();
@@ -77,7 +84,22 @@ const Catalog = () => {
         return matchCat && matchSearch;
       });
 
-      return [...mappedDb, ...filteredStatic.filter(sp => !mappedDb.find(dp => dp.name === sp.name))];
+      const combined = [...mappedDb, ...filteredStatic.filter(sp => !mappedDb.find(dp => dp.name === sp.name))];
+      
+      // PIE Advanced Sorting: City Match > Quality Score > Popularity
+      return combined.sort((a, b) => {
+        const scoreA = (a as any).pieScore || 0;
+        const scoreB = (b as any).pieScore || 0;
+        
+        // City boost
+        if (city) {
+          const cityMatchA = (a as any).city?.toLowerCase() === city.toLowerCase() ? 10 : 0;
+          const cityMatchB = (b as any).city?.toLowerCase() === city.toLowerCase() ? 10 : 0;
+          if (cityMatchA !== cityMatchB) return cityMatchB - cityMatchA;
+        }
+
+        return scoreB - scoreA;
+      });
     }
   });
 

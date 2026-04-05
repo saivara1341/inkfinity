@@ -3,6 +3,7 @@ import { ShoppingCart, IndianRupee, Clock, CheckCircle2, Eye, Download } from "l
 import { Button } from "@/components/ui/button";
 import type { Tables } from "@/integrations/supabase/types";
 import { format } from "date-fns";
+import { calculateNetEarnings } from "@/utils/algorithms";
 
 type Order = Tables<"orders">;
 
@@ -40,13 +41,17 @@ export const ShopOverview = ({ orders, onViewOrders }: Props) => {
   const todayOrders = orders.filter((o) => new Date(o.created_at) >= today);
   const todayRevenue = todayOrders.reduce((sum, o) => sum + Number(o.grand_total), 0);
   const pendingOrders = orders.filter((o) => !["delivered", "cancelled"].includes(o.status));
-  const completedOrders = orders.filter((o) => o.status === "delivered");
+  const totalGross = orders.reduce((sum, o) => sum + Number(o.grand_total), 0);
+  
+  // High-Precision Economic Calculations
+  const netStats = calculateNetEarnings(totalGross);
+  const todayNet = calculateNetEarnings(todayRevenue);
 
   const stats = [
-    { label: "Today's Orders", value: todayOrders.length.toString(), icon: ShoppingCart, color: "text-accent" },
-    { label: "Revenue Today", value: `₹${todayRevenue.toLocaleString("en-IN")}`, icon: IndianRupee, color: "text-success" },
-    { label: "Pending Orders", value: pendingOrders.length.toString(), icon: Clock, color: "text-warning" },
-    { label: "Completed", value: completedOrders.length.toString(), icon: CheckCircle2, color: "text-success" },
+    { label: "Today's Gross", value: `₹${todayRevenue.toLocaleString("en-IN")}`, icon: ShoppingCart, color: "text-accent" },
+    { label: "Today's Net", value: `₹${todayNet.net.toLocaleString("en-IN")}`, icon: IndianRupee, color: "text-success" },
+    { label: "Platform Fee", value: `₹${(netStats.commission + netStats.taxOnCommission).toLocaleString("en-IN")}`, icon: ShieldCheck, color: "text-[#FF7300]" },
+    { label: "Total Net Payout", value: `₹${netStats.net.toLocaleString("en-IN")}`, icon: IndianRupee, color: "text-success" },
   ];
 
   return (

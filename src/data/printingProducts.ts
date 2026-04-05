@@ -394,7 +394,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "standard-visiting-card", name: "Standard Visiting Card", description: "Classic business card, most popular in India",
-        image: "/inkfinity/assets/products/premium_visiting_cards_mockup_1775247422194.png",
+        image: "/inkfinity/assets/products/standard-visiting-card.png",
         startingPrice: "₹249", unit: "per 100 cards", minQty: 100, popular: true,
         sizes: visitingCardSizes.filter(s => ["vc-standard", "vc-indian"].includes(s.id)),
         papers: visitingCardPapers.slice(0, 4), finishes: visitingCardFinishes.slice(0, 5),
@@ -408,7 +408,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "premium-visiting-card", name: "Premium Visiting Card", description: "Luxury cards with special finishes",
-        image: "/inkfinity/assets/products/gold_foil_visiting_card_mockup_1775247458938.png",
+        image: "/inkfinity/assets/products/premium-visiting-card.png",
         startingPrice: "₹5", unit: "per card", minQty: 50, popular: true,
         sizes: visitingCardSizes, papers: visitingCardPapers, finishes: visitingCardFinishes,
         quantityTiers: [
@@ -419,7 +419,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "transparent-visiting-card", name: "Transparent PVC Card", description: "Modern see-through plastic cards",
-        image: "/inkfinity/assets/products/glossy_finish_visiting_card_mockup_1775247440849.png",
+        image: "/inkfinity/assets/products/transparent-pvc-card.png",
         startingPrice: "₹10", unit: "per card", minQty: 50,
         sizes: [visitingCardSizes[0]], papers: [visitingCardPapers[5]], finishes: [visitingCardFinishes[0]],
         quantityTiers: [
@@ -454,7 +454,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "door-hanger", name: "Door Hanger", description: "Die-cut flyers for door handles",
-        image: "https://images.unsplash.com/photo-1620121692029-d088224efc74?auto=format&fit=crop&w=400&q=80",
+        image: "/inkfinity/assets/products/flyer_mockup_canva_style_1775247481252.png",
         startingPrice: "₹5", unit: "per piece", minQty: 100,
         sizes: [{ id: "dh-std", label: "Standard", dimensions: "89 × 216 mm", widthMM: 89, heightMM: 216, widthInch: "3.5", heightInch: "8.5", basePrice: 5 }],
         papers: flyerPapers.slice(1, 4), finishes: flyerFinishes,
@@ -486,7 +486,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "trifold-brochure", name: "Tri-Fold Brochure", description: "6-panel folded brochure, most popular",
-        image: "https://images.unsplash.com/photo-1517487881594-2787fef5ebf7?auto=format&fit=crop&w=400&q=80",
+        image: "/inkfinity/assets/products/trifold-brochure.png",
         startingPrice: "₹7", unit: "per piece", minQty: 50, popular: true,
         sizes: pamphletSizes.filter(s => s.id.includes("trifold") || s.id.includes("z-fold")),
         papers: flyerPapers.slice(1, 6), finishes: flyerFinishes,
@@ -517,7 +517,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "photo-poster", name: "Photo Poster", description: "High-quality photo prints",
-        image: "https://images.unsplash.com/photo-1562654501-a0ccc0af3fb1?w=800&q=80",
+        image: "/inkfinity/assets/products/photo-poster.png",
         startingPrice: "₹99", unit: "each", minQty: 1,
         sizes: posterSizes.slice(0, 5), papers: posterPapers.filter(p => p.id.includes("photo") || p.id === "canvas"),
         finishes: [{ id: "none", label: "No Finish", description: "Standard", priceAdd: 0 }, { id: "matte-lam", label: "Matte Lamination", description: "Anti-glare", priceAdd: 20 }],
@@ -579,7 +579,7 @@ export const productCategories: ProductCategory[] = [
       },
       {
         id: "sheet-sticker", name: "Sheet Stickers", description: "A4 sheets with multiple stickers",
-        image: "https://images.unsplash.com/photo-1496096265110-f83ad7f96608?w=800&q=80",
+        image: "/inkfinity/assets/products/sheet-stickers.png",
         startingPrice: "₹15", unit: "per sheet", minQty: 10,
         sizes: [stickerSizes[3]], papers: stickerPapers.slice(0, 4), finishes: commonFinishes,
         quantityTiers: [
@@ -609,7 +609,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "pvc-id-card", name: "PVC ID Card", description: "Standard plastic identity cards",
-        image: "https://images.unsplash.com/photo-1581413809628-98e3b3a5fe6f?w=400&q=80",
+        image: "/inkfinity/assets/products/id_card_branded.png",
         startingPrice: "₹25", unit: "per card", minQty: 1, popular: true,
         sizes: idCardSizes, papers: idCardPapers, finishes: [{ id: "none", label: "No Finish", description: "Standard", priceAdd: 0 }, { id: "matte", label: "Matte Surface", description: "Anti-glare", priceAdd: 5 }],
         quantityTiers: [
@@ -823,6 +823,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "tshirt-print", name: "T-Shirt Printing", description: "Custom printed t-shirts",
+        image: "/inkfinity/assets/products/tshirt_branded.png",
         startingPrice: "₹150", unit: "per piece", minQty: 1, popular: true,
         sizes: merchandiseSizes,
         papers: [
@@ -885,7 +886,7 @@ export const productCategories: ProductCategory[] = [
     subcategories: [
       {
         id: "restaurant-menu", name: "Restaurant Menu", description: "Laminated or synthetic menu cards",
-        image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80",
+        image: "/inkfinity/assets/products/pamphlet_branded.png",
         startingPrice: "₹45", unit: "per menu", minQty: 10, popular: true,
         sizes: menuCardSizes, papers: menuPapers, finishes: commonFinishes,
         quantityTiers: [

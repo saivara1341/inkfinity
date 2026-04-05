@@ -6,24 +6,75 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
-const mockCustomers = [
-  { id: 1, name: "Arjun Mehta", email: "arjun.m@example.com", phone: "+91 90000 12345", totalOrders: 12, totalSpent: 15400, lastOrder: "2 days ago", rank: "Platinum", avatar: "AM" },
-  { id: 2, name: "Priya Sharma", email: "priya.s@design.in", phone: "+91 87654 32109", totalOrders: 5, totalSpent: 4200, lastOrder: "1 week ago", rank: "Gold", avatar: "PS" },
-  { id: 3, name: "Karan Johar", email: "karan.j@events.com", phone: "+91 76543 21098", totalOrders: 28, totalSpent: 45000, lastOrder: "Today", rank: "Diamond", avatar: "KJ" },
-];
+import { formatDistanceToNow, isAfter, subDays, differenceInDays } from "date-fns";
+import type { Tables } from "@/integrations/supabase/types";
+import { calculateCustomerLTVRank } from "@/utils/algorithms";
 
-const Customer360 = () => {
+type Order = Tables<"orders">;
+
+interface Props {
+  orders: Order[];
+}
+
+const Customer360 = ({ orders }: Props) => {
   const [search, setSearch] = useState("");
+
+  // Process unique customers from orders
+  const customerMap = orders.reduce((acc, order) => {
+    const key = order.customer_id || 'guest';
+    if (!acc[key]) {
+      acc[key] = {
+        id: key,
+        name: key === 'guest' ? "Guest Customer" : `Cust-${key.slice(0, 6)}`,
+        email: "Contact in details",
+        phone: "View order",
+        totalOrders: 0,
+        totalSpent: 0,
+        lastOrderDate: order.created_at,
+        rank: "New",
+        avatar: "C"
+      };
+    }
+    acc[key].totalOrders += 1;
+    acc[key].totalSpent += Number(order.grand_total || 0);
+    if (new Date(order.created_at) > new Date(acc[key].lastOrderDate)) {
+      acc[key].lastOrderDate = order.created_at;
+    }
+    
+    // Assign ranks using PIE RFM Algorithm
+    const daysSinceLast = differenceInDays(new Date(), new Date(acc[key].lastOrderDate));
+    acc[key].rank = calculateCustomerLTVRank(
+      acc[key].totalSpent, 
+      acc[key].totalOrders, 
+      daysSinceLast
+    );
+    
+    return acc;
+  }, {} as Record<string, any>);
+
+  const customerList = Object.values(customerMap);
+  const filteredCustomers = customerList.filter(c => 
+    c.name.toLowerCase().includes(search.toLowerCase()) || 
+    c.email.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const totalCustomers = customerList.length;
+  const newCustomersThisMonth = customerList.filter(c => 
+    isAfter(new Date(c.lastOrderDate), subDays(new Date(), 30))
+  ).length;
+  const totalRevenue = orders.reduce((sum, o) => sum + Number(o.grand_total || 0), 0);
+  const avgLTV = totalCustomers > 0 ? totalRevenue / totalCustomers : 0;
+  const retentionRate = totalCustomers > 0 ? (customerList.filter(c => c.totalOrders > 1).length / totalCustomers) * 100 : 0;
 
   return (
     <div className="space-y-8">
       {/* CRM Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[
-          { label: "Total Customers", value: "1,248", icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
-          { label: "New This Month", value: "84", icon: UserPlus, color: "text-accent", bg: "bg-accent/10" },
-          { label: "Retention Rate", value: "72%", icon: TrendingUp, color: "text-purple-500", bg: "bg-purple-500/10" },
-          { label: "Avg. Lifetime Value", value: "₹8,450", icon: Star, color: "text-yellow-500", bg: "bg-yellow-500/10" },
+          { label: "Total Customers", value: totalCustomers.toString(), icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
+          { label: "Active Recently", value: newCustomersThisMonth.toString(), icon: UserPlus, color: "text-accent", bg: "bg-accent/10" },
+          { label: "Retention Rate", value: `${retentionRate.toFixed(1)}%`, icon: TrendingUp, color: "text-purple-500", bg: "bg-purple-500/10" },
+          { label: "Avg. Lifetime Value", value: `₹${Math.round(avgLTV).toLocaleString()}`, icon: Star, color: "text-yellow-500", bg: "bg-yellow-500/10" },
         ].map((stat, i) => (
           <motion.div
             key={i}
@@ -55,6 +106,8 @@ const Customer360 = () => {
               <input
                 type="text"
                 placeholder="Search customers..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 className="pl-12 pr-6 py-3 rounded-2xl bg-white/5 border border-white/5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-accent/50 w-64"
               />
             </div>
@@ -76,7 +129,7 @@ const Customer360 = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {mockCustomers.map((customer) => (
+              {filteredCustomers.map((customer) => (
                 <tr key={customer.id} className="hover:bg-white/[0.01] transition-colors group">
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
@@ -87,7 +140,9 @@ const Customer360 = () => {
                         <div className="flex items-center gap-2">
                           <p className="font-bold text-white group-hover:text-accent transition-colors">{customer.name}</p>
                           <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter ${
-                            customer.rank === 'Diamond' ? 'bg-purple-500/20 text-purple-400' : 'bg-accent/20 text-accent'
+                            customer.rank === 'Diamond' ? 'bg-purple-500/20 text-purple-400' : 
+                            customer.rank === 'Platinum' ? 'bg-blue-500/20 text-blue-400' :
+                            'bg-accent/20 text-accent'
                           }`}>
                             {customer.rank}
                           </span>
@@ -107,7 +162,7 @@ const Customer360 = () => {
                         <span className="text-sm font-bold text-white">{customer.totalOrders} Orders</span>
                       </div>
                       <div className="w-24 h-1 bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-accent" style={{ width: '65%' }} />
+                        <div className="h-full bg-accent" style={{ width: `${Math.min((customer.totalOrders / 5) * 100, 100)}%` }} />
                       </div>
                     </div>
                   </td>
@@ -120,7 +175,7 @@ const Customer360 = () => {
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-2 text-xs text-gray-500">
                       <Clock className="w-3 h-3" />
-                      {customer.lastOrder}
+                      {formatDistanceToNow(new Date(customer.lastOrderDate), { addSuffix: true })}
                     </div>
                   </td>
                   <td className="px-8 py-6 text-right">
@@ -135,6 +190,13 @@ const Customer360 = () => {
                   </td>
                 </tr>
               ))}
+              {filteredCustomers.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-8 py-20 text-center text-muted-foreground italic">
+                    {search ? "No matching customers found." : "No customer intelligence available yet. Start processing orders to build your database."}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

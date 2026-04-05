@@ -22,8 +22,7 @@ export const LogisticsService = {
     console.log(`Calculating logistics from ${fromPincode} to ${toPincode}...`);
     
     // Mocking real-time calculation logic
-    // Distance Factor: Simplified as the difference in first digits (Zones)
-    const zoneDiff = Math.abs(parseInt(fromPincode[0]) - parseInt(toPincode[0]));
+    const zoneDiff = Math.abs(parseInt(fromPincode[0] || "0") - parseInt(toPincode[0] || "0"));
     const baseRate = 59;
     const distancePrice = zoneDiff * 25;
     const weightPrice = weightKg > 1 ? (weightKg - 1) * 30 : 0;
@@ -31,26 +30,19 @@ export const LogisticsService = {
     const finalRate = baseRate + distancePrice + weightPrice;
 
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    await new Promise(resolve => setTimeout(resolve, 600));
 
     return [
       {
-        provider: "Shiprocket",
-        service_name: "Standard Delivery",
+        provider: "Standard Delivery",
+        service_name: "Door Delivery",
         rate: finalRate,
         estimated_days: 3 + zoneDiff,
         tracking_available: true
       },
       {
-        provider: "Delhivery",
-        service_name: "Express (Air)",
-        rate: finalRate + 40,
-        estimated_days: 1 + Math.min(1, zoneDiff),
-        tracking_available: true
-      },
-      {
-        provider: "Shop Delivery",
-        service_name: "Local Pickup/Native",
+        provider: "Shop Pickup",
+        service_name: "Self Pickup",
         rate: 0,
         estimated_days: 2,
         tracking_available: false

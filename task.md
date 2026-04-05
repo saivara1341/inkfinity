@@ -1,0 +1,5 @@
+- [ ] Simplify Shipping Logic in `logisticsService.ts`
+- [ ] Update `Checkout.tsx` to show only two shipping options (Pickup/Delivery)
+- [ ] Implement typed numeric quantity input in `Cart.tsx`
+- [ ] Implement typed numeric quantity input in `ProductDetails.tsx`
+- [ ] Audit and fix checkout submission errors in `Checkout.tsx`

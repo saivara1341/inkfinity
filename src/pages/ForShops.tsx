@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
@@ -59,7 +59,7 @@ const howItWorks = [
 const pricing = [
   { label: "Registration Fee", value: "FREE", highlight: true },
   { label: "Monthly Subscription", value: "FREE", highlight: true },
-  { label: "Variable Commission", value: "5% - 10%", highlight: false },
+  { label: "Total Platform Fee", value: "5%", highlight: false },
   { label: "Market Adjustment", value: "Quarterly", highlight: false },
 ];
 
@@ -93,6 +93,13 @@ const faqs = [
 ];
 
 const ForShops = () => {
+  const navigate = useNavigate();
+
+  const handleSignup = () => {
+    sessionStorage.setItem('intendedRole', 'shop_owner');
+    navigate('/signup');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -120,10 +127,7 @@ const ForShops = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button variant="coral" size="lg" className="gap-2 text-base px-8" asChild>
-                  <button onClick={() => {
-                    sessionStorage.setItem('intendedRole', 'shop_owner');
-                    window.location.href = '#/signup';
-                  }}>
+                  <button onClick={handleSignup}>
                     Register Your Shop <ArrowRight className="w-5 h-5" />
                   </button>
                 </Button>
@@ -256,8 +260,8 @@ const ForShops = () => {
             <div className="bg-card rounded-2xl border border-border p-8 shadow-elevated">
               <div className="text-center mb-8">
                 <p className="text-sm text-accent font-semibold uppercase tracking-wide mb-2">Market-Linked Model</p>
-                <p className="font-display text-5xl font-bold text-foreground">5% - 10%</p>
-                <p className="text-muted-foreground mt-2">flexible commission structure — that's it!</p>
+                <p className="font-display text-5xl font-bold text-foreground">5%</p>
+                <p className="text-muted-foreground mt-2">total platform fee — that's it!</p>
               </div>
 
               <div className="space-y-4">
@@ -272,10 +276,7 @@ const ForShops = () => {
               </div>
 
               <Button variant="coral" size="lg" className="w-full mt-8 gap-2 text-base" asChild>
-                <button onClick={() => {
-                  sessionStorage.setItem('intendedRole', 'shop_owner');
-                  window.location.href = '#/signup';
-                }}>
+                <button onClick={handleSignup}>
                   Start Selling Online <ArrowRight className="w-5 h-5" />
                 </button>
               </Button>
@@ -370,10 +371,7 @@ const ForShops = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button variant="ink" size="lg" className="gap-2 text-base px-8" asChild>
-                <button onClick={() => {
-                  sessionStorage.setItem('intendedRole', 'shop_owner');
-                  window.location.href = '#/signup';
-                }}>
+                <button onClick={handleSignup}>
                   Register Now — It's Free <ArrowRight className="w-5 h-5" />
                 </button>
               </Button>

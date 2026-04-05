@@ -11,36 +11,39 @@ export const useShopData = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Fetch shop data
+  // Fetch shop data with high-performance caching (Marketplace 2.0)
   const { data: shop, isLoading: shopLoading } = useQuery({
     queryKey: ["shop-data", user?.id],
     queryFn: async () => {
       if (!user) return null;
       const { data, error } = await supabase
         .from("shops")
-        .select("*")
+        .select("id, name, owner_id, city, is_verified, product_count, rating, storefront_status")
         .eq("owner_id", user.id)
         .maybeSingle();
       if (error) throw error;
       return data;
     },
     enabled: !!user,
+    staleTime: 1000 * 60 * 5, // 5 minutes fresh
+    gcTime: 1000 * 60 * 30,    // 30 minutes cache
   });
 
-  // Fetch orders for this shop
+  // Fetch orders with specific selection to reduce bandwidth
   const { data: orders = [], isLoading: ordersLoading } = useQuery({
     queryKey: ["shop-orders", shop?.id],
     queryFn: async () => {
       if (!shop) return [];
       const { data, error } = await supabase
         .from("orders")
-        .select("*")
+        .select("id, order_number, product_name, grand_total, status, created_at, customer_id, shop_id")
         .eq("shop_id", shop.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data || [];
     },
     enabled: !!shop,
+    staleTime: 1000 * 30, // 30 seconds fresh (orders change more frequently)
   });
 
   // Mutation to update order status

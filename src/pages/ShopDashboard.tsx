@@ -211,11 +211,11 @@ const ShopDashboard = () => {
               {activeTab === "wallet" && <ShopWallet shopId={shop.id} />}
               {activeTab === "ai-hub" && <ShopAIHub />}
               {activeTab === "marketing" && <ShopMarketing />}
-              {activeTab === "pipeline" && <ProductionPipeline />}
+              {activeTab === "pipeline" && <ProductionPipeline orders={orders} />}
               {activeTab === "inventory" && <InventoryManager />}
               {activeTab === "crm" && (
                 <div className="space-y-8">
-                  <Customer360 />
+                  <Customer360 orders={orders} />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <CouponManager ownerId={shop.id} />
                     <CustomerSegments ownerId={shop.id} />

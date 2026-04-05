@@ -301,7 +301,7 @@ const AdminDashboard = () => {
   if (!user) return null;
 
   const totalRevenue = orders.reduce((s, o) => s + Number(o.grand_total), 0);
-  const platformFees = Math.round(totalRevenue * 0.1);
+  const platformFees = orders.reduce((s, o) => s + Number(o.platform_fee || 0), 0);
   const pendingShops = shops.filter(s => !s.is_verified);
   const pendingSuppliers = suppliers.filter(s => !s.verified);
   const activeShops = shops.filter(s => s.is_active && s.is_verified);
@@ -391,7 +391,7 @@ const AdminDashboard = () => {
                       { label: "Total Shops", value: shops.length.toString(), icon: Store, sub: `${pendingShops.length} pending` },
                       { label: "Total Manufacturers", value: suppliers.length.toString(), icon: Activity, sub: `${pendingSuppliers.length} pending` },
                       { label: "Total Revenue", value: `₹${(totalRevenue / 100000).toFixed(1)}L`, icon: IndianRupee, sub: `${orders.length} orders` },
-                      { label: "Platform Fees", value: `₹${(platformFees / 100000).toFixed(1)}L`, icon: TrendingUp, sub: "Market-linked commission" },
+                      { label: "Platform Earnings", value: `₹${(platformFees / 100000).toFixed(1)}L`, icon: TrendingUp, sub: "Currently 0% commission" },
                     ].map((stat) => (
                       <div key={stat.label} className="bg-card rounded-xl border border-border p-5 shadow-card">
                         <div className="flex items-center justify-between mb-3">

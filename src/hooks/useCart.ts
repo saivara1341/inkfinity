@@ -48,6 +48,14 @@ export const useCart = (userId?: string) => {
     }) => {
       if (!userId) throw new Error("Not logged in");
       
+      // SWIGGY MODEL: Check if adding from a different shop
+      if (items.length > 0) {
+        const currentShopId = items[0].shop_id;
+        if (currentShopId !== shopId) {
+          throw new Error("SHOP_MISMATCH");
+        }
+      }
+
       // Check if already in cart
       const existing = items.find((i) => 
         (productId && i.product_id === productId) || 
@@ -122,13 +130,15 @@ export const useCart = (userId?: string) => {
   });
 
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
-  const totalAmount = items.reduce((sum, i) => {
+  const subtotal = items.reduce((sum, i) => {
     const basePrice = (i as any).product?.base_price || 0;
     const itemTotal = basePrice * i.quantity;
-    // If shop excludes GST, we add 12% estimate (standard for printing in India)
     const gstIncl = (i as any).shop?.price_includes_gst ?? true;
     return sum + (gstIncl ? itemTotal : itemTotal * 1.12);
   }, 0);
+
+  const platformFee = Math.round(subtotal * 0.02); // 2% Platform Fee for Customer
+  const totalAmount = subtotal + platformFee;
 
   return {
     items,
@@ -141,6 +151,8 @@ export const useCart = (userId?: string) => {
       removeMutation.mutateAsync(itemId),
     clearCart: () => clearMutation.mutateAsync(),
     totalItems,
+    subtotal,
+    platformFee,
     totalAmount,
     addMutation,
     updateQuantityMutation,

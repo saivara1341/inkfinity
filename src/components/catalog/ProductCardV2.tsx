@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { IndianRupee, Star, Package, ChevronRight, Heart, Share2 } from "lucide-react";
+import { IndianRupee, Star, Package, ChevronRight, Heart, Share2, Zap, ShieldCheck, TrendingUp } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { calculateShopScore } from "@/utils/algorithms";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -147,9 +149,19 @@ const ProductCardV2 = ({ product }: ProductCardV2Props) => {
 
         {/* Tags */}
         <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
+          {product.pieScore > 0.8 && (
+            <div className="px-2.5 py-1 bg-[#1ED760] text-white text-[10px] font-bold uppercase tracking-wider rounded-md shadow-lg flex items-center gap-1.5 backdrop-blur-sm border border-white/20">
+              <Zap className="w-3 h-3 fill-current" /> PIE Top Match
+            </div>
+          )}
           {product.popular && (
             <div className="px-2.5 py-1 bg-[#FF7300] text-white text-[10px] font-bold uppercase tracking-wider rounded-md shadow-lg flex items-center gap-1.5 backdrop-blur-sm">
               <Star className="w-3 h-3 fill-current" /> Bestseller
+            </div>
+          )}
+          {product.pieScore > 0.6 && !product.popular && (
+            <div className="px-2.5 py-1 bg-blue-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-md shadow-lg flex items-center gap-1.5 backdrop-blur-sm">
+              <ShieldCheck className="w-3 h-3" /> Quality Verified
             </div>
           )}
         </div>

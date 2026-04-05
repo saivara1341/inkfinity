@@ -87,7 +87,7 @@ const ProductCustomize = () => {
             sizes: (data.specifications as any)?.sizes || [],
             papers: (data.specifications as any)?.papers || [],
             finishes: (data.specifications as any)?.finishes || [],
-            quantityTiers: data.volume_pricing || (data.specifications as any)?.quantityTiers || [],
+            quantityTiers: data.volume_pricing || (data.specifications as any)?.price_tiers || (data.specifications as any)?.quantityTiers || [],
             printingMethods: (data.specifications as any)?.printingMethods || [],
             minQty: data.min_quantity,
           };
@@ -111,7 +111,8 @@ const ProductCustomize = () => {
   const [selectedSize, setSelectedSize] = useState<PrintSize>(product?.sizes[0] || {} as PrintSize);
   const [selectedPaper, setSelectedPaper] = useState<PaperType>(product?.papers[0] || {} as PaperType);
   const [selectedFinish, setSelectedFinish] = useState<FinishType>(product?.finishes[0] || {} as FinishType);
-  const [quantity, setQuantity] = useState(product?.minQty || 100);
+  const [quantityInput, setQuantityInput] = useState(String(product?.minQty || 100));
+  const quantity = parseInt(quantityInput) || 0;
 
   // Design State
   const [frontFile, setFrontFile] = useState<File | null>(null);
@@ -172,7 +173,7 @@ const ProductCustomize = () => {
       .sort((a: any, b: any) => (b.min_qty || b.min) - (a.min_qty || a.min))
       .find((t: any) => quantity >= (t.min_qty || t.min));
 
-    if (tier) basePricePerUnit = tier.price || tier.pricePerUnit;
+    if (tier) basePricePerUnit = tier.price || tier.pricePerUnit || tier.price_per_unit;
 
     const paperPrice = basePricePerUnit * (selectedPaper.priceMultiplier || 1);
     const finishPrice = paperPrice + (selectedFinish.priceAdd || 0);
@@ -360,7 +361,7 @@ const ProductCustomize = () => {
                     {quantityOptions.map((qty) => (
                       <button
                         key={qty}
-                        onClick={() => setQuantity(qty)}
+                        onClick={() => setQuantityInput(String(qty))}
                         className={`py-3 rounded-xl text-xs font-black transition-all border-2 ${quantity === qty ? "border-[#FF7300] bg-[#FF7300] text-white shadow-lg" : "border-gray-100 bg-white text-gray-400 hover:border-gray-300"
                           }`}
                       >
@@ -372,9 +373,9 @@ const ProductCustomize = () => {
                     <div className="flex-1 relative">
                       <Input
                         type="number"
-                        min={100}
-                        value={quantity}
-                        onChange={(e) => setQuantity(parseInt(e.target.value) || 100)}
+                        min={product.minQty || 1}
+                        value={quantityInput}
+                        onChange={(e) => setQuantityInput(e.target.value)}
                         className="h-14 bg-gray-50 border-none rounded-2xl text-center font-display font-black text-2xl"
                       />
                       <span className="absolute top-1/2 -translate-y-1/2 left-6 text-[10px] font-black text-gray-400 uppercase">Custom</span>

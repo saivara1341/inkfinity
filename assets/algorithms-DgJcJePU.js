@@ -1,0 +1,1 @@
+const g=t=>{const n=(t.rating||4)/5,o=t.is_verified?1:.5,a=t.turnaround_days||3,s=Math.max(.2,1-(a-1)*.15),c=n*.4+o*.3+s*.3;return parseFloat(c.toFixed(2))},u=(t,i="general")=>{const e={premium:.2,bulk:.1,general:.15},r=e[i]||e.general,n=t*r,o=n*.18,a=t-n-o;return{gross:Math.round(t),commission:Math.round(n),taxOnCommission:Math.round(o),net:Math.round(a)}};export{u as a,g as c};

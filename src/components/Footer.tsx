@@ -31,9 +31,9 @@ const Footer = () => {
           <div>
             <h4 className="font-display font-semibold mb-4">For Shops</h4>
             <ul className="space-y-2 text-sm opacity-70">
-              <li><Link to="/for-shops" className="hover:opacity-100 transition-opacity">Register Your Shop</Link></li>
-              <li><Link to="/for-shops" className="hover:opacity-100 transition-opacity">Shop Dashboard</Link></li>
-              <li><Link to="/for-shops" className="hover:opacity-100 transition-opacity">Pricing Plans</Link></li>
+              <li><Link to="/signup" className="hover:opacity-100 transition-opacity">Become a Partner</Link></li>
+              <li><Link to="/shop" className="hover:opacity-100 transition-opacity">Shop Dashboard</Link></li>
+              <li><Link to="/store" className="hover:opacity-100 transition-opacity">Shop Marketplace</Link></li>
             </ul>
           </div>
 
@@ -48,8 +48,20 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-primary-foreground/10 mt-12 pt-8 text-center text-sm opacity-50">
-          © 2026 PrintFlow. All rights reserved.
+        <div className="border-t border-primary-foreground/10 mt-12 pt-8 text-center text-sm opacity-50 flex flex-col md:flex-row justify-center items-center gap-2">
+          <span>© 2026 PrintFlow. All rights reserved.</span>
+          <span className="hidden md:inline">|</span>
+          <span>
+            A product of{" "}
+            <a 
+              href="https://siddhidynamics.in" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="hover:text-accent transition-colors underline decoration-dotted underline-offset-4"
+            >
+              Siddhi Dynamics LLP
+            </a>
+          </span>
         </div>
       </div>
     </footer>

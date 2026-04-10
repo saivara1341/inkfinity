@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Pencil, Trash2, Package, IndianRupee, Clock, ToggleLeft, ToggleRight, X, ImagePlus, TrendingUp, Sparkles } from "lucide-react";
+import { Plus, Pencil, Trash2, Package, IndianRupee, Clock, ToggleLeft, ToggleRight, X, ImagePlus, TrendingUp, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -277,13 +277,7 @@ export const ShopProducts = ({ shop }: Props) => {
     }
   };
 
-  if (!shop) {
-    return (
-      <div className="bg-card rounded-xl border border-border p-10 text-center shadow-card">
-        <p className="text-muted-foreground">Register your shop first to manage products.</p>
-      </div>
-    );
-  }
+  if (!shop) return null;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">

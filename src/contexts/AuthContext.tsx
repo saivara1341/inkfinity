@@ -34,7 +34,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (mounted) {
         if (error) console.error("Error getting session:", error);
         setSession(session);
-        setUser(session?.user ?? null);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        if (currentUser) syncUserMetadata(currentUser);
         setLoading(false);
       }
     });
@@ -43,7 +45,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (mounted) {
         setSession(session);
-        setUser(session?.user ?? null);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        if (currentUser && (_event === 'SIGNED_IN' || _event === 'INITIAL_SESSION')) {
+          syncUserMetadata(currentUser);
+        }
         setLoading(false);
       }
     });
@@ -53,6 +59,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       subscription.unsubscribe();
     }
   }, []);
+
+  const syncUserMetadata = async (currentUser: User) => {
+    try {
+      // 1. Fetch role from DB
+      const { data: roleData, error: roleError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", currentUser.id)
+        .maybeSingle();
+
+      if (roleError) {
+        console.warn("Error fetching role for sync:", roleError.message);
+        return;
+      }
+
+      const dbRole = roleData?.role || "customer";
+      const currentMetadataRole = currentUser.user_metadata?.user_role;
+
+      // 2. Fetch profile info if needed (just for full_name sync)
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", currentUser.id)
+        .maybeSingle();
+
+      const needsUpdate = dbRole !== currentMetadataRole;
+
+      if (needsUpdate) {
+        console.log("Synchronizing user metadata with database role:", dbRole);
+        const { data: updatedData, error: updateError } = await supabase.auth.updateUser({
+          data: { 
+            user_role: dbRole
+          }
+        });
+        
+        if (!updateError && updatedData.user) {
+          setUser(updatedData.user);
+        }
+      }
+    } catch (err) {
+      console.error("Critical error in syncUserMetadata:", err);
+    }
+  };
 
   const signUp = async (email: string, password: string, metadata?: Record<string, string>) => {
     try {
@@ -93,7 +142,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin + (import.meta.env.BASE_URL || window.location.pathname.split('/')[1] + '/' || "/"),
+          redirectTo: window.location.origin + (import.meta.env.BASE_URL || "/"),
         }
       });
       if (error) return { error };
@@ -139,6 +188,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (dbError) {
         console.warn("Could not sync role to DB:", dbError.message);
+      }
+
+      // Proactively ensure profile exists
+      const { error: profileSyncError } = await supabase
+        .from("profiles")
+        .upsert({
+          user_id: currentUser.id,
+          full_name: currentUser.user_metadata?.full_name || currentUser.email?.split("@")[0] || "User",
+          phone: currentUser.user_metadata?.phone || "0000000000"
+        }, { onConflict: "user_id" });
+
+      if (profileSyncError) {
+        console.warn("Profile sync warning:", profileSyncError.message);
       }
 
       // Update profile with referral info if found

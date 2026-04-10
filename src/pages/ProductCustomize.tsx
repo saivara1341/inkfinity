@@ -220,12 +220,30 @@ const ProductCustomize = () => {
     if (!user) { toast.error("Please log in first"); navigate("/login"); return; }
     setUploading(true);
     try {
-      await addToCart((dbProduct as any)?.id || null, selectedShopId, quantity, {
-        size: selectedSize.label, paper: selectedPaper.label, finish: selectedFinish.label, sides: printSides,
-        frontDesign: frontPreview || frontAiUrl, backDesign: backPreview || backAiUrl
-      }, product.name, product.categoryName);
+      await addToCart({
+        productId: (dbProduct as any)?.id || null,
+        shopId: selectedShopId,
+        quantity: quantity,
+        specs: {
+          size: selectedSize.label,
+          paper: selectedPaper.label,
+          finish: selectedFinish.label,
+          sides: printSides,
+          frontDesign: frontPreview || frontAiUrl,
+          backDesign: backPreview || backAiUrl
+        },
+        productName: product.name,
+        categoryName: product.categoryName
+      });
       navigate("/checkout");
-    } catch (err: any) { toast.error(err.message); }
+    } catch (err: any) { 
+      console.error("Cart error:", err);
+      if (err.message === "SHOP_MISMATCH") {
+        toast.error("You have items from another shop. Please clear your cart first.");
+      } else {
+        toast.error(err.message || "Failed to add to cart"); 
+      }
+    }
     finally { setUploading(false); }
   };
 

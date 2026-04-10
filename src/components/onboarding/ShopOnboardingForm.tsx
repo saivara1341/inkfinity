@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import locationsData from "@/data/india-locations.json";
 import { useLocation } from "@/contexts/LocationContext";
 import { handleFormKeyDown } from "@/utils/keyboardNavigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 const PINCODE_MAP: Record<string, string> = {
   "Chennai": "600001",
@@ -35,8 +36,11 @@ const SERVICES = [
   "Luxury Weddings"
 ];
 
+const PREDEFINED_SERVICES = SERVICES.filter(s => s !== "All Products");
+
 export const ShopOnboardingForm = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -69,12 +73,44 @@ export const ShopOnboardingForm = () => {
   };
 
   const toggleService = (service: string) => {
-    setForm(prev => ({
-      ...prev,
-      services: prev.services.includes(service)
+    if (service === "All Products") {
+      const allPredefinedSelected = PREDEFINED_SERVICES.every(s => form.services.includes(s));
+      setForm(prev => {
+        if (allPredefinedSelected) {
+          // Deselect all predefined, keep custom ones
+          return {
+            ...prev,
+            services: prev.services.filter(s => !PREDEFINED_SERVICES.includes(s)),
+          };
+        } else {
+          // Select all predefined, keep existing custom ones
+          const newServices = Array.from(new Set([...prev.services, ...PREDEFINED_SERVICES]));
+          return {
+            ...prev,
+            services: newServices,
+          };
+        }
+      });
+      return;
+    }
+
+    setForm(prev => {
+      const newServices = prev.services.includes(service)
         ? prev.services.filter(s => s !== service)
-        : [...prev.services, service],
-    }));
+        : [...prev.services, service];
+      
+      return {
+        ...prev,
+        services: newServices,
+      };
+    });
+  };
+
+  const isSelected = (service: string) => {
+    if (service === "All Products") {
+      return PREDEFINED_SERVICES.length > 0 && PREDEFINED_SERVICES.every(s => form.services.includes(s));
+    }
+    return form.services.includes(service);
   };
 
   const validateStep = (s: number) => {
@@ -131,6 +167,10 @@ export const ShopOnboardingForm = () => {
 
     setLoading(false);
     toast.success("Shop registered successfully! 🎉");
+    
+    // Invalidate queries to ensure dashboard picks up new shop data immediately
+    queryClient.invalidateQueries({ queryKey: ["shop-data"] });
+    
     navigate("/shop");
   };
 
@@ -302,12 +342,12 @@ export const ShopOnboardingForm = () => {
                   key={service}
                   onClick={() => toggleService(service)}
                   className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${
-                    form.services.includes(service)
+                    isSelected(service)
                       ? "bg-primary text-primary-foreground"
                       : "bg-secondary text-muted-foreground hover:bg-secondary/80"
                   }`}
                 >
-                  {form.services.includes(service) && <Check className="w-3 h-3 inline mr-1" />}
+                  {isSelected(service) && <Check className="w-3 h-3 inline mr-1" />}
                   {service}
                 </button>
               ))}

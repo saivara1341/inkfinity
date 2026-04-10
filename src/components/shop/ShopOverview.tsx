@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ShoppingCart, IndianRupee, Clock, CheckCircle2, Eye, Download } from "lucide-react";
+import { ShoppingCart, IndianRupee, Clock, CheckCircle2, Eye, Download, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Tables } from "@/integrations/supabase/types";
 import { format } from "date-fns";

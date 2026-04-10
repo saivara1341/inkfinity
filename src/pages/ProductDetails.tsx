@@ -165,11 +165,26 @@ const ProductDetails = () => {
         if (!product) return;
 
         try {
-            await addToCart(product.id, product.shop_id, quantity);
+            await addToCart({
+                productId: product.id,
+                shopId: product.shop_id,
+                quantity: quantity,
+                productName: product.name,
+                categoryName: product.category
+            });
             toast.success("Added to cart! Proceeding to customize...");
             navigate(`/customize/${product.category.toLowerCase().replace(/\s+/g, '-') || 'generic'}?productId=${product.id}`);
-        } catch (error) {
-            toast.error("Failed to add to cart");
+        } catch (error: any) {
+            console.error("Cart error:", error);
+            if (error.message === "SHOP_MISMATCH") {
+                toast.error("You have items from another shop. Please clear your cart first.");
+            } else if (error.message === "NO_SHOPS_AVAILABLE") {
+                toast.error("Shopping is temporarily disabled as no active shops were found.");
+            } else if (error.message === "PRODUCT_UNAVAILABLE") {
+                toast.error("This product is currently unavailable for online ordering.");
+            } else {
+                toast.error("Failed to add to cart. Please try again later.");
+            }
         }
     };
 

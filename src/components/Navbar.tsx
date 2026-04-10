@@ -83,9 +83,6 @@ const Navbar = () => {
           <Link to="/store?view=shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             <MapPin className="w-3.5 h-3.5" /> Find Shops Near You
           </Link>
-          {(!user || role === "customer") && (
-            <Link to="/for-shops" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">For Shops</Link>
-          )}
         </div>
 
         <div className="hidden md:flex items-center gap-3">

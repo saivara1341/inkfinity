@@ -27,6 +27,7 @@ const Onboarding = () => {
         // 1. Check if registration is already complete
         const isComplete = user.user_metadata?.registration_complete;
         if (isComplete) {
+          console.log("Registration already complete, redirecting...");
           const path = user.user_metadata?.user_role === "shop_owner" ? "/shop" :
             ["manufacturer", "distributor", "supplier"].includes(user.user_metadata?.user_role) ? "/supplier" :
               "/dashboard";

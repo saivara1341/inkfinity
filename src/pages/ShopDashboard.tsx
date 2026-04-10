@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ShoppingCart, BarChart3, Settings,
   ChevronDown, Printer, Bell, LogOut, Package, Sparkles, Megaphone, FileWarning, ShoppingBag, X, Menu,
   ArrowRight, Store, Tag, Award, PanelLeftClose, PanelLeftOpen, ArrowLeft, Home as HomeIcon,
-  Activity, Database, Users, IndianRupee
+  Activity, Database, Users, IndianRupee, Loader2, RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -19,25 +19,23 @@ import { ShopProducts } from "@/components/shop/ShopProducts";
 import { ShopWallet } from "@/components/shop/ShopWallet";
 import ShopAIHub from "@/components/shop/ShopAIHub";
 import ShopMarketing from "@/components/shop/ShopMarketing";
-import { CouponManager } from "@/components/crm/CouponManager";
-import { CustomerSegments } from "@/components/crm/CustomerSegments";
-import Customer360 from "@/components/dashboard/crm/Customer360";
 import ProductionPipeline from "@/components/dashboard/erp/ProductionPipeline";
 import InventoryManager from "@/components/dashboard/erp/InventoryManager";
+import Customer360 from "@/components/dashboard/crm/Customer360";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
-type Tab = "overview" | "orders" | "products" | "wallet" | "analytics" | "ai-hub" | "marketing" | "settings" | "support" | "sourcing" | "crm" | "pipeline" | "inventory";
+type Tab = "overview" | "orders" | "products" | "wallet" | "analytics" | "ai-hub" | "marketing" | "settings" | "support" | "sourcing" | "pipeline" | "inventory" | "crm";
 
 const sidebarItems: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
-  { id: "pipeline", label: "Production Line", icon: Activity },
   { id: "products", label: "Products", icon: Package },
-  { id: "inventory", label: "Raw Materials", icon: Database },
   { id: "orders", label: "Orders", icon: ShoppingCart },
-  { id: "crm", label: "CRM Intelligence", icon: Users },
-  { id: "wallet", label: "Earnings & Wallet", icon: IndianRupee },
+  { id: "wallet", label: "Payments", icon: IndianRupee },
   { id: "sourcing", label: "Material Sourcing", icon: ShoppingBag },
   { id: "ai-hub", label: "AI Design Hub", icon: Sparkles },
   { id: "marketing", label: "Marketing", icon: Megaphone },
+  { id: "crm", label: "Customers", icon: Users },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
   { id: "settings", label: "Settings", icon: Settings },
   { id: "support", label: "Support & Reports", icon: FileWarning },
@@ -50,16 +48,90 @@ const ShopDashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { shop, orders, loading, updateOrderStatus, updateShopProfile } = useShopData();
+  const queryClient = useQueryClient();
+  const [initializing, setInitializing] = useState(false);
+  const [initialWait, setInitialWait] = useState(true);
+
+  // Allow a short buffer for data to settle after fresh login
+  useState(() => {
+    const timer = setTimeout(() => setInitialWait(false), 2500);
+    return () => clearTimeout(timer);
+  });
+
+  const handleAutoInitialize = async () => {
+    if (!user) return;
+    setInitializing(true);
+    const loadingToast = toast.loading("Initializing your dashboard...");
+
+    try {
+      console.log("Attempting to auto-initialize shop and profile for user:", user.id);
+      
+      // Step 1: Ensure profile exists
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .upsert({
+          user_id: user.id,
+          full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || "User",
+          phone: "0000000000",
+        }, { onConflict: 'user_id' });
+
+      if (profileError) {
+        console.error("Profile upsert error:", profileError);
+        toast.error("Failed to sync profile. Data might be inconsistent.", { id: loadingToast });
+        // We continue anyway as for some users the RPC might handle it or the error might be non-blocking
+      }
+
+      // Step 2: Register shop
+      const { error } = await supabase.rpc("register_shop", {
+        _name: user.user_metadata?.full_name || user.email?.split("@")[0] || "My Print Shop",
+        _description: "Professional printing services",
+        _phone: "0000000000", // Placeholder, user can update in settings
+        _email: user.email || "",
+        _address: "Address not set",
+        _city: "City not set",
+        _state: "State not set",
+        _pincode: "000000",
+        _services: ["All Products"],
+        _latitude: null,
+        _longitude: null,
+      });
+
+      if (error) {
+        console.error("Auto-initialization error:", error);
+        toast.error("Failed to initialize dashboard. Please try onboarding manually.", { id: loadingToast });
+        return;
+      }
+
+      // Force refresh query
+      await queryClient.invalidateQueries({ queryKey: ["shop-data"] });
+      toast.success("Dashboard activated! Your store is ready.", { id: loadingToast });
+    } catch (err) {
+      console.error("Initialization exception:", err);
+      toast.error("An unexpected error occurred during initialization.", { id: loadingToast });
+    } finally {
+      setInitializing(false);
+    }
+  };
 
   if (!user) {
     navigate("/login");
     return null;
   }
 
-  if (loading) {
+  if (loading || (initialWait && !shop)) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading dashboard...</div>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-20 h-20 rounded-2xl bg-primary/5 flex items-center justify-center mb-8 relative">
+          <Loader2 className="w-10 h-10 text-primary animate-spin" />
+          <div className="absolute inset-0 border-4 border-primary/10 rounded-2xl animate-pulse" />
+        </div>
+        <h1 className="text-2xl font-display font-bold text-foreground mb-3">Syncing Your Print Hub</h1>
+        <div className="space-y-1.5">
+          <p className="text-muted-foreground text-sm flex items-center justify-center gap-2">
+            <Database className="w-4 h-4" /> Authenticating store records...
+          </p>
+          <p className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.2em] font-medium">Please do not refresh</p>
+        </div>
       </div>
     );
   }
@@ -78,7 +150,7 @@ const ShopDashboard = () => {
           </div>
           {(sidebarOpen || mobileMenuOpen) && (
             <span className="font-display font-bold text-foreground truncate">
-              {shop?.name || "My Shop"}
+              {shop?.name || "My Print Hub"}
             </span>
           )}
           {/* Mobile Close Button */}
@@ -170,97 +242,54 @@ const ShopDashboard = () => {
         </header>
 
         <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar">
-          {!shop ? (
-            <div className="bg-card rounded-[2.5rem] border border-border p-12 text-center space-y-8 animate-in fade-in zoom-in duration-500 shadow-xl max-w-2xl mx-auto mt-12">
-              <div className="w-24 h-24 rounded-[2rem] bg-[#FF7300] flex items-center justify-center mx-auto shadow-xl">
-                <Store className="w-12 h-12 text-white" />
-              </div>
-              <div className="space-y-3">
-                <h2 className="text-4xl font-display font-bold text-foreground italic">Register your shop first</h2>
-                <p className="text-muted-foreground text-lg leading-relaxed">
-                  Register your shop first to manage products and reach 500+ local customers.
-                </p>
-              </div>
-              <div className="pt-4">
-                <Button
-                  variant="coral"
-                  size="lg"
-                  className="h-16 px-10 rounded-2xl text-xl font-bold shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]"
-                  onClick={() => navigate("/register-shop")}
-                >
-                  Register Your Shop Now <ArrowRight className="ml-2 w-6 h-6" />
+          <>
+            {activeTab === "overview" && (
+              <ShopOverview orders={orders} onViewOrders={() => setActiveTab("orders")} />
+            )}
+            {activeTab === "products" && <ShopProducts shop={shop} />}
+            {activeTab === "orders" && (
+              <ShopOrders
+                orders={orders}
+                onUpdateStatus={updateOrderStatus}
+              />
+            )}
+            {activeTab === "wallet" && <ShopWallet shopId={shop?.id} />}
+            {activeTab === "ai-hub" && <ShopAIHub />}
+            {activeTab === "marketing" && <ShopMarketing />}
+            {activeTab === "crm" && <Customer360 />}
+            {activeTab === "pipeline" && <ProductionPipeline orders={orders} />}
+            {activeTab === "inventory" && <InventoryManager />}
+            {activeTab === "analytics" && <ShopAnalytics orders={orders} />}
+            {activeTab === "settings" && (
+              <ShopSettings shop={shop} onSave={updateShopProfile} />
+            )}
+            {activeTab === "sourcing" && (
+              <div className="bg-card rounded-xl border border-border p-8 text-center space-y-6 shadow-card">
+                <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto">
+                  <ShoppingBag className="w-8 h-8 text-accent" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-display font-bold text-foreground">B2B Material Sourcing</h2>
+                  <p className="text-muted-foreground max-w-sm mx-auto">Connect directly with manufacturers and distributors for bulk paper, ink, and supplies at wholesale rates.</p>
+                </div>
+                <Button variant="coral" size="lg" onClick={() => navigate("/sourcing")}>
+                  Go to Sourcing Portal
                 </Button>
               </div>
-              <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
-                <Sparkles className="w-4 h-4 text-accent" />
-                Takes less than 2 minutes to get online
-              </p>
-            </div>
-          ) : (
-            <>
-              {activeTab === "overview" && (
-                <ShopOverview orders={orders} onViewOrders={() => setActiveTab("orders")} />
-              )}
-              {activeTab === "products" && <ShopProducts shop={shop} />}
-              {activeTab === "orders" && (
-                <ShopOrders
-                  orders={orders}
-                  onUpdateStatus={updateOrderStatus}
-                />
-              )}
-              {activeTab === "wallet" && <ShopWallet shopId={shop.id} />}
-              {activeTab === "ai-hub" && <ShopAIHub />}
-              {activeTab === "marketing" && <ShopMarketing />}
-              {activeTab === "pipeline" && <ProductionPipeline orders={orders} />}
-              {activeTab === "inventory" && <InventoryManager />}
-              {activeTab === "crm" && (
-                <div className="space-y-8">
-                  <Customer360 orders={orders} />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <CouponManager ownerId={shop.id} />
-                    <CustomerSegments ownerId={shop.id} />
-                  </div>
+            )}
+            {activeTab === "support" && (
+              <div className="bg-card rounded-xl border border-border p-8 text-center space-y-4 shadow-card">
+                <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto">
+                  <FileWarning className="w-8 h-8 text-accent" />
                 </div>
-              )}
-              {activeTab === "analytics" && <ShopAnalytics orders={orders} />}
-              {activeTab === "settings" && (
-                <ShopSettings shop={shop} onSave={updateShopProfile} />
-              )}
-              {activeTab === "sourcing" && (
-                <div className="bg-card rounded-xl border border-border p-8 text-center space-y-6 shadow-card">
-                  <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto">
-                    <ShoppingBag className="w-8 h-8 text-accent" />
-                  </div>
-                  <div className="space-y-2">
-                    <h2 className="text-2xl font-display font-bold text-foreground">B2B Material Sourcing</h2>
-                    <p className="text-muted-foreground max-w-sm mx-auto">Connect directly with manufacturers and distributors for bulk paper, ink, and supplies at wholesale rates.</p>
-                  </div>
-                  <Button variant="coral" size="lg" onClick={() => navigate("/sourcing")}>
-                    Go to Sourcing Portal
-                  </Button>
-                </div>
-              )}
-              {activeTab === "support" && (
-                <div className="bg-card rounded-xl border border-border p-8 text-center space-y-4 shadow-card">
-                  <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto">
-                    <FileWarning className="w-8 h-8 text-accent" />
-                  </div>
-                  <h2 className="text-xl font-display font-bold text-foreground">Merchant Support Command</h2>
-                  <p className="text-muted-foreground max-w-sm mx-auto">Report technical issues, payment delays, or platform suggestions directly to the admin team.</p>
-                  <Button variant="coral" onClick={() => toast.info("Report modal coming soon! For now, use the order report buttons.")}>
-                    Report an Issue
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Footer inside scroll area so it moves with content or stays at bottom */}
-          <footer className="mt-auto pt-10 pb-6 border-t border-border/40 text-center">
-            <p className="text-xs text-muted-foreground italic">
-              &copy; {new Date().getFullYear()} PrintFlow Merchant Center • Empowering Local Printing Excellence
-            </p>
-          </footer>
+                <h2 className="text-xl font-display font-bold text-foreground">Merchant Support Command</h2>
+                <p className="text-muted-foreground max-w-sm mx-auto">Report technical issues, payment delays, or platform suggestions directly to the admin team.</p>
+                <Button variant="coral" onClick={() => toast.info("Report modal coming soon! For now, use the order report buttons.")}>
+                  Report an Issue
+                </Button>
+              </div>
+            )}
+          </>
         </div>
       </main>
     </div>

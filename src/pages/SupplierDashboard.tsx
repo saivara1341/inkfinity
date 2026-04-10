@@ -56,6 +56,13 @@ const SupplierDashboard = () => {
     fetchSupplierData();
   }, [user]);
 
+  useEffect(() => {
+    // If user is a registered shop owner but not a supplier, send them to their dashboard
+    if (!loading && !supplier && user?.user_metadata?.registration_complete && user?.user_metadata?.user_role === "shop_owner") {
+      navigate("/shop");
+    }
+  }, [supplier, loading, user, navigate]);
+
   const handleSaveSupplier = async (updates: any) => {
     if (!supplier) return;
     const { error } = await supabase

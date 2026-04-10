@@ -1,9 +1,9 @@
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { ArrowRight, Store } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const CTASection = () => {
+  const { user } = useAuth();
+  const isRegisteredMerchant = user?.user_metadata?.registration_complete;
+
   return (
     <section className="py-24">
       <div className="container mx-auto px-4">
@@ -34,14 +34,18 @@ const CTASection = () => {
           >
             <div className="flex items-center gap-2 mb-3">
               <Store className="w-6 h-6" />
-              <h3 className="font-display text-3xl font-bold">Own a print shop?</h3>
+              <h3 className="font-display text-3xl font-bold">
+                {isRegisteredMerchant ? "Manage Your Business" : "Own a print shop?"}
+              </h3>
             </div>
             <p className="opacity-80 mb-6 leading-relaxed">
-              Join PrintFlow and get orders from thousands of customers. Manage everything from one dashboard.
+              {isRegisteredMerchant 
+                ? "Access your shop dashboard to manage orders, products, and customers with ease."
+                : "Join PrintFlow and get orders from thousands of customers. Manage everything from one dashboard."}
             </p>
             <Button variant="coral" size="lg" asChild>
-              <Link to="/for-shops">
-                Register Your Shop <ArrowRight className="w-4 h-4 ml-1" />
+              <Link to={isRegisteredMerchant ? (user?.user_metadata?.user_role === "shop_owner" ? "/shop" : "/supplier") : "/signup"}>
+                {isRegisteredMerchant ? "Go to Dashboard" : "Start Selling"} <ArrowRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>
           </motion.div>

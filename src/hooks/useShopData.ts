@@ -12,16 +12,58 @@ export const useShopData = () => {
   const queryClient = useQueryClient();
 
   // Fetch shop data with high-performance caching (Marketplace 2.0)
-  const { data: shop, isLoading: shopLoading } = useQuery({
-    queryKey: ["shop-data", user?.id],
+  const { data: shop, isLoading: shopLoading, error: shopError } = useQuery({
+    queryKey: ["shop-data", user?.id, user?.email],
     queryFn: async () => {
       if (!user) return null;
-      const { data, error } = await supabase
+      console.log("Fetching shop data for user:", user.id, user.email);
+      
+      // 1. Try fetching by exact owner_id
+      let { data, error } = await supabase
         .from("shops")
-        .select("id, name, owner_id, city, is_verified, product_count, rating, storefront_status")
+        .select("*")
         .eq("owner_id", user.id)
         .maybeSingle();
-      if (error) throw error;
+      
+      if (error) {
+        console.error("Error fetching shop data by ID:", error);
+        throw error;
+      }
+
+      // 2. If not found, try fetching by email (Identity Sync Fallback)
+      if (!data && user.email) {
+        console.log("No shop found by owner_id, attempting email fallback for:", user.email);
+        const { data: emailData, error: emailError } = await supabase
+          .from("shops")
+          .select("*")
+          .eq("email", user.email)
+          .maybeSingle();
+
+        if (emailError) {
+          console.warn("Email fallback query failed:", emailError.message);
+        } else if (emailData) {
+          console.log("Identity match found by email. Auto-healing owner_id...");
+          // Auto-heal: Link this shop to the current identity permanently
+          const { error: patchError } = await supabase
+            .from("shops")
+            .update({ owner_id: user.id })
+            .eq("id", emailData.id);
+
+          if (!patchError) {
+            data = { ...emailData, owner_id: user.id };
+            
+            // Also update user metadata to prevent future onboarding redirects
+            supabase.auth.updateUser({
+              data: { registration_complete: true, user_role: 'shop_owner' }
+            });
+          } else {
+            console.error("Failed to auto-heal shop owner_id:", patchError);
+            data = emailData; // Still return it so they have dashboard access
+          }
+        }
+      }
+      
+      console.log("Shop data result:", data ? `Found (${data.name})` : "Not found");
       return data;
     },
     enabled: !!user,

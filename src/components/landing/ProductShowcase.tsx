@@ -10,7 +10,7 @@ const products: { name: string; description: string; Icon: LucideIcon; slug: str
   { name: "Banners", description: "Large format banners from ₹199", Icon: RectangleHorizontal, slug: "banners", image: "/inkfinity/assets/products/banner_branded.png" },
   { name: "Stickers", description: "Custom stickers from ₹2/piece", Icon: Sticker, slug: "stickers", image: "/inkfinity/assets/products/sticker_mockup_canva_style_1775247512635.png" },
   { name: "ID Cards", description: "Professional ID cards from ₹25", Icon: IdCard, slug: "id-cards", image: "/inkfinity/assets/products/id_card_branded.png" },
-  { name: "Custom Prints", description: "Any custom print job you need", Icon: Paintbrush, slug: "custom", image: "https://images.unsplash.com/photo-1623013898240-dc50ec9588b3?w=800&q=80" },
+  { name: "Custom Prints", description: "Any custom print job you need", Icon: Paintbrush, slug: "custom", image: "/inkfinity/assets/products/custom_prints_branded.png" },
 ];
 
 const ProductShowcase = () => {

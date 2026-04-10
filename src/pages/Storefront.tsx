@@ -226,10 +226,21 @@ const Storefront = () => {
       return;
     }
     try {
-      await addToCart(product.id, product.shop_id, product.min_quantity);
+      await addToCart({
+        productId: product.id,
+        shopId: product.shop_id,
+        quantity: product.min_quantity,
+        productName: product.name,
+        categoryName: (product as any).category
+      });
       toast.success(`${product.name} added to cart!`);
-    } catch (error) {
-      toast.error("Failed to add to cart");
+    } catch (error: any) {
+      console.error("Cart error:", error);
+      if (error.message === "SHOP_MISMATCH") {
+        toast.error("You have items from another shop. Please clear your cart first.");
+      } else {
+        toast.error("Failed to add to cart");
+      }
     }
   };
 

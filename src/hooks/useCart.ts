@@ -1,6 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
+import { isUuid } from "@/lib/utils";
+import { getSubcategoryById } from "@/data/printingProducts";
+import { toast } from "sonner";
 
 export type CartItem = Database["public"]["Tables"]["cart_items"]["Row"] & {
   product?: Database["public"]["Tables"]["products"]["Row"];
@@ -48,18 +51,78 @@ export const useCart = (userId?: string) => {
     }) => {
       if (!userId) throw new Error("Not logged in");
       
-      // SWIGGY MODEL: Check if adding from a different shop
+      console.log("Cart Action - Start:", { productId, shopId, quantity });
+
+      let finalProductId: string | null = productId && isUuid(productId) ? productId : null;
+      let finalShopId: string = shopId;
+
+      // 1. Resolve Shop if it's a static slug
+      if (shopId && !isUuid(shopId)) {
+         const { data: firstShop } = await supabase.from("shops").select("id").limit(1).maybeSingle();
+         if (firstShop) {
+           finalShopId = firstShop.id;
+         } else {
+           throw new Error("NO_SHOPS_AVAILABLE");
+         }
+      }
+
+      // 2. Resolve or Create Product if it's a static slug
+      if (productId && !isUuid(productId)) {
+        console.log("Resolving static product slug:", productId);
+        
+        // Search by mapping in metadata
+        const { data: existingProduct } = await supabase
+          .from("products")
+          .select("id")
+          .eq("shop_id", finalShopId)
+          .contains('specifications', { original_slug: productId })
+          .maybeSingle();
+
+        if (existingProduct) {
+          finalProductId = existingProduct.id;
+        } else {
+          // Perform Lazy Sync
+          const staticData = getSubcategoryById(productId);
+          const insertData = {
+            name: productName || staticData?.name || "Platform Item",
+            category: categoryName || staticData?.categoryName || "Custom Print",
+            base_price: staticData ? parseInt(staticData.startingPrice.replace(/[^0-9]/g, "")) || 0 : 0,
+            min_quantity: staticData?.minQty || 1,
+            shop_id: finalShopId,
+            description: staticData?.description || `Premium ${productName || 'product'} from partner shop`,
+            images: staticData?.image ? [staticData.image] : [],
+            specifications: {
+              ...(specs || {}),
+              original_slug: productId,
+              platform_standard: true,
+              sync_date: new Date().toISOString()
+            },
+            is_active: true
+          };
+
+          const { data: newProd, error: insertErr } = await supabase
+            .from("products")
+            .insert(insertData as any)
+            .select("id")
+            .single();
+
+          if (insertErr) throw insertErr;
+          finalProductId = newProd.id;
+        }
+      }
+
+      if (!finalProductId) throw new Error("PRODUCT_UNAVAILABLE");
+
+      // 3. Prevent cross-shopping (mismatch check)
       if (items.length > 0) {
-        const currentShopId = items[0].shop_id;
-        if (currentShopId !== shopId) {
+        if (items[0].shop_id !== finalShopId) {
           throw new Error("SHOP_MISMATCH");
         }
       }
 
       // Check if already in cart
       const existing = items.find((i) => 
-        (productId && i.product_id === productId) || 
-        (!productId && i.generic_product_id === specs?.genericProductId)
+        (finalProductId && i.product_id === finalProductId)
       );
 
       if (existing) {
@@ -71,10 +134,13 @@ export const useCart = (userId?: string) => {
       } else {
         const { error } = await supabase.from("cart_items").insert({
           user_id: userId,
-          product_id: productId as any, 
-          shop_id: shopId,
+          product_id: finalProductId as any, 
+          shop_id: finalShopId,
           quantity,
-          specifications: specs || {},
+          specifications: {
+            ...specs,
+            resolved_from_slug: productId && !isUuid(productId) ? productId : undefined
+          },
           design_file_url: specs?.frontDesign || null
         } as any);
         if (error) throw error;
@@ -143,8 +209,14 @@ export const useCart = (userId?: string) => {
   return {
     items,
     loading,
-    addToCart: (productId: string | null, shopId: string, quantity: number, specs?: any, productName?: string, categoryName?: string) => 
-      addMutation.mutateAsync({ productId, shopId, quantity, specs, productName, categoryName }),
+    addToCart: (params: { 
+      productId: string | null, 
+      shopId: string, 
+      quantity: number, 
+      specs?: any, 
+      productName?: string, 
+      categoryName?: string 
+    }) => addMutation.mutateAsync(params),
     updateQuantity: (itemId: string, quantity: number) => 
       updateQuantityMutation.mutateAsync({ itemId, quantity }),
     removeFromCart: (itemId: string) => 

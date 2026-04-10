@@ -35,7 +35,6 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Storefront = lazy(() => import("./pages/Storefront"));
 const CartPage = lazy(() => import("./pages/Cart"));
 const OrderHistory = lazy(() => import("./pages/OrderHistory"));
-const ForShops = lazy(() => import("./pages/ForShops"));
 const SelectRole = lazy(() => import("./pages/SelectRole"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const CanvaAuthCallback = lazy(() => import("./pages/CanvaAuthCallback"));
@@ -154,17 +153,32 @@ const OnboardingChecker = ({ children }: { children: React.ReactNode }) => {
 
       const isSelectRolePage = location.pathname === "/select-role";
       const isOnboardingPage = location.pathname === "/onboarding";
-      const isLandingPage = location.pathname === "/";
-
-      // Public paths that don't need a role check (except for landing page which needs it for logged-in users)
-      const nonRedirectPaths = ["/login", "/signup", "/forgot-password", "/reset-password"];
+      
+      // Public paths that don't need a role check
+      const nonRedirectPaths = ["/login", "/signup", "/forgot-password", "/reset-password", "/"];
       if (nonRedirectPaths.includes(location.pathname)) return;
 
-      const metadataRole = user.user_metadata?.user_role;
+      let metadataRole = user.user_metadata?.user_role;
 
-      // If we are on landing page or any other protected page and have no role, go to select-role
+      // Fallback: If metadata role is missing, check the DB directly before redirecting
+      if (!metadataRole) {
+        console.log("Metadata role missing, checking DB fallback...");
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        
+        if (roleData?.role) {
+          metadataRole = roleData.role;
+          console.log("Restored role from DB:", metadataRole);
+          // Metadata will be synced by AuthContext soon, but we use this local value for now
+        }
+      }
+
+      // If we still have no role and aren't on select-role/onboarding, redirect
       if (!metadataRole && !isSelectRolePage && !isOnboardingPage) {
-        console.log("No role found for user, redirecting to select-role...");
+        console.log("No role found for user even after DB check, redirecting to select-role...");
         navigate("/select-role", { replace: true });
       }
     };
@@ -213,7 +227,6 @@ const App = () => {
                           <Route path="/product/:productId" element={<ProductDetails />} />
                           <Route path="/customize/:category" element={<ProductCustomize />} />
 
-                          <Route path="/for-shops" element={<ForShops />} />
                           <Route path="/track" element={<OrderTracking />} />
                           <Route path="/login" element={<Login />} />
                           <Route path="/signup" element={<Signup />} />

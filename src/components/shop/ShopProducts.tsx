@@ -296,21 +296,18 @@ export const ShopProducts = ({ shop }: Props) => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-primary/5 border border-primary/20 rounded-2xl p-6 mb-8 flex items-start gap-4"
+          className="bg-primary/5 border border-primary/20 rounded-2xl p-6 mb-8 flex items-center gap-4"
         >
           <div className="bg-primary/10 p-3 rounded-xl text-primary">
             <Package className="w-6 h-6" />
           </div>
-          <div>
-            <h3 className="font-bold text-foreground mb-1">Add your products to start selling!</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              You haven't added any products yet. Adding products allows customers to order directly with custom specs.
-              <span className="font-semibold text-primary"> Shops without products will only receive quotation requests.</span>
-            </p>
-            <Button variant="link" className="p-0 h-auto text-primary font-bold mt-2" onClick={() => setShowForm(true)}>
-              + Create your first product now
-            </Button>
+          <div className="flex-1">
+            <h3 className="font-bold text-foreground">No Products Yet</h3>
+            <p className="text-sm text-muted-foreground">Add your first product so customers can start placing orders!</p>
           </div>
+          <Button variant="coral" onClick={() => setShowForm(true)} className="shrink-0 gap-2">
+            <Plus className="w-4 h-4" /> Create Product
+          </Button>
         </motion.div>
       )}
 

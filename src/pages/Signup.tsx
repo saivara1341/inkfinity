@@ -56,8 +56,8 @@ const Signup = () => {
       return;
     }
 
-    toast({ title: "Account created!", description: "Welcome to PrintFlow!" });
-    navigate("/dashboard");
+    toast({ title: "Account created!", description: "Welcome to PrintFlow! Please select your role." });
+    navigate("/select-role");
     setLoading(false);
   };
 

@@ -169,16 +169,16 @@ const OnboardingChecker = ({ children }: { children: React.ReactNode }) => {
           .eq("user_id", user.id)
           .maybeSingle();
         
-        if (roleData?.role) {
+        // Ignore the trigger-assigned 'customer' role for new users
+        if (roleData?.role && roleData.role !== 'customer') {
           metadataRole = roleData.role;
-          console.log("Restored role from DB:", metadataRole);
-          // Metadata will be synced by AuthContext soon, but we use this local value for now
+          console.log("Restored elevated role from DB:", metadataRole);
         }
       }
 
       // If we still have no role and aren't on select-role/onboarding, redirect
       if (!metadataRole && !isSelectRolePage && !isOnboardingPage) {
-        console.log("No role found for user even after DB check, redirecting to select-role...");
+        console.log("No explicit role found for user even after DB check, redirecting to select-role...");
         navigate("/select-role", { replace: true });
       }
     };

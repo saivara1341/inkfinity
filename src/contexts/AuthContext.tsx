@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      const dbRole = roleData?.role || "customer";
+      const dbRole = roleData?.role;
       const currentMetadataRole = currentUser.user_metadata?.user_role;
 
       // 2. Fetch profile info if needed (just for full_name sync)
@@ -84,7 +84,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .eq("user_id", currentUser.id)
         .maybeSingle();
 
-      const needsUpdate = dbRole !== currentMetadataRole;
+      const isAutoAssignedCustomer = dbRole === "customer" && !currentMetadataRole;
+      const needsUpdate = dbRole && dbRole !== currentMetadataRole && !isAutoAssignedCustomer;
 
       if (needsUpdate) {
         console.log("Synchronizing user metadata with database role:", dbRole);

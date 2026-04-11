@@ -47,7 +47,7 @@ const ShopDashboard = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const { shop, orders, loading, updateOrderStatus, updateShopProfile } = useShopData();
+  const { shop, orders, loading, updateOrderStatus, updateOrderPayment, updateOrderTracking, updateShopProfile } = useShopData();
   const queryClient = useQueryClient();
   const [initializing, setInitializing] = useState(false);
   const [initialWait, setInitialWait] = useState(true);
@@ -251,6 +251,8 @@ const ShopDashboard = () => {
               <ShopOrders
                 orders={orders}
                 onUpdateStatus={updateOrderStatus}
+                onUpdatePayment={updateOrderPayment}
+                onUpdateTracking={updateOrderTracking}
               />
             )}
             {activeTab === "wallet" && <ShopWallet shopId={shop?.id} />}

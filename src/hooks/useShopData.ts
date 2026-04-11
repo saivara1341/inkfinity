@@ -117,6 +117,34 @@ export const useShopData = () => {
     },
   });
 
+  // Mutation to update order tracking
+  const updateTrackingMutation = useMutation({
+    mutationFn: async ({ orderId, trackingInfo }: { orderId: string; trackingInfo: any }) => {
+      const { error } = await supabase
+        .from("orders")
+        .update({ tracking_details: trackingInfo as any })
+        .eq("id", orderId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shop-orders", shop?.id] });
+    },
+  });
+
+  // Mutation to update order payment
+  const updatePaymentMutation = useMutation({
+    mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
+      const { error } = await supabase
+        .from("orders")
+        .update({ payment_status: status as any })
+        .eq("id", orderId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shop-orders", shop?.id] });
+    },
+  });
+
   // Mutation to update shop profile
   const updateShopMutation = useMutation({
     mutationFn: async (updates: Partial<Shop>) => {
@@ -144,6 +172,22 @@ export const useShopData = () => {
         return { error };
       }
     },
+    updateOrderPayment: async (id: string, status: string) => {
+      try {
+        await updatePaymentMutation.mutateAsync({ orderId: id, status });
+        return { error: null };
+      } catch (error) {
+        return { error };
+      }
+    },
+    updateOrderTracking: async (id: string, trackingInfo: any) => {
+      try {
+        await updateTrackingMutation.mutateAsync({ orderId: id, trackingInfo });
+        return { error: null };
+      } catch (error) {
+        return { error };
+      }
+    },
     updateShopProfile: async (updates: Partial<Shop>) => {
       try {
         await updateShopMutation.mutateAsync(updates);
@@ -153,6 +197,8 @@ export const useShopData = () => {
       }
     },
     updateStatusMutation,
+    updateTrackingMutation,
+    updatePaymentMutation,
     updateShopMutation
   };
 };

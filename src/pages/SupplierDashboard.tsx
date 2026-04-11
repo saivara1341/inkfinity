@@ -29,6 +29,8 @@ import { SupplierSettings } from "@/components/supplier/SupplierSettings";
 import { CouponManager } from "@/components/crm/CouponManager";
 import { CustomerSegments } from "@/components/crm/CustomerSegments";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CardSkeleton, DashboardHeroSkeleton, ListSkeleton } from "@/components/ui/Skeletons";
 
 const SupplierDashboard = () => {
   const { user } = useAuth();
@@ -79,8 +81,21 @@ const SupplierDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center font-display">
-        <div className="w-12 h-12 rounded-full border-4 border-accent/20 border-t-accent animate-spin" />
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navbar />
+        <main className="p-8 pt-24 max-w-7xl mx-auto w-full space-y-8">
+           <DashboardHeroSkeleton />
+           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <CardSkeleton />
+              <CardSkeleton />
+              <CardSkeleton />
+              <CardSkeleton />
+           </div>
+           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ListSkeleton rows={5} />
+              <ListSkeleton rows={5} />
+           </div>
+        </main>
       </div>
     );
   }

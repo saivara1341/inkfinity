@@ -28,6 +28,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { ReportModal } from "@/components/modals/ReportModal";
 import { Calculator } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CardSkeleton, DashboardHeroSkeleton } from "@/components/ui/Skeletons";
 
 type Tab = "overview" | "orders" | "products" | "wallet" | "accountant" | "analytics" | "ai-hub" | "marketing" | "settings" | "support" | "sourcing" | "pipeline" | "inventory" | "crm";
 
@@ -119,35 +121,39 @@ const ShopDashboard = () => {
 
   if (loading && !shop) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
-        {/* Animated Background Elements */}
-        <motion.div 
-          animate={{ rotate: 360 }} 
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-32 -right-32 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"
-        />
-        <motion.div 
-          animate={{ rotate: -360 }} 
-          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-          className="absolute -bottom-32 -left-32 w-80 h-80 bg-accent/5 rounded-full blur-3xl pointer-events-none"
-        />
+      <div className="min-h-screen bg-background flex">
+        {/* Fixed Sidebar Skeleton */}
+        <div className="w-64 border-r border-border p-6 space-y-8 hidden md:block">
+          <Skeleton className="h-10 w-32 mb-10" />
+          <div className="space-y-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="h-11 w-full rounded-xl" />
+            ))}
+          </div>
+        </div>
 
-        <motion.div
-           initial={{ scale: 0.8, opacity: 0 }}
-           animate={{ scale: 1, opacity: 1 }}
-           transition={{ type: "spring", bounce: 0.5 }}
-           className="relative z-10 flex flex-col items-center"
-        >
-          {/* Printer Animation Container */}
-          <div className="relative w-32 h-32 mb-8 flex items-center justify-center bg-card rounded-3xl shadow-xl shadow-accent/10 border border-border">
-            {/* Paper Sliding Out */}
-            <motion.div
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: [ -20, -5, 20 ], opacity: [ 0, 1, 0 ] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-2 w-16 h-12 bg-white rounded-sm shadow-sm border border-gray-200 z-0"
-            />
-            {/* Printer Body */}
+        <div className="flex-1 flex flex-col">
+          {/* Header Skeleton */}
+          <header className="h-16 border-b border-border px-8 flex items-center justify-between">
+            <Skeleton className="h-6 w-48" />
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <Skeleton className="h-10 w-24 rounded-xl" />
+            </div>
+          </header>
+
+          <main className="p-8 space-y-8 overflow-auto max-h-screen">
+            <DashboardHeroSkeleton />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <CardSkeleton />
+              <CardSkeleton />
+              <CardSkeleton />
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
             <div className="relative z-10 w-20 h-16 bg-primary/10 rounded-xl flex items-center justify-center border border-primary/20 backdrop-blur-md">
               <Printer className="w-10 h-10 text-primary" />
               {/* Scanning Laser Effect */}

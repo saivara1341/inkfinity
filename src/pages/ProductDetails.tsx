@@ -15,6 +15,7 @@ import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { Skeleton } from "@/components/ui/skeleton";
 import ShareControl from "@/components/ShareControl";
 import { ReviewSystem } from "@/components/ReviewSystem";
 import { getSubcategoryById } from "@/data/printingProducts";
@@ -192,9 +193,20 @@ const ProductDetails = () => {
         return (
             <div className="min-h-screen bg-background flex flex-col">
                 <Navbar />
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-                </div>
+                <main className="pt-24 pb-20 container mx-auto px-4 space-y-12">
+                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                        <div className="lg:col-span-7">
+                           <Skeleton className="aspect-[4/3] rounded-[2.5rem] w-full" />
+                        </div>
+                        <div className="lg:col-span-5 space-y-6">
+                           <Skeleton className="h-4 w-32" />
+                           <Skeleton className="h-12 w-full" />
+                           <Skeleton className="h-6 w-64" />
+                           <Skeleton className="h-48 w-full rounded-[2.5rem]" />
+                           <Skeleton className="h-24 w-full rounded-[2rem]" />
+                        </div>
+                     </div>
+                </main>
             </div>
         );
     }

@@ -23,6 +23,9 @@ interface Props {
   shopId: string;
 }
 
+import { WalletSkeleton, ListSkeleton } from "@/components/ui/Skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export const ShopWallet = ({ shopId }: Props) => {
   const queryClient = useQueryClient();
   const [withdrawAmount, setWithdrawAmount] = useState("");
@@ -298,9 +301,21 @@ export const ShopWallet = ({ shopId }: Props) => {
 
   if (loadingShop) {
     return (
-      <div className="flex flex-col items-center justify-center p-20 space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin text-accent" />
-        <p className="text-muted-foreground">Fetching payment details...</p>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2">
+            <WalletSkeleton />
+          </div>
+          <div className="bg-card rounded-[2rem] border border-border p-6 shadow-card">
+            <Skeleton className="h-4 w-32 mb-4" />
+            <Skeleton className="h-12 w-full mb-4" />
+            <Skeleton className="h-12 w-full rounded-xl" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ListSkeleton rows={4} />
+          <ListSkeleton rows={4} />
+        </div>
       </div>
     );
   }

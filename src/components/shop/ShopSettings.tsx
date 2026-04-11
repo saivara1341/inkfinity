@@ -11,6 +11,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Database } from "@/integrations/supabase/types";
 import { Badge } from "@/components/ui/badge";
+import { InfoPopover } from "@/components/ui/InfoPopover";
+import { Switch } from "@/components/ui/switch";
 
 type Shop = Database["public"]["Tables"]["shops"]["Row"];
 
@@ -46,6 +48,7 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
     qr_code_url: (shop as any)?.qr_code_url || "",
     supported_payment_apps: (shop as any)?.supported_payment_apps || [],
     is_verified: shop?.is_verified || false,
+    is_gst_registered: (shop as any)?.is_gst_registered ?? true,
   });
 
   // sync form if shop object changes (onSuccess of mutation)
@@ -76,6 +79,7 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
         use_custom_razorpay: shop.use_custom_razorpay || false,
         razorpay_key_id: shop.razorpay_key_id || "",
         razorpay_key_secret: shop.razorpay_key_secret || "",
+        is_gst_registered: (shop as any).is_gst_registered ?? true,
       }));
     }
   }, [shop]);
@@ -282,6 +286,45 @@ export const ShopSettings = ({ shop, onSave }: Props) => {
               </div>
             </div>
           </div>
+          </div>
+        </div>
+
+        <div className="p-6 rounded-2xl bg-accent/5 border border-accent/20 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                <ShieldQuestion className="w-5 h-5 text-accent" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="font-bold text-foreground">GST Registration Status</h4>
+                  <InfoPopover content="If you are NOT registered for GST, toggle this off. The platform will stop collecting tax on your behalf and mark your earnings as GST exempt in reports." />
+                </div>
+                <p className="text-xs text-muted-foreground">Specify if your business is registered for GST.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={`text-xs font-bold uppercase ${form.is_gst_registered ? "text-accent" : "text-muted-foreground"}`}>
+                {form.is_gst_registered ? "Registered" : "Not Registered"}
+              </span>
+              <Switch 
+                checked={form.is_gst_registered}
+                onCheckedChange={(checked) => setForm(prev => ({ ...prev, is_gst_registered: checked }))}
+              />
+            </div>
+          </div>
+          {!form.is_gst_registered && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl flex gap-3"
+            >
+              <ShieldAlert className="w-5 h-5 text-amber-500 shrink-0" />
+              <p className="text-xs text-amber-700 leading-relaxed font-medium">
+                Note: By declaring yourself as unregistered, you represent that you are not required to collect GST under Indian law. All your products will be listed with 0% tax component.
+              </p>
+            </motion.div>
+          )}
         </div>
 
         <div className="pt-4 border-t border-border">

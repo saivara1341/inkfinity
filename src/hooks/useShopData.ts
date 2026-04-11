@@ -78,7 +78,7 @@ export const useShopData = () => {
       if (!shop) return [];
       const { data, error } = await supabase
         .from("orders")
-        .select("id, order_number, product_name, grand_total, status, created_at, customer_id, shop_id")
+        .select("id, order_number, product_name, grand_total, status, created_at, customer_id, shop_id, gst_amount, platform_fee, merchant_earning")
         .eq("shop_id", shop.id)
         .order("created_at", { ascending: false });
       if (error) throw error;

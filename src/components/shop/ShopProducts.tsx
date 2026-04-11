@@ -7,12 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { calculateNetEarnings } from "@/utils/algorithms";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { HelpCircle, Calculator, Info } from "lucide-react";
+  InfoPopover
+} from "@/components/ui/InfoPopover";
+import { HelpCircle, Calculator, Info, ShieldAlert } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -292,15 +289,16 @@ export const ShopProducts = ({ shop }: Props) => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      {/* Header */}
+      {/* Header - Only show button if we have products to avoid UI duplication with the empty banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">My Products</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage your print catalog and pricing</p>
+          <p className="text-sm text-muted-foreground">Manage your print catalog, specifications, and pricing intelligence</p>
         </div>
-        <Button onClick={() => { setEditingId(null); setForm(emptyForm); setShowForm(true); }} className="gap-2 rounded-xl bg-coral hover:bg-coral/90 text-white">
-          <Plus className="w-4 h-4" /> Add New Product
-        </Button>
+        {products.length > 0 && (
+          <Button onClick={() => { setEditingId(null); setForm(emptyForm); setShowForm(true); }} className="gap-2 rounded-xl bg-coral hover:bg-coral/90 text-white shadow-lg shadow-coral/20">
+            <Plus className="w-4 h-4" /> Add New Product
+          </Button>
+        )}
       </div>
 
       {!loading && products.length === 0 && !showForm && (
@@ -403,14 +401,7 @@ export const ShopProducts = ({ shop }: Props) => {
                         <div className="space-y-2">
                           <label className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-2">
                             Base Price (₹)
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <HelpCircle className="w-3 h-3 cursor-help text-muted-foreground" />
-                                </TooltipTrigger>
-                                <TooltipContent>The base listing price shown to customers.</TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                            <InfoPopover content="The base listing price shown to customers. This is the amount they will pay on your store front." />
                           </label>
                           <div className="relative">
                             <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -427,22 +418,21 @@ export const ShopProducts = ({ shop }: Props) => {
                         <div className="space-y-2">
                           <label className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-2">
                             GST on Product (%)
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <HelpCircle className="w-3 h-3 cursor-help text-muted-foreground" />
-                                </TooltipTrigger>
-                                <TooltipContent>If you are GST registered, specify the tax component included in this price.</TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                            <InfoPopover content={shop?.is_gst_registered ? "If you are GST registered, specify the tax component included in this price." : "You are currently marked as Not GST Registered in settings. All products are considered GST exempt."} />
                           </label>
                           <input
                             type="number"
                             value={form.gst_percentage}
                             onChange={(e) => setForm({ ...form, gst_percentage: e.target.value })}
-                            placeholder="18"
-                            className="w-full px-4 py-2.5 rounded-xl border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+                            placeholder={shop?.is_gst_registered ? "18" : "0"}
+                            disabled={!shop?.is_gst_registered}
+                            className={`w-full px-4 py-2.5 rounded-xl border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all ${!shop?.is_gst_registered ? "opacity-50 cursor-not-allowed" : ""}`}
                           />
+                          {!shop?.is_gst_registered && (
+                            <p className="text-[10px] text-amber-600 font-bold mt-1 flex items-center gap-1">
+                              <ShieldAlert className="w-3 h-3" /> GST Exempt (Unregistered)
+                            </p>
+                          )}
                         </div>
                       </div>
 

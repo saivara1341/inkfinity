@@ -114,17 +114,17 @@ const AdminDashboard = () => {
     enabled: roleData?.role === "admin",
   });
 
-  // 1. Lightweight Metrics Query (Global Totals)
+  // 1. Comprehensive Metrics Query (All Orders for Financial Strategy)
   const { data: metricsData } = useQuery({
-    queryKey: ["admin-metrics"],
+    queryKey: ["admin-metrics-full"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("grand_total, platform_fee, status, payment_status");
+        .select("grand_total, platform_fee, gst_amount, merchant_earning, status, created_at");
       if (error) throw error;
       return data || [];
     },
-    enabled: roleData?.role === "admin" && (activeTab === "overview" || activeTab === "analytics" || (activeTab === "nexus" && nexusAccessGranted)),
+    enabled: roleData?.role === "admin" && (activeTab === "overview" || activeTab === "analytics" || activeTab === "strategy" || (activeTab === "nexus" && nexusAccessGranted)),
   });
 
   const { totalRevenue, totalPlatformFees, pendingOrdersCount } = useMemo(() => {
@@ -1539,7 +1539,7 @@ const AdminDashboard = () => {
               {activeTab === "strategy" && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <AIAccountantHub 
-                    orders={orders} 
+                    orders={metricsData || []} 
                     context="supplier" 
                     title="Platform HQ"
                   />

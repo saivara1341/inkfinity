@@ -22,11 +22,11 @@ interface Props {
   orders: Order[];
 }
 
-const Customer360 = ({ orders }: Props) => {
+const Customer360 = ({ orders = [] }: Props) => {
   const [search, setSearch] = useState("");
 
   // Process unique customers from orders
-  const customerMap = (orders || []).reduce((acc, order) => {
+  const customerMap = orders.reduce((acc, order) => {
     const key = order.customer_id || 'guest';
     if (!acc[key]) {
       acc[key] = {
@@ -37,6 +37,7 @@ const Customer360 = ({ orders }: Props) => {
         totalOrders: 0,
         totalSpent: 0,
         lastOrderDate: order.created_at,
+        firstOrderDate: order.created_at,
         avatar: "C"
       };
     }
@@ -44,6 +45,9 @@ const Customer360 = ({ orders }: Props) => {
     acc[key].totalSpent += Number(order.grand_total || 0);
     if (new Date(order.created_at) > new Date(acc[key].lastOrderDate)) {
       acc[key].lastOrderDate = order.created_at;
+    }
+    if (new Date(order.created_at) < new Date(acc[key].firstOrderDate)) {
+      acc[key].firstOrderDate = order.created_at;
     }
     return acc;
   }, {} as Record<string, any>);
@@ -118,7 +122,7 @@ const Customer360 = ({ orders }: Props) => {
                 <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Client Profile</th>
                 <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Order Volume</th>
                 <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Total Value</th>
-                <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Last Interactive</th>
+                <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">History & Age</th>
                 <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">Actions</th>
               </tr>
             </thead>
@@ -166,9 +170,15 @@ const Customer360 = ({ orders }: Props) => {
                       <p className="text-lg font-bold text-foreground font-display">₹{customer.totalSpent.toLocaleString()}</p>
                     </td>
                     <td className="px-8 py-6">
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-                        <Clock className="w-3.5 h-3.5" />
-                        {formatDistanceToNow(new Date(customer.lastOrderDate), { addSuffix: true })}
+                      <div className="flex flex-col gap-1.5 text-xs font-medium">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Clock className="w-3.5 h-3.5" />
+                          Last: {formatDistanceToNow(new Date(customer.lastOrderDate), { addSuffix: true })}
+                        </div>
+                        <div className="flex items-center gap-2 text-indigo-400">
+                          <UserPlus className="w-3.5 h-3.5" />
+                          Age: {formatDistanceToNow(new Date(customer.firstOrderDate))}
+                        </div>
                       </div>
                     </td>
                     <td className="px-8 py-6 text-right">

@@ -4,8 +4,14 @@ import {
   CreditCard, Wallet, ArrowUpRight, ArrowDownLeft, 
   Clock, CheckCircle2, AlertCircle, IndianRupee,
   Download, Send, Building, Smartphone, Settings,
-  QrCode, Upload, X, ShieldCheck, Check, ArrowRight, Loader2
+  QrCode, Upload, X, ShieldCheck, Check, ArrowRight, Loader2, HelpCircle
 } from "lucide-react";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -161,7 +167,22 @@ export const ShopWallet = ({ shopId }: Props) => {
                 <CreditCard className="w-5 h-5 text-accent" />
               </div>
               <div>
-                <h4 className="font-bold text-foreground">Online Payments (Razorpay)</h4>
+                <div className="flex items-center gap-2">
+                  <h4 className="font-bold text-foreground">Online Payments (Razorpay)</h4>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs p-3">
+                        <p className="text-xs leading-relaxed">
+                          Enabling Razorpay allows you to accept credit/debit cards, UPI, and netbanking during checkout. 
+                          A small transaction fee (approx. 2-3%) is deducted by the gateway for each successful transaction.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <p className="text-xs text-muted-foreground">Accept cards and netbanking via checkout.</p>
               </div>
             </div>
@@ -216,7 +237,22 @@ export const ShopWallet = ({ shopId }: Props) => {
             <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
               <Building className="w-5 h-5 text-green-600" />
             </div>
-            <h4 className="font-bold text-foreground">Bank & UPI for Settlements</h4>
+            <div className="flex items-center gap-2">
+              <h4 className="font-bold text-foreground">Bank & UPI for Settlements</h4>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs p-3">
+                    <p className="text-xs leading-relaxed">
+                      These details are used by Print Flow to transfer your accrued earnings to your account. 
+                      Ensure your UPI ID and Bank details are accurate to avoid delays in automated payouts.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           </div>
 
           <div className="space-y-4">

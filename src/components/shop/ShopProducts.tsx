@@ -5,6 +5,14 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import { calculateNetEarnings } from "@/utils/algorithms";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { HelpCircle, Calculator, Info } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -99,6 +107,7 @@ const emptyForm = {
   price_tiers: [{ min: "1", price_per_unit: "0" }] as any[],
   sizes: [] as string[],
   materials: [] as string[],
+  gst_percentage: "18",
 };
 
 export const ShopProducts = ({ shop }: Props) => {
@@ -146,6 +155,7 @@ export const ShopProducts = ({ shop }: Props) => {
       })),
       sizes: (product.specifications as any)?.sizes || [],
       materials: (product.specifications as any)?.materials || [],
+      gst_percentage: (product.specifications as any)?.gst_percentage?.toString() || "18",
     });
     setShowForm(true);
   };
@@ -207,17 +217,18 @@ export const ShopProducts = ({ shop }: Props) => {
       max_quantity: form.max_quantity ? parseInt(form.max_quantity) : null,
       is_active: form.is_active,
       images,
-      specifications: {
-        ...((editingId ? products.find(p => p.id === editingId)?.specifications : {}) as any),
-        price_tiers: form.price_tiers.map(t => ({
-          min: parseInt(t.min.toString()) || 0,
-          price_per_unit: parseFloat(t.price_per_unit.toString()) || 0
-        })),
-        sizes: form.sizes,
-        materials: form.materials,
-      },
-      price_includes_gst: form.price_includes_gst
-    };
+        specifications: {
+          ...((editingId ? products.find(p => p.id === editingId)?.specifications : {}) as any),
+          price_tiers: form.price_tiers.map(t => ({
+            min: Number(t.min),
+            price_per_unit: Number(t.price_per_unit)
+          })),
+          sizes: form.sizes,
+          materials: form.materials,
+          gst_percentage: Number(form.gst_percentage || 18),
+        },
+        price_includes_gst: form.price_includes_gst
+      };
 
     if (editingId) {
       const { error } = await supabase.from("products").update(payload).eq("id", editingId);
@@ -379,18 +390,112 @@ export const ShopProducts = ({ shop }: Props) => {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-semibold text-foreground mb-1.5 block">Base Price (₹ per single piece or unit) *</label>
-                  <div className="relative">
-                    <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <input
-                      type="number"
-                      value={form.base_price}
-                      onChange={(e) => setForm({ ...form, base_price: e.target.value })}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                  </div>
-                </div>
+                {/* PricingAnalyzer logic */}
+                {(() => {
+                  const price = Number(form.base_price) || 0;
+                  const stats = calculateNetEarnings(price, form.category.toLowerCase().includes('bulk') ? 'bulk' : 'general');
+                  const gatewayFee = price * 0.02; // Placeholder 2% for Razorpay
+                  const takeHome = stats.net - gatewayFee;
+
+                  return (
+                    <div className="col-span-2 space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-2">
+                            Base Price (₹)
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <HelpCircle className="w-3 h-3 cursor-help text-muted-foreground" />
+                                </TooltipTrigger>
+                                <TooltipContent>The base listing price shown to customers.</TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </label>
+                          <div className="relative">
+                            <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <input
+                              type="number"
+                              value={form.base_price}
+                              onChange={(e) => setForm({ ...form, base_price: e.target.value })}
+                              placeholder="0.00"
+                              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-input bg-background/50 text-foreground font-bold focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-2">
+                            GST on Product (%)
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <HelpCircle className="w-3 h-3 cursor-help text-muted-foreground" />
+                                </TooltipTrigger>
+                                <TooltipContent>If you are GST registered, specify the tax component included in this price.</TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </label>
+                          <input
+                            type="number"
+                            value={form.gst_percentage}
+                            onChange={(e) => setForm({ ...form, gst_percentage: e.target.value })}
+                            placeholder="18"
+                            className="w-full px-4 py-2.5 rounded-xl border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Pricing Analyzer Card */}
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-accent/5 border border-accent/20 rounded-2xl p-5 space-y-4"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-accent">
+                            <Calculator className="w-4 h-4" />
+                            <h5 className="text-sm font-bold">Pricing Intelligence (Analyzer)</h5>
+                          </div>
+                          <span className="text-[10px] font-bold bg-accent/10 text-accent px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                            Real-time Estimate
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="space-y-1">
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold text-xs">Customer Pays</p>
+                            <p className="text-sm font-bold">₹{price.toLocaleString()}</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold text-xs">Platform Fee</p>
+                            <p className="text-sm font-bold text-destructive">-₹{(stats.commission + stats.taxOnCommission).toLocaleString()}</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold text-xs">Gateway Fee</p>
+                            <p className="text-sm font-bold text-destructive">-₹{gatewayFee.toLocaleString()}</p>
+                          </div>
+                          <div className="space-y-1 p-2 bg-green-500/10 rounded-lg border border-green-500/20">
+                            <p className="text-[10px] text-green-600 font-bold uppercase text-xs">Net Payout</p>
+                            <p className="text-base font-black text-green-600">₹{Math.max(0, takeHome).toLocaleString()}</p>
+                          </div>
+                        </div>
+
+                        <div className="p-3 bg-card border border-border rounded-xl flex items-start gap-3">
+                          <Info className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                          <div className="space-y-1">
+                            <p className="text-[11px] font-medium text-foreground leading-tight">
+                              {takeHome < price * 0.7 
+                                ? "Margins are tight. To compete with local markets, consider listing with slightly higher prices while highlighting 'Doorstep Delivery' as a premium value."
+                                : "Your pricing is healthy. This price point allows you to offer premium service while remaining profitable on the platform."}
+                            </p>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </div>
+                  );
+                })()}
+
                 <div>
                   <label className="text-sm font-semibold text-foreground mb-1.5 block">Min Quantity</label>
                   <input

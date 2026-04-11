@@ -14,8 +14,10 @@ import {
   Globe,
   Facebook,
   Twitter,
-  MessageSquare
+  MessageSquare,
+  FileWarning
 } from "lucide-react";
+import { ReportModal } from "@/components/modals/ReportModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -33,7 +35,8 @@ const SupplierDashboard = () => {
   const navigate = useNavigate();
   const [supplier, setSupplier] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"catalog" | "quotes" | "coupons" | "segments" | "settings">("catalog");
+  const [activeTab, setActiveTab] = useState<"catalog" | "quotes" | "coupons" | "segments" | "settings" | "support">("catalog");
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const fetchSupplierData = async () => {
     if (!user) return;
@@ -190,6 +193,13 @@ const SupplierDashboard = () => {
             >
                 Settings
             </Button>
+            <Button 
+                variant={activeTab === "support" ? "coral" : "outline"}
+                className="rounded-xl px-6 h-12 flex-none shadow-sm text-sm md:text-lg font-bold"
+                onClick={() => setActiveTab("support")}
+            >
+                Support
+            </Button>
           </div>
         </header>
 
@@ -226,6 +236,25 @@ const SupplierDashboard = () => {
 
             {activeTab === "settings" && (
               <SupplierSettings supplier={supplier} onSave={handleSaveSupplier} />
+            )}
+
+            {activeTab === "support" && (
+              <div className="bg-card rounded-xl border border-border p-8 text-center space-y-4 shadow-card">
+                <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto">
+                  <FileWarning className="w-8 h-8 text-accent" />
+                </div>
+                <h2 className="text-xl font-display font-bold text-foreground">Manufacturer Support Command</h2>
+                <p className="text-muted-foreground max-w-sm mx-auto">Report technical issues, supply chain disruptions, or platform suggestions.</p>
+                <Button variant="coral" onClick={() => setIsReportModalOpen(true)}>
+                  Report an Issue
+                </Button>
+                <ReportModal 
+                  isOpen={isReportModalOpen} 
+                  onClose={() => setIsReportModalOpen(false)} 
+                  subjectId={supplier?.id}
+                  subjectType="shop"
+                />
+              </div>
             )}
           </div>
         </div>

@@ -283,101 +283,78 @@ const Storefront = () => {
             </motion.div>
           )}
 
-          {/* Top Rated Shops Carousel - Swiggy Style */}
-          {view === "shops" && searchQuery === "" && selectedCategory === "All" && !shopFilter && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-12"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-black text-slate-900 flex items-center gap-2">
-                  <Flame className="w-7 h-7 text-[#FF7300] fill-[#FF7300]" />
-                  Top Rated Shops
-                </h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {shops.slice(0, 3).map((shop) => (
-                  <motion.div
-                    key={`top-${shop.id}`}
-                    whileHover={{ y: -8 }}
-                    className="group relative cursor-pointer overflow-hidden rounded-3xl h-64 shadow-lg shadow-black/5"
-                    onClick={() => navigate(`/shop/${shop.id}`)}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
-                    <img 
-                      src={`https://images.unsplash.com/photo-1504215680145-505bb1df7017?w=800&q=80`} 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      alt={shop.name}
-                    />
-                    <div className="absolute bottom-6 left-6 right-6 z-20 text-white">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="px-2 py-0.5 bg-[#FF7300] text-white text-[10px] font-black rounded uppercase">Premium</span>
-                        <div className="h-4 w-[1px] bg-white/30" />
-                        <span className="text-xs font-bold opacity-90">{shop.city}</span>
-                      </div>
-                      <h3 className="text-2xl font-black">{shop.name}</h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="flex items-center gap-1 bg-green-500 text-white px-1.5 py-0.5 rounded text-[10px] font-black">
-                         {shop.rating || "5.0"} <Star className="w-2.5 h-2.5 fill-current" />
-                        </div>
-                        <span className="text-xs font-medium opacity-80">• {shop.product_count}+ Products</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
+          {/* Premium Hero & Search Section */}
+          <div className="relative mb-20">
+            {/* Background Decorative Elements */}
+            <div className="absolute -top-24 -left-24 w-96 h-96 bg-accent/20 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute top-0 -right-24 w-64 h-64 bg-primary/20 rounded-full blur-[100px] pointer-events-none" />
+            
+            <div className="relative text-center space-y-8 pt-12 pb-8">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="space-y-4"
+              >
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs font-bold uppercase tracking-widest">
+                  <Flame className="w-3.5 h-3.5 fill-accent" /> Trending: Digital Business Cards
+                </div>
+                <h1 className="text-5xl md:text-7xl font-display font-black text-foreground tracking-tight italic">
+                  Print the <span className="text-accent">Future.</span>
+                </h1>
+                <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto font-medium">
+                  India's premium marketplace for high-performance printing services and machinery.
+                </p>
+              </motion.div>
 
-          {/* Premium Search Experience - Swiggy/Diginaat Style */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="sticky top-20 z-40 mb-12 -mx-4 px-4 py-6 bg-slate-50/80 backdrop-blur-xl border-b border-white/20"
-          >
-            <div className="relative max-w-3xl mx-auto group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-[#FF7300] to-[#FF9D00] rounded-[28px] blur opacity-20 group-focus-within:opacity-40 transition-opacity duration-500" />
-              <div className="relative flex items-center bg-white rounded-3xl shadow-[0_8px_40px_rgb(0,0,0,0.06)] border border-slate-100 overflow-hidden">
-                <div className="pl-6 text-slate-400 group-focus-within:text-[#FF7300] transition-colors">
-                  <Search className="w-6 h-6 stroke-[2.5px]" />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+                className="relative max-w-3xl mx-auto group z-50"
+              >
+                <div className="absolute -inset-1 bg-gradient-to-r from-accent to-primary rounded-[2rem] blur opacity-25 group-focus-within:opacity-50 transition-opacity duration-500" />
+                <div className="relative flex items-center bg-card rounded-[2rem] shadow-2xl border border-white/20 overflow-hidden backdrop-blur-3xl">
+                  <div className="pl-6 text-muted-foreground group-focus-within:text-accent transition-colors">
+                    <Search className="w-6 h-6 stroke-[2.5px]" />
+                  </div>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search for premium shops, products, or materials..."
+                    className="w-full pl-4 pr-12 py-6 bg-transparent border-none focus:ring-0 text-foreground text-xl font-bold placeholder:text-muted-foreground/30"
+                  />
+                  <div className="absolute right-4 flex items-center gap-2">
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="p-2 hover:bg-secondary rounded-full text-muted-foreground hover:text-foreground transition-all"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    )}
+                    <Button variant="coral" size="lg" className="rounded-2xl h-12 px-8 font-bold shadow-lg shadow-accent/20">
+                      Search
+                    </Button>
+                  </div>
                 </div>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Design anything? Visiting Cards, Banners, or Custom Prints..."
-                  className="w-full pl-4 pr-12 py-5 bg-transparent border-none focus:ring-0 text-slate-900 text-lg font-bold placeholder:text-slate-300 placeholder:font-medium"
-                />
-                <div className="absolute right-4 flex items-center gap-2">
-                  {searchQuery && (
+                
+                <div className="mt-4 flex items-center justify-center gap-6 overflow-x-auto no-scrollbar py-2">
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest whitespace-nowrap opacity-60">HOT PICKS:</span>
+                  {["Visiting Cards", "ID Cards", "T-Shirts", "Signage"].map(tag => (
                     <button
-                      onClick={() => setSearchQuery("")}
-                      className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-all"
+                      key={tag}
+                      onClick={() => setSearchQuery(tag)}
+                      className="text-xs font-bold text-muted-foreground hover:text-accent transition-colors whitespace-nowrap bg-secondary/50 px-3 py-1 rounded-full border border-border/50 hover:border-accent/30"
                     >
-                      <X className="w-5 h-5" />
+                      {tag}
                     </button>
-                  )}
-                  <div className="h-8 w-[1px] bg-slate-100 mx-1" />
-                  <button className="bg-slate-900 text-white px-6 py-2.5 rounded-2xl text-sm font-black hover:bg-slate-800 transition-colors shadow-lg active:scale-95">
-                    Search
-                  </button>
+                  ))}
                 </div>
-              </div>
-              <div className="mt-3 flex items-center gap-4 px-4 overflow-x-auto no-scrollbar">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Suggested:</span>
-                {["Visiting Cards", "ID Cards", "Banners", "Stickers"].map(tag => (
-                  <button
-                    key={tag}
-                    onClick={() => setSearchQuery(tag)}
-                    className="text-xs font-bold text-slate-600 hover:text-[#FF7300] transition-colors whitespace-nowrap"
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
+              </motion.div>
             </div>
-          </motion.div>
+          </div>
 
           <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
             {/* View Toggle (Traditional Swiggy Filter Style) */}
@@ -520,59 +497,75 @@ const Storefront = () => {
                     transition={{ delay: i * 0.05 }}
                     className="bg-card rounded-xl border border-border shadow-card hover:shadow-elevated transition-all group"
                   >
-                    <Link to={`/product/${product.id}`} className="block aspect-[4/3] bg-secondary rounded-t-xl overflow-hidden relative">
+                    <Link to={`/product/${product.id}`} className="block aspect-[4/3] bg-secondary/30 rounded-t-3xl overflow-hidden relative group-hover:shadow-inner transition-all">
                       {product.images?.[0] ? (
-                        <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                        <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted-foreground text-center p-4">
-                          <Store className="w-10 h-10 mx-auto mb-2 opacity-40" />
-                          <p className="text-xs">{product.category}</p>
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground/40 bg-secondary/10">
+                          <Package className="w-12 h-12 stroke-[1.5px]" />
                         </div>
                       )}
-                      <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <WishlistButton productId={product.id} variant="secondary" size="icon" />
+                      
+                      {/* Gradient Overlay for Text Visibility */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      
+                      <div className="absolute top-4 right-4 flex flex-col gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                        <WishlistButton productId={product.id} variant="secondary" size="icon" className="rounded-2xl backdrop-blur-md bg-white/10 border-white/20" />
+                      </div>
+                      
+                      <div className="absolute bottom-4 left-4 right-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                         <p className="text-white text-[10px] font-black uppercase tracking-widest bg-accent px-2 py-1 rounded inline-block mb-1">BESTSELLER</p>
                       </div>
                     </Link>
+// ... (rest of search/replace)
 
-                    <div className="p-4 space-y-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <Link to={`/product/${product.id}`} className="hover:text-accent transition-colors">
-                          <h3 className="font-display font-semibold text-foreground text-sm line-clamp-2">{product.name}</h3>
+                    <div className="p-5 space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <Link to={`/product/${product.id}`} className="group/title">
+                          <h3 className="font-display font-bold text-foreground text-base line-clamp-2 leading-tight group-hover/title:text-accent transition-colors italic">{product.name}</h3>
                         </Link>
-                        <span className="text-lg font-display font-bold text-accent whitespace-nowrap">
-                          ₹{product.base_price}
-                        </span>
+                        <div className="text-right">
+                          <span className="text-xl font-display font-black text-accent block">
+                            ₹{product.base_price}
+                          </span>
+                          <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-tighter">Starting at</span>
+                        </div>
                       </div>
 
                       {(product.shop as any) && (
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <Store className="w-3 h-3" />
+                        <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground/60 bg-secondary/30 p-2 rounded-xl border border-border/50">
+                          <Store className="w-3.5 h-3.5 text-accent" />
                           <span className="truncate">{(product.shop as any).name}</span>
-                          <span>•</span>
-                          <MapPin className="w-3 h-3" />
+                          <div className="w-1 h-1 rounded-full bg-border" />
+                          <MapPin className="w-3.5 h-3.5" />
                           <span>{(product.shop as any).city}</span>
                         </div>
                       )}
 
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span>Min: {product.min_quantity} units</span>
+                      <div className="flex items-center justify-between pt-2">
+                         <div className="flex items-center gap-1.5 text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">
+                            <Clock className="w-3.5 h-3.5" /> 24hr Dispatch
+                         </div>
+                         <div className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">
+                            Min: {product.min_quantity} units
+                         </div>
                       </div>
 
                       <div className="flex gap-2 pt-2">
                         <Button
                           variant="coral"
-                          size="sm"
-                          className="flex-1 gap-1 font-bold"
+                          className="flex-1 h-11 rounded-2xl gap-2 font-bold shadow-lg shadow-accent/10 hover-lift"
                           onClick={() => navigate(`/customize/${product.category.toLowerCase().replace(/\s+/g, '-') || 'generic'}?productId=${product.id}`)}
                         >
-                          <ShoppingCart className="w-3.5 h-3.5" /> Customize
+                          <ShoppingCart className="w-4 h-4" /> Personalize
                         </Button>
                         <ShareControl
                           title={product.name}
                           text={`Check out this ${product.name} on PrintFlow!`}
                           url={window.location.origin + `/product/${product.id}`}
                           variant="secondary"
-                          size="sm"
+                          size="icon"
+                          className="w-11 h-11 rounded-2xl bg-secondary/50 border-border/50 hover:bg-secondary"
                           showLabel={false}
                         />
                       </div>
@@ -596,48 +589,61 @@ const Storefront = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className="bg-card rounded-xl border border-border p-5 shadow-card hover:shadow-elevated transition-all"
+                    className="group bg-card rounded-[2.5rem] border border-border p-6 shadow-card hover:shadow-2xl transition-all duration-500 hover:-translate-y-1 relative overflow-hidden"
                   >
-                    <div className="flex items-start gap-4 mb-3">
-                      <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                        <Store className="w-7 h-7 text-accent" />
+                    {/* Decorative Background Accent */}
+                    <div className="absolute -top-12 -right-12 w-32 h-32 bg-accent/5 rounded-full blur-3xl group-hover:bg-accent/10 transition-colors" />
+                    
+                    <div className="flex items-start gap-5 mb-5 relative z-10">
+                      <div className="w-16 h-16 rounded-[1.25rem] bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center shrink-0 border border-accent/10 group-hover:scale-110 transition-transform duration-500 shadow-lg">
+                        <Store className="w-8 h-8 text-accent" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-display font-semibold text-foreground truncate">{shop.name}</h3>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-display font-bold text-xl text-foreground truncate italic">{shop.name}</h3>
                           {shop.is_verified && (
-                            <span className="text-xs px-1.5 py-0.5 rounded bg-success/20 text-success shrink-0">✓ Verified</span>
+                            <div className="w-5 h-5 flex items-center justify-center bg-blue-500 text-white rounded-full scale-75 shadow-sm">
+                               <CheckCircle2 className="w-3.5 h-3.5 fill-current" />
+                            </div>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                          <MapPin className="w-3 h-3" /> {shop.city}
-                          <span>•</span>
-                          <Star className="w-3 h-3 text-warning fill-warning" /> {shop.rating || "New"}
+                        <div className="flex items-center gap-3 text-xs font-semibold text-muted-foreground/60">
+                          <div className="flex items-center gap-1">
+                            <MapPin className="w-3.5 h-3.5" /> {shop.city}
+                          </div>
+                          <div className="w-1 h-1 rounded-full bg-border" />
+                          <div className="flex items-center gap-1 bg-success/10 text-success px-1.5 py-0.5 rounded">
+                            <Star className="w-3 h-3 fill-current" /> {shop.rating || "5.0"}
+                          </div>
                         </div>
-                        <SocialIcons shop={shop} className="mt-2" />
                       </div>
                     </div>
-                    {shop.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{shop.description}</p>
-                    )}
-                    <div className="flex items-center justify-between mt-auto pt-3 border-t border-border/50">
-                      <div className="flex items-center gap-4">
-                        <ShareControl
-                          title={shop.name}
-                          text={`Check out this shop on PrintFlow: ${shop.name}`}
-                          url={`/store?view=products&shop=${shop.id}`}
-                          variant="ghost"
-                          size="sm"
-                          showLabel={false}
-                        />
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{shop.product_count} products</span>
+
+                    <div className="space-y-4 relative z-10">
+                      {shop.description && (
+                         <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed h-10">{shop.description}</p>
+                      )}
+                      
+                      <div className="flex flex-wrap gap-2">
+                        {shop.services?.slice(0, 3).map((s: string) => (
+                          <span key={s} className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full bg-secondary/50 border border-border/50 text-muted-foreground/80">
+                            {s.replace('social:', '')}
+                          </span>
+                        ))}
                       </div>
-                      <Link
-                        to={`/store?view=products&shop=${shop.id}`}
-                        className="text-sm text-accent font-bold flex items-center gap-1 hover:underline group/link"
-                      >
-                        View Shop <ChevronRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
-                      </Link>
+
+                      <div className="pt-5 border-t border-border/50 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <SocialIcons shop={shop} />
+                          <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest ml-1">{shop.product_count} SKUs</span>
+                        </div>
+                        <Link
+                          to={`/store?view=products&shop=${shop.id}`}
+                          className="h-10 px-5 bg-foreground text-background rounded-2xl text-[11px] font-black flex items-center gap-2 transition-all hover:bg-accent hover:text-white"
+                        >
+                          OPEN SHOP <ArrowRight className="w-4 h-4" />
+                        </Link>
+                      </div>
                     </div>
                   </motion.div>
                 ))

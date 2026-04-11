@@ -18,6 +18,7 @@ import { ShopAnalytics } from "@/components/shop/ShopAnalytics";
 import { ShopSettings } from "@/components/shop/ShopSettings";
 import { ShopProducts } from "@/components/shop/ShopProducts";
 import { ShopWallet } from "@/components/shop/ShopWallet";
+import { AIAccountantHub } from "@/components/shop/AIAccountantHub";
 import ShopAIHub from "@/components/shop/ShopAIHub";
 import ShopMarketing from "@/components/shop/ShopMarketing";
 import ProductionPipeline from "@/components/dashboard/erp/ProductionPipeline";
@@ -25,14 +26,17 @@ import InventoryManager from "@/components/dashboard/erp/InventoryManager";
 import Customer360 from "@/components/dashboard/crm/Customer360";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { ReportModal } from "@/components/modals/ReportModal";
+import { Calculator } from "lucide-react";
 
-type Tab = "overview" | "orders" | "products" | "wallet" | "analytics" | "ai-hub" | "marketing" | "settings" | "support" | "sourcing" | "pipeline" | "inventory" | "crm";
+type Tab = "overview" | "orders" | "products" | "wallet" | "accountant" | "analytics" | "ai-hub" | "marketing" | "settings" | "support" | "sourcing" | "pipeline" | "inventory" | "crm";
 
 const sidebarItems: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "products", label: "Products", icon: Package },
   { id: "orders", label: "Orders", icon: ShoppingCart },
   { id: "wallet", label: "Payments", icon: IndianRupee },
+  { id: "accountant", label: "AI Accountant", icon: Calculator },
   { id: "sourcing", label: "Material Sourcing", icon: ShoppingBag },
   { id: "ai-hub", label: "AI Design Hub", icon: Sparkles },
   { id: "marketing", label: "Marketing", icon: Megaphone },
@@ -46,6 +50,7 @@ const ShopDashboard = () => {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { shop, orders, loading, updateOrderStatus, updateOrderPayment, updateOrderTracking, updateShopProfile } = useShopData();
@@ -300,6 +305,7 @@ const ShopDashboard = () => {
             )}
             {activeTab === "wallet" && <ShopWallet shopId={shop?.id} />}
             {activeTab === "ai-hub" && <ShopAIHub />}
+            {activeTab === "accountant" && <AIAccountantHub />}
             {activeTab === "marketing" && <ShopMarketing />}
             {activeTab === "crm" && <Customer360 />}
             {activeTab === "pipeline" && <ProductionPipeline orders={orders} />}
@@ -329,9 +335,15 @@ const ShopDashboard = () => {
                 </div>
                 <h2 className="text-xl font-display font-bold text-foreground">Merchant Support Command</h2>
                 <p className="text-muted-foreground max-w-sm mx-auto">Report technical issues, payment delays, or platform suggestions directly to the admin team.</p>
-                <Button variant="coral" onClick={() => toast.info("Report modal coming soon! For now, use the order report buttons.")}>
+                <Button variant="coral" onClick={() => setIsReportModalOpen(true)}>
                   Report an Issue
                 </Button>
+                <ReportModal 
+                  isOpen={isReportModalOpen} 
+                  onClose={() => setIsReportModalOpen(false)} 
+                  subjectId={shop?.id}
+                  subjectType="shop"
+                />
               </div>
             )}
           </>

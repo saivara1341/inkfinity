@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   LayoutDashboard, Store, Users, CreditCard, BarChart3, Settings,
   Shield, CheckCircle2, XCircle, Clock, IndianRupee,
-  TrendingUp, AlertTriangle, Bell, Eye, LogOut, Activity, BarChart, FileWarning, HelpCircle, User, Camera, UploadCloud, Save, Menu, X, ChevronDown, Instagram, Facebook, Twitter, Phone, Globe
+  TrendingUp, AlertTriangle, Bell, Eye, LogOut, Activity, BarChart, FileWarning, HelpCircle, User, Camera, UploadCloud, Save, Menu, X, ChevronDown, Instagram, Facebook, Twitter, Phone, Globe,
+  Cpu, Rocket, Briefcase, Zap, Fingerprint, Lock, Database as DbIcon
 } from "lucide-react";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart as ReBarChart, Bar } from "recharts";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ type Order = Database["public"]["Tables"]["orders"]["Row"];
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type UserRole = Database["public"]["Tables"]["user_roles"]["Row"];
 
-type Tab = "overview" | "shops" | "suppliers" | "users" | "orders" | "analytics" | "settings" | "reports" | "profile" | "verification" | "marketing";
+type Tab = "overview" | "shops" | "suppliers" | "users" | "orders" | "analytics" | "settings" | "reports" | "profile" | "verification" | "marketing" | "nexus" | "strategy";
 
 const sidebarItems: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
@@ -34,6 +35,8 @@ const sidebarItems: { id: Tab; label: string; icon: typeof LayoutDashboard }[] =
   { id: "marketing", label: "Marketing Center", icon: Bell },
   { id: "reports", label: "Support Tickets", icon: FileWarning },
   { id: "verification", label: "Compliance & verification", icon: Shield },
+  { id: "nexus", label: "Nexus Commander", icon: Cpu },
+  { id: "strategy", label: "Financial Strategy", icon: Rocket },
   { id: "profile", label: "My Profile", icon: User },
 ];
 
@@ -41,7 +44,7 @@ const AdminDashboard = () => {
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") as Tab;
   const [activeTab, setActiveTab] = useState<Tab>(
-    initialTab && ["overview", "shops", "suppliers", "users", "orders", "analytics", "settings", "reports", "profile", "verification", "marketing"].includes(initialTab) 
+    initialTab && ["overview", "shops", "suppliers", "users", "orders", "analytics", "settings", "reports", "profile", "verification", "marketing", "nexus", "strategy"].includes(initialTab) 
       ? initialTab 
       : "overview"
   );
@@ -77,6 +80,16 @@ const AdminDashboard = () => {
       navigate("/dashboard");
     }
   }, [roleData, roleLoading, navigate]);
+
+  const isOwner = user?.email === "ssaivaraprasad51@gmail.com";
+  
+  // Extra security for HQ tabs
+  useEffect(() => {
+    if ((activeTab === "nexus" || activeTab === "strategy") && !isOwner) {
+      toast.error("Critical Security: Only the Platform Commander can access this sector.");
+      setActiveTab("overview");
+    }
+  }, [activeTab, isOwner]);
 
   // Main data queries
   const { data: shops = [], isLoading: shopsLoading } = useQuery({
@@ -132,6 +145,18 @@ const AdminDashboard = () => {
         .select("*, shops(name)")
         .order("created_at", { ascending: false });
       if (error) throw error;
+      return data || [];
+    },
+    enabled: roleData?.role === "admin",
+  });
+
+  const { data: userReports = [], isLoading: reportsLoading } = useQuery({
+    queryKey: ["admin-user-reports"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("user_reports")
+        .select("*, profiles!reporter_id(full_name)")
+        .order("created_at", { ascending: false });
       return data || [];
     },
     enabled: roleData?.role === "admin",
@@ -724,10 +749,71 @@ const AdminDashboard = () => {
                   <div className="bg-card rounded-xl border border-border shadow-card overflow-hidden">
                     <div className="p-5 border-b border-border bg-secondary/20 flex items-center justify-between">
                        <h3 className="font-display font-semibold text-foreground flex items-center gap-2">
-                        <FileWarning className="w-5 h-5 text-destructive" /> Support Tickets & Reports
+                        <FileWarning className="w-5 h-5 text-destructive" /> Support HQ: Merchant & Customer Reports
                       </h3>
+                      <Badge variant="outline" className="bg-destructive/10 text-destructive">{userReports.filter((r:any) => r.status === 'pending').length} Unresolved</Badge>
                     </div>
-                    <div className="p-10 text-center text-muted-foreground text-xs italic">Support tickets will appear here.</div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-border bg-secondary/5">
+                            {["Reporter", "Category", "Description", "Priority", "Status", "Date", "Actions"].map(h => (
+                              <th key={h} className="text-left text-xs font-medium text-muted-foreground px-5 py-3 text-[10px] uppercase tracking-wider">{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {userReports.map((report: any) => (
+                            <tr key={report.id} className="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
+                              <td className="px-5 py-4 text-sm font-bold truncate max-w-[120px]">{report.profiles?.full_name || "Nexus User"}</td>
+                              <td className="px-5 py-4 text-xs font-medium text-foreground">{report.issue_category}</td>
+                              <td className="px-5 py-4 text-[11px] text-muted-foreground max-w-[250px] line-clamp-2 leading-relaxed">
+                                {report.description}
+                              </td>
+                              <td className="px-5 py-4">
+                                <Badge className={`text-[9px] uppercase font-bold ${
+                                  report.priority === 'critical' ? 'bg-destructive/20 text-destructive' : 
+                                  report.priority === 'high' ? 'bg-orange-500/20 text-orange-500' : 
+                                  'bg-blue-500/20 text-blue-500'
+                                }`}>
+                                  {report.priority}
+                                </Badge>
+                              </td>
+                              <td className="px-5 py-4">
+                                <span className={`text-[10px] font-bold uppercase transition-colors ${
+                                  report.status === 'resolved' ? 'text-success' : 'text-warning'
+                                }`}>
+                                  {report.status}
+                                </span>
+                              </td>
+                              <td className="px-5 py-4 text-[10px] text-muted-foreground italic">
+                                {format(new Date(report.created_at), "MMM d, HH:mm")}
+                              </td>
+                              <td className="px-5 py-4">
+                                {report.status === 'pending' && (
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="h-8 text-[10px] font-bold hover:bg-success/10 hover:text-success hover:border-success/50"
+                                    onClick={async () => {
+                                      const { error } = await supabase.from("user_reports").update({ status: 'resolved', resolved_at: new Date().toISOString() }).eq("id", report.id);
+                                      if (error) toast.error("Resolution failed");
+                                      else {
+                                        toast.success("Issue marked as RESOLVED");
+                                        queryClient.invalidateQueries({ queryKey: ["admin-user-reports"] });
+                                      }
+                                    }}
+                                  >
+                                    Resolve
+                                  </Button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {userReports.length === 0 && <div className="p-16 text-center text-muted-foreground text-sm italic">No active reports. The marketplace is running smoothly.</div>}
+                    </div>
                   </div>
 
                   {/* Payout Management Section */}
@@ -1115,6 +1201,113 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                   </div>
+                </motion.div>
+              )}
+              {activeTab === "nexus" && isOwner && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-card rounded-xl border border-border p-6 shadow-card space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-accent/10 rounded-lg"><Cpu className="w-5 h-5 text-accent" /></div>
+                        <div>
+                          <h3 className="font-display font-bold text-lg">System Nexus</h3>
+                          <p className="text-xs text-muted-foreground">Manage global merchant tiers and system status.</p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3 pt-4">
+                        <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg border border-border">
+                          <div className="flex items-center gap-3">
+                            <Lock className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-sm font-medium">Auto-Verification Mode</span>
+                          </div>
+                          <div className="w-10 h-5 bg-success/20 rounded-full relative"><div className="absolute right-1 top-1 w-3 h-3 bg-success rounded-full" /></div>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg border border-border">
+                          <div className="flex items-center gap-3">
+                            <Zap className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-sm font-medium">AI Design Hub Priority</span>
+                          </div>
+                          <div className="w-10 h-5 bg-secondary rounded-full relative"><div className="absolute left-1 top-1 w-3 h-3 bg-muted-foreground rounded-full" /></div>
+                        </div>
+                      </div>
+
+                      <div className="pt-4">
+                        <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3">Premium Subscription Ledger</h4>
+                        <div className="space-y-2">
+                           {shops.slice(0, 3).map(s => (
+                             <div key={s.id} className="flex items-center justify-between text-xs p-2 hover:bg-secondary/20 rounded transition-colors">
+                               <span className="font-medium">{s.name}</span>
+                               <Badge className="bg-accent/10 text-accent text-[9px]">ENTERPRISE</Badge>
+                             </div>
+                           ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-card rounded-xl border border-border p-6 shadow-card space-y-4">
+                       <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-500/10 rounded-lg"><DbIcon className="w-5 h-5 text-blue-500" /></div>
+                        <div>
+                          <h3 className="font-display font-bold text-lg">Infrastructure Health</h3>
+                          <p className="text-xs text-muted-foreground">Database clusters and API latency.</p>
+                        </div>
+                      </div>
+                      
+                      <div className="h-[120px] flex items-end gap-1 px-2 pt-4">
+                        {[40, 60, 45, 90, 100, 80, 75, 85, 95, 70, 65, 80].map((h, i) => (
+                          <div key={i} className="flex-1 bg-accent/20 rounded-t-sm transition-all hover:bg-accent" style={{ height: `${h}%` }} />
+                        ))}
+                      </div>
+                      <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+                         <span>CPU: 24%</span>
+                         <span>LATENCY: 42ms</span>
+                         <span>RAM: 1.2GB/4GB</span>
+                      </div>
+
+                      <div className="pt-4 border-t border-border">
+                         <Button variant="outline" className="w-full h-10 gap-2 border-dashed border-border hover:border-accent hover:text-accent group transition-all">
+                            <Fingerprint className="w-4 h-4 group-hover:rotate-12 transition-transform" /> Generate System Access Key
+                         </Button>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {activeTab === "strategy" && isOwner && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                   <div className="bg-card rounded-2xl border border-border p-8 shadow-card relative overflow-hidden text-center">
+                     <div className="absolute top-0 right-0 p-4 opacity-10"><Rocket className="w-32 h-32" /></div>
+                     <div className="relative z-10 max-w-2xl mx-auto space-y-6">
+                       <h2 className="text-3xl font-display font-bold italic">Financial Strategy Command</h2>
+                       <p className="text-muted-foreground">Deep analysis of platform commissions, merchant retention, and global expansion projections.</p>
+                       
+                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 text-left">
+                         <div className="space-y-1">
+                           <p className="text-[10px] font-bold text-muted-foreground uppercase">Commission Runway</p>
+                           <p className="text-2xl font-display font-bold text-success">+₹2.4L <span className="text-xs font-normal text-muted-foreground">est. next month</span></p>
+                         </div>
+                         <div className="space-y-1">
+                           <p className="text-[10px] font-bold text-muted-foreground uppercase">Merchant CAC</p>
+                           <p className="text-2xl font-display font-bold text-accent">₹420 <span className="text-xs font-normal text-muted-foreground">per shop</span></p>
+                         </div>
+                         <div className="space-y-1">
+                           <p className="text-[10px] font-bold text-muted-foreground uppercase">LTV/CAC Ratio</p>
+                           <p className="text-2xl font-display font-bold text-blue-500">8.4x <span className="text-xs font-normal text-muted-foreground">v/s local market</span></p>
+                         </div>
+                       </div>
+
+                       <div className="pt-8 border-t border-border flex flex-col md:flex-row gap-4 items-center justify-center">
+                         <Button variant="coral" size="lg" className="rounded-2xl px-10 h-14 font-bold text-lg hover-lift">
+                            Export Strategic Roadmap
+                         </Button>
+                         <Button variant="outline" size="lg" className="rounded-2xl px-10 h-14 font-bold border-border/50 hover:bg-secondary transition-all">
+                            Review Profit Model
+                         </Button>
+                       </div>
+                     </div>
+                   </div>
                 </motion.div>
               )}
             </>

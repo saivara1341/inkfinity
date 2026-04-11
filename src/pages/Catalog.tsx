@@ -6,12 +6,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import {
+  AlertCircle, RefreshCw,
   Search, Package, Star, ChevronRight, IndianRupee, MapPin, Zap,
   Store, ShieldCheck, ArrowRight, Sparkles, ShoppingBag
 } from "lucide-react";
 import { productCategories, getAllSubcategories } from "@/data/printingProducts";
 import { useLocation } from "@/contexts/LocationContext";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/contexts/AuthContext";
 import SEO from "@/components/SEO";
@@ -30,8 +31,9 @@ const Catalog = () => {
   const { city, loading: isLoadingLocation } = useLocation();
   const { user } = useAuth();
   const { items: cartItems, totalAmount } = useCart(user?.id);
+  const queryClient = useQueryClient();
 
-  const { data: allProducts = [], isLoading: loadingProducts } = useQuery({
+  const { data: allProducts = [], isLoading: loadingProducts, isError: isErrorProducts } = useQuery({
     queryKey: ["catalog-products", activeCategory, search],
     queryFn: async () => {
       let dbProducts = [];
@@ -223,6 +225,21 @@ const Catalog = () => {
               {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                 <div key={i} className="aspect-[4/5] bg-slate-50 rounded-2xl animate-pulse border border-slate-100" />
               ))}
+            </div>
+          ) : isErrorProducts ? (
+            <div className="text-center py-20 bg-destructive/5 rounded-3xl border border-destructive/20">
+              <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-foreground mb-2">Sync Error</h3>
+              <p className="text-muted-foreground max-w-sm mx-auto mb-6">
+                We're having trouble connecting to the print database. This usually resolves in a few seconds.
+              </p>
+              <Button 
+                onClick={() => queryClient.invalidateQueries({ queryKey: ["catalog-products"] })}
+                variant="outline"
+                className="gap-2"
+              >
+                <RefreshCw className="w-4 h-4" /> Retry Connection
+              </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">

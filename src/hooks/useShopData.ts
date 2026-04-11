@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -78,7 +79,15 @@ export const useShopData = () => {
       if (!shop) return [];
       const { data, error } = await supabase
         .from("orders")
-        .select("id, order_number, product_name, grand_total, status, created_at, customer_id, shop_id, gst_amount, platform_fee, merchant_earning")
+        .select(`
+          *,
+          customer:profiles!orders_customer_id_fkey(
+            full_name,
+            avatar_url,
+            business_name,
+            phone
+          )
+        `)
         .eq("shop_id", shop.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -145,6 +154,41 @@ export const useShopData = () => {
     },
   });
 
+export const useShopTransactions = (shopId?: string) => {
+  return useQuery({
+    queryKey: ["shop-transactions", shopId],
+    queryFn: async () => {
+      if (!shopId) return [];
+      const { data, error } = await supabase
+        .from("wallet_transactions" as any)
+        .select("*")
+        .eq("shop_id", shopId)
+        .order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!shopId,
+  });
+};
+
+export const useOrderHistory = (orderId: string) => {
+  return useQuery({
+    queryKey: ["order-history", orderId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("order_status_history" as any)
+        .select("*")
+        .eq("order_id", orderId)
+        .order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!orderId,
+  });
+};
+
   // Mutation to update shop profile
   const updateShopMutation = useMutation({
     mutationFn: async (updates: Partial<Shop>) => {
@@ -196,9 +240,53 @@ export const useShopData = () => {
         return { error };
       }
     },
-    updateStatusMutation,
-    updateTrackingMutation,
-    updatePaymentMutation,
-    updateShopMutation
+    updateShopMutation,
   };
+};
+
+export const useShopRealtime = (shopId?: string) => {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!shopId) return;
+
+    // Listen for order changes
+    const ordersChannel = supabase
+      .channel("shop-orders-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "orders",
+          filter: `shop_id=eq.${shopId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["shop-orders", shopId] });
+        }
+      )
+      .subscribe();
+
+    // Listen for transaction changes
+    const txChannel = supabase
+      .channel("shop-tx-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "wallet_transactions",
+          filter: `shop_id=eq.${shopId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["shop-transactions", shopId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(ordersChannel);
+      supabase.removeChannel(txChannel);
+    };
+  }, [shopId, queryClient]);
 };

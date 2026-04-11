@@ -4,6 +4,7 @@ import {
   ArrowUpRight, ArrowDownRight, Target, PieChart as PieIcon,
   Calendar, Zap
 } from "lucide-react";
+import { InfoPopover } from "@/components/ui/InfoPopover";
 import { Database } from "@/integrations/supabase/types";
 import { subDays, format, startOfDay, isAfter, endOfMonth, differenceInDays } from "date-fns";
 import { 
@@ -102,13 +103,15 @@ export const ShopAnalytics = ({ orders }: Props) => {
       label: "Retention Rate", 
       value: retentionRate.toFixed(1) + "%", 
       icon: Zap,
-      subtitle: `${repeatCustomers} repeat purchases`
+      subtitle: `${repeatCustomers} repeat purchases`,
+      info: "Percentage of customers with multiple orders in the last 30 days."
     },
     { 
       label: "Projected Revenue", 
       value: `₹${Math.round(projectedRevenue).toLocaleString("en-IN")}`, 
       icon: Target,
-      subtitle: "Estimated by month end"
+      subtitle: "Estimated by month end",
+      info: "AI projection based on current sales velocity."
     },
   ];
 
@@ -132,7 +135,10 @@ export const ShopAnalytics = ({ orders }: Props) => {
         {stats.map((stat) => (
           <div key={stat.label} className="bg-card rounded-xl border border-border p-5 shadow-card hover:border-accent/30 transition-all hover-lift">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</p>
+                {(stat as any).info && <InfoPopover content={(stat as any).info} iconClassName="w-3 h-3" />}
+              </div>
               <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
                 <stat.icon className="w-4 h-4 text-accent" />
               </div>

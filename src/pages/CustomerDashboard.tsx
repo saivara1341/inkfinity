@@ -3,8 +3,10 @@ import {
   ShoppingCart, User, MapPin, Clock,
   CheckCircle2, Package, ChevronRight, LogOut, Printer, Truck, AlertCircle,
   Camera, Plus, Trash2, Save, FileWarning, HelpCircle, ShieldCheck, Briefcase,
-  RefreshCw, Star, Bell
+  RefreshCw, Star, Bell, Handshake
 } from "lucide-react";
+import PartnerNetwork from "@/components/shared/PartnerNetwork";
+
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -22,7 +24,8 @@ import ReviewModal from "@/components/modals/ReviewModal";
 import { NotificationInbox } from "@/components/dashboard/NotificationInbox";
 import { useNotifications } from "@/hooks/useNotifications";
 
-type Tab = "orders" | "tracking" | "notifications" | "rewards" | "profile";
+type Tab = "orders" | "tracking" | "notifications" | "rewards" | "partners" | "profile";
+
 type Order = Database["public"]["Tables"]["orders"]["Row"];
 type Address = Database["public"]["Tables"]["user_addresses"]["Row"];
 
@@ -74,7 +77,9 @@ const CustomerDashboard = () => {
     { id: "tracking", label: "Track Order", icon: MapPin },
     { id: "notifications", label: "Notifications", icon: Bell, count: unreadCount },
     { id: "rewards", label: "Rewards", icon: Star },
+    { id: "partners", label: "Partners", icon: Handshake },
     { id: "profile", label: "My Profile", icon: User },
+
   ];
 
   return (
@@ -119,7 +124,19 @@ const CustomerDashboard = () => {
               {activeTab === "tracking" && <TrackingView orders={orders} />}
               {activeTab === "notifications" && <NotificationInbox />}
               {activeTab === "rewards" && <ReferralProgram />}
+              {activeTab === "partners" && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-display font-bold text-foreground">Exclusive Benefits</h2>
+                      <p className="text-muted-foreground text-sm">Special offers from our logistics and design partners.</p>
+                    </div>
+                  </div>
+                  <PartnerNetwork userRole="customer" />
+                </div>
+              )}
               {activeTab === "profile" && <ProfileView user={user} onSignOut={async () => { await signOut(); navigate("/login"); }} />}
+
             </div>
           )}
         </div>

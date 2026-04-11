@@ -231,10 +231,11 @@ const Checkout = () => {
       
       const designFromCustomize = sessionStorage.getItem("design_file_url");
       const backDesignFromCustomize = sessionStorage.getItem("back_design_file_url");
-      const orderNumber = "ORD-" + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100);
+      const purchaseId = "PUR-" + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100);
       const estimatedDelivery = new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
-      const orderPromises = items.map(async (item) => {
+
+      const orderPromises = items.map(async (item, index) => {
         const product = (item as CartItem).product;
         const unitPrice = (item.specifications as any)?.unitPrice || product?.base_price || 0;
         const itemSubtotal = unitPrice * item.quantity;
@@ -249,16 +250,16 @@ const Checkout = () => {
         
         // Marketplace 2.0 Standard: 15% Commission + 18% GST on service
         const category = (product?.category?.toLowerCase() || "general").includes("bulk") ? "bulk" : "general";
-        const financials = calculateNetEarnings(itemGrandTotal, category);
+        const shopCommission = (currentShop as any)?.platform_commission_rate ?? 5.0;
+        const financials = calculateNetEarnings(itemGrandTotal, category, shopCommission);
         const platformTotalFee = financials.commission + financials.taxOnCommission;
         const vendorPayout = financials.net;
 
-        const itemOrderNumber = items.length > 1
-          ? orderNumber + "-" + item.product_id.slice(0, 4).toUpperCase()
-          : orderNumber;
+        const itemOrderNumber = `${purchaseId}-${index + 1}`;
 
         const { error } = await supabase.from("orders").insert({
           order_number: itemOrderNumber,
+          purchase_id: purchaseId,
           customer_id: user.id,
           shop_id: item.shop_id || selectedShopId,
           product_id: (item as any).product_id,
@@ -272,9 +273,11 @@ const Checkout = () => {
           delivery_charge: itemDelivery,
           status: (initialStatus?.orderStatus || "pending") as any,
           payment_status: (initialStatus?.paymentStatus || "pending") as any,
-          platform_commission_rate: 5.0,
+          platform_commission_rate: shopCommission,
+          utr_number: transactionId || null,
           specifications: {
             ...(item.specifications as object || {}),
+            purchase_id: purchaseId,
             shipping_method: shippingMethod,
             business_name: addressForm.businessName,
             gstin: addressForm.gstin,
@@ -294,6 +297,7 @@ const Checkout = () => {
           platform_fee: platformTotalFee,
           merchant_earning: vendorPayout,
         } as any);
+
         if (error) throw error;
       });
 
@@ -323,15 +327,16 @@ const Checkout = () => {
       }
 
       await Promise.all(orderPromises);
-      return orderNumber;
+      return purchaseId;
     },
-    onSuccess: (orderNumber) => {
+    onSuccess: (purchaseId) => {
       clearCart();
       sessionStorage.removeItem("design_file_url");
       sessionStorage.removeItem("back_design_file_url");
       sessionStorage.removeItem("customize_product");
       toast.success("Order placed successfully! 🎉");
-      navigate(`/order-success?order=${orderNumber}`);
+      navigate(`/order-success?order=${purchaseId}`);
+
     },
     onError: (error: any) => {
       toast.error("Failed to place order: " + error.message);

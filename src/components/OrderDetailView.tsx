@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Database } from "@/integrations/supabase/types";
 import { format } from "date-fns";
 import { statusColors, statusLabels } from "./shop/ShopOverview";
+import { useOrderHistory } from "@/hooks/useShopData";
 
 type Order = Database["public"]["Tables"]["orders"]["Row"];
 
@@ -23,6 +24,8 @@ interface Props {
 
 export const OrderDetailView = ({ order, onClose, onStatusUpdate, isAdmin }: Props) => {
   const specs = (order.specifications as any) || {};
+  const customer = (order as any).customer || {};
+  const { data: history = [], isLoading: historyLoading } = useOrderHistory(order.id);
 
   return (
     <motion.div 
@@ -52,10 +55,13 @@ export const OrderDetailView = ({ order, onClose, onStatusUpdate, isAdmin }: Pro
               <User className="w-3.5 h-3.5" /> Customer Information
             </h3>
             <div className="bg-secondary/20 rounded-xl p-4 border border-border/50">
-              <p className="text-sm font-bold text-foreground">Rahul Sharma</p>
+              <p className="text-sm font-bold text-foreground">{customer.full_name || "Guest Customer"}</p>
               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-                <MapPin className="w-3 h-3" /> {order.delivery_address}
+                <MapPin className="w-3 h-3" /> {order.delivery_address || "Address not provided"}
               </p>
+              {customer.phone && (
+                <p className="text-[10px] text-muted-foreground mt-1 font-medium">Contact: {customer.phone}</p>
+              )}
             </div>
           </section>
 
@@ -208,20 +214,32 @@ export const OrderDetailView = ({ order, onClose, onStatusUpdate, isAdmin }: Pro
           <div className="space-y-6 pl-4 relative">
              <div className="absolute left-6 top-2 bottom-8 w-0.5 bg-border" />
              
-             {[
-               { status: "delivered", label: "Delivered", time: "Pending", icon: CheckCircle2, current: false },
-               { status: "printing", label: "Printing In-Progress", time: "March 29, 2:30 PM", icon: Info, current: true },
-               { status: "confirmed", label: "Order Confirmed", time: "March 28, 11:15 AM", icon: CheckCircle2, current: false },
-               { status: "pending", label: "Order Placed", time: "March 28, 10:45 AM", icon: CheckCircle2, current: false },
-             ].map((step, idx) => (
-                <div key={idx} className="relative flex items-start gap-6">
-                   <div className={`z-10 w-4 h-4 rounded-full border-2 bg-background shrink-0 mt-1 transition-colors ${step.current ? "border-accent" : "border-border"}`} />
-                   <div>
-                      <p className={`text-sm font-bold ${step.current ? "text-accent" : "text-foreground"}`}>{step.label}</p>
-                      <p className="text-[10px] text-muted-foreground">{step.time}</p>
-                   </div>
-                </div>
-             ))}
+             {historyLoading ? (
+               <div className="flex items-center gap-3 text-xs text-muted-foreground animate-pulse">
+                 <Clock className="w-4 h-4" /> Fetching timeline...
+               </div>
+             ) : history.length > 0 ? (
+               history.map((step: any, idx: number) => (
+                  <div key={step.id} className="relative flex items-start gap-6">
+                     <div className={`z-10 w-4 h-4 rounded-full border-2 bg-background shrink-0 mt-1 transition-colors ${idx === 0 ? "border-accent" : "border-border"}`} />
+                     <div>
+                        <p className={`text-sm font-bold ${idx === 0 ? "text-accent" : "text-foreground"}`}>{statusLabels[step.status as keyof typeof statusLabels] || step.status}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {format(new Date(step.created_at), "MMM d, h:mm a")} 
+                          {step.notes && <span className="block italic opacity-70">{step.notes}</span>}
+                        </p>
+                     </div>
+                  </div>
+               ))
+             ) : (
+               <div className="relative flex items-start gap-6">
+                 <div className="z-10 w-4 h-4 rounded-full border-2 border-accent bg-background shrink-0 mt-1" />
+                 <div>
+                    <p className="text-sm font-bold text-accent">Order Placed</p>
+                    <p className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), "MMM d, h:mm a")}</p>
+                 </div>
+               </div>
+             )}
           </div>
         </section>
       </div>
@@ -230,9 +248,34 @@ export const OrderDetailView = ({ order, onClose, onStatusUpdate, isAdmin }: Pro
          <Button variant="outline" className="flex-1 gap-2 rounded-xl">
             <MessageSquare className="w-4 h-4" /> Message Customer
          </Button>
-         <Button variant="coral" className="flex-1 gap-2 rounded-xl shadow-lg shadow-coral/20">
-            Next status: Quality Check <ChevronRight className="w-4 h-4" />
-         </Button>
+         {order.status !== 'delivered' && order.status !== 'cancelled' && (
+           <Button 
+             variant="coral" 
+             className="flex-1 gap-2 rounded-xl shadow-lg shadow-coral/20"
+             onClick={() => {
+               const nextStatusMap: Record<string, string> = {
+                 'pending': 'confirmed',
+                 'confirmed': 'designing',
+                 'designing': 'printing',
+                 'printing': 'quality_check',
+                 'quality_check': 'shipped',
+                 'shipped': 'delivered'
+               };
+               const next = nextStatusMap[order.status];
+               if (next && onStatusUpdate) onStatusUpdate(next);
+             }}
+           >
+              Next: {statusLabels[({
+                'pending': 'confirmed',
+                'confirmed': 'designing',
+                'designing': 'printing',
+                'printing': 'quality_check',
+                'quality_check': 'shipped',
+                'shipped': 'delivered'
+              } as any)[order.status] as keyof typeof statusLabels] || 'Update Status'} 
+              <ChevronRight className="w-4 h-4" />
+           </Button>
+         )}
       </div>
     </motion.div>
   );

@@ -5,12 +5,12 @@ import {
   LayoutDashboard, ShoppingCart, BarChart3, Settings,
   ChevronDown, Printer, Bell, LogOut, Package, Sparkles, Megaphone, FileWarning, ShoppingBag, X, Menu,
   ArrowRight, Store, Tag, Award, PanelLeftClose, PanelLeftOpen, ArrowLeft, Home as HomeIcon,
-  Activity, Database, Users, IndianRupee, Loader2, RefreshCw
+  Activity, Database, Users, IndianRupee, Loader2, RefreshCw, Handshake, Briefcase
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { useShopData } from "@/hooks/useShopData";
+import { useShopData, useShopRealtime } from "@/hooks/useShopData";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ShopOverview } from "@/components/shop/ShopOverview";
 import { ShopOrders } from "@/components/shop/ShopOrders";
@@ -24,6 +24,8 @@ import ShopMarketing from "@/components/shop/ShopMarketing";
 import ProductionPipeline from "@/components/dashboard/erp/ProductionPipeline";
 import InventoryManager from "@/components/dashboard/erp/InventoryManager";
 import Customer360 from "@/components/dashboard/crm/Customer360";
+import PartnerNetwork from "@/components/shared/PartnerNetwork";
+import Customer360 from "@/components/dashboard/crm/Customer360";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { ReportModal } from "@/components/modals/ReportModal";
@@ -31,7 +33,7 @@ import { Calculator } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CardSkeleton, DashboardHeroSkeleton } from "@/components/ui/Skeletons";
 
-type Tab = "overview" | "orders" | "products" | "wallet" | "accountant" | "analytics" | "ai-hub" | "marketing" | "settings" | "support" | "sourcing" | "pipeline" | "inventory" | "crm";
+type Tab = "overview" | "orders" | "products" | "wallet" | "accountant" | "analytics" | "ai-hub" | "marketing" | "settings" | "support" | "sourcing" | "pipeline" | "inventory" | "crm" | "partners";
 
 const sidebarItems: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
@@ -44,6 +46,7 @@ const sidebarItems: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "marketing", label: "Marketing", icon: Megaphone },
   { id: "crm", label: "Customers", icon: Users },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
+  { id: "partners", label: "Partner Network", icon: Handshake },
   { id: "settings", label: "Settings", icon: Settings },
   { id: "support", label: "Support & Reports", icon: FileWarning },
 ];
@@ -56,6 +59,7 @@ const ShopDashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { shop, orders, loading, updateOrderStatus, updateOrderPayment, updateOrderTracking, updateShopProfile } = useShopData();
+  useShopRealtime(shop?.id);
   const queryClient = useQueryClient();
   const [initializing, setInitializing] = useState(false);
 
@@ -154,6 +158,15 @@ const ShopDashboard = () => {
       </div>
     );
   }
+  if (initializing) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="max-w-md w-full text-center space-y-8"
+        >
+          <div className="relative flex justify-center">
             <div className="relative z-10 w-20 h-16 bg-primary/10 rounded-xl flex items-center justify-center border border-primary/20 backdrop-blur-md">
               <Printer className="w-10 h-10 text-primary" />
               {/* Scanning Laser Effect */}
@@ -298,7 +311,7 @@ const ShopDashboard = () => {
         <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar">
           <>
             {activeTab === "overview" && (
-              <ShopOverview orders={orders} onViewOrders={() => setActiveTab("orders")} />
+              <ShopOverview orders={orders} onViewOrders={() => setActiveTab("orders")} shop={shop} />
             )}
             {activeTab === "products" && <ShopProducts shop={shop} />}
             {activeTab === "orders" && (
@@ -350,6 +363,11 @@ const ShopDashboard = () => {
                   subjectId={shop?.id}
                   subjectType="shop"
                 />
+              </div>
+            )}
+            {activeTab === "partners" && (
+              <div className="p-4 md:p-0">
+                <PartnerNetwork userRole="shop_owner" />
               </div>
             )}
           </>

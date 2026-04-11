@@ -33,7 +33,7 @@ type Order = Database["public"]["Tables"]["orders"]["Row"];
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type UserRole = Database["public"]["Tables"]["user_roles"]["Row"];
 
-type Tab = "overview" | "shops" | "suppliers" | "users" | "orders" | "analytics" | "settings" | "reports" | "profile" | "verification" | "marketing" | "nexus" | "strategy";
+type Tab = "overview" | "shops" | "suppliers" | "users" | "orders" | "analytics" | "settings" | "reports" | "profile" | "verification" | "marketing" | "nexus" | "strategy" | "collaborations";
 
 const sidebarItems: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
@@ -47,6 +47,7 @@ const sidebarItems: { id: Tab; label: string; icon: typeof LayoutDashboard }[] =
   { id: "verification", label: "Compliance & verification", icon: Shield },
   { id: "nexus", label: "Nexus Commander", icon: Cpu },
   { id: "strategy", label: "Financial Strategy", icon: Rocket },
+  { id: "collaborations", label: "Partner Network", icon: Briefcase },
   { id: "profile", label: "My Profile", icon: User },
 ];
 
@@ -54,7 +55,7 @@ const AdminDashboard = () => {
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") as Tab;
   const [activeTab, setActiveTab] = useState<Tab>(
-    initialTab && ["overview", "shops", "suppliers", "users", "orders", "analytics", "settings", "reports", "profile", "verification", "marketing", "nexus", "strategy"].includes(initialTab) 
+    initialTab && ["overview", "shops", "suppliers", "users", "orders", "analytics", "settings", "reports", "profile", "verification", "marketing", "nexus", "strategy", "collaborations"].includes(initialTab) 
       ? initialTab 
       : "overview"
   );
@@ -310,6 +311,17 @@ const AdminDashboard = () => {
     user_role: null
   });
 
+  const [collabForm, setCollabForm] = useState({
+    name: "",
+    description: "",
+    category: "Machinery",
+    logo_url: "",
+    cta_link: "",
+    target_roles: ["shop_owner"]
+  });
+
+  const [globalRate, setGlobalRate] = useState(5.0);
+
   const broadcastMutation = useMutation({
     mutationFn: async (form: typeof marketingForm) => {
       const { error } = await supabase.rpc("broadcast_marketing_notification", {
@@ -328,7 +340,58 @@ const AdminDashboard = () => {
     onError: (err: any) => toast.error("Broadcast failed: " + err.message),
   });
 
-  const loading = roleLoading || shopsLoading || suppliersLoading || ordersLoading || profilesLoading || rolesLoading || payoutsLoading;
+  const { data: collaborations = [], isLoading: collabsLoading } = useQuery({
+    queryKey: ["admin-collaborations"],
+    queryFn: async () => {
+      const { data } = await supabase.from("collaborations").select("*").order("created_at", { ascending: false });
+      return data || [];
+    },
+    enabled: roleData?.role === "admin",
+  });
+
+  const updateShopCommissionMutation = useMutation({
+    mutationFn: async ({ shopId, rate }: { shopId: string, rate: number }) => {
+      const { error } = await supabase.from("shops").update({ platform_commission_rate: rate }).eq("id", shopId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Commission rate updated");
+      queryClient.invalidateQueries({ queryKey: ["admin-shops"] });
+    },
+  });
+
+  const bulkUpdateCommissionMutation = useMutation({
+    mutationFn: async (rate: number) => {
+      const { error } = await supabase.rpc("update_all_shop_commissions", { p_new_rate: rate });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("All shop commissions updated");
+      queryClient.invalidateQueries({ queryKey: ["admin-shops"] });
+    },
+    onError: (err: any) => toast.error("Bulk update failed: " + err.message)
+  });
+
+  const collaborationMutation = useMutation({
+    mutationFn: async ({ mode, id, data }: { mode: 'create' | 'update' | 'delete', id?: string, data?: any }) => {
+      if (mode === 'delete') {
+        const { error } = await supabase.from("collaborations").delete().eq("id", id);
+        if (error) throw error;
+      } else if (mode === 'create') {
+        const { error } = await supabase.from("collaborations").insert(data);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("collaborations").update(data).eq("id", id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      toast.success("Partnership updated");
+      queryClient.invalidateQueries({ queryKey: ["admin-collaborations"] });
+    },
+  });
+
+  const loading = roleLoading || shopsLoading || suppliersLoading || ordersLoading || profilesLoading || rolesLoading || payoutsLoading || collabsLoading;
 
   const myProfile = profiles.find(p => p.user_id === user?.id);
   const [profileForm, setProfileForm] = useState({
@@ -563,7 +626,7 @@ const AdminDashboard = () => {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-border">
-                          {["Shop Name", "City", "Payment Details", "Verified", "Active", "Created", "Actions"].map(h => (
+                          {["Shop Name", "City", "Payment Details", "Fee (%)", "Verified", "Active", "Created", "Actions"].map(h => (
                             <th key={h} className="text-left text-xs font-medium text-muted-foreground px-5 py-3">{h}</th>
                           ))}
                         </tr>
@@ -577,6 +640,23 @@ const AdminDashboard = () => {
                               <div className="flex flex-col gap-0.5">
                                 <span className="text-[10px] font-bold text-foreground truncate max-w-[150px]">{shop.upi_id || "No UPI"}</span>
                                 <span className="text-[9px] text-muted-foreground truncate max-w-[150px]">{shop.bank_name} {shop.bank_account_number}</span>
+                              </div>
+                            </td>
+                            <td className="px-5 py-3">
+                              <div className="flex items-center gap-2">
+                                <input 
+                                  type="number" 
+                                  step="0.5"
+                                  className="w-16 px-2 py-1 bg-secondary/50 border border-border rounded text-xs"
+                                  defaultValue={(shop as any).platform_commission_rate || 5.0}
+                                  onBlur={(e) => {
+                                    const val = parseFloat(e.target.value);
+                                    if (!isNaN(val) && val !== (shop as any).platform_commission_rate) {
+                                      updateShopCommissionMutation.mutate({ shopId: shop.id, rate: val });
+                                    }
+                                  }}
+                                />
+                                <span className="text-[10px] text-muted-foreground">%</span>
                               </div>
                             </td>
                             <td className="px-5 py-3">
@@ -1419,13 +1499,55 @@ const AdminDashboard = () => {
                           <p className="text-[10px] text-muted-foreground font-medium mt-1">DB Connection Optimized</p>
                         </div>
 
-                        <div className="bg-card p-5 rounded-xl border border-border shadow-card hover:border-success/50 transition-colors group">
+                        <div className="bg-card p-5 rounded-xl border border-border shadow-card hover:border-primary/50 transition-colors group">
                           <div className="flex items-center justify-between mb-3 text-muted-foreground">
-                             <span className="text-xs font-bold uppercase tracking-widest group-hover:text-success transition-colors">Deployment</span>
-                             <Rocket className="w-4 h-4" />
+                             <span className="text-xs font-bold uppercase tracking-widest group-hover:text-primary transition-colors italic">Strategic Fee Control</span>
+                             <Briefcase className="w-4 h-4" />
                           </div>
-                          <p className="text-2xl font-display font-bold text-foreground">v4.2.1</p>
-                          <p className="text-[10px] text-success font-medium mt-1">Platform Readiness G1</p>
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <input 
+                                type="number" 
+                                step="0.5"
+                                value={globalRate}
+                                onChange={(e) => setGlobalRate(parseFloat(e.target.value))}
+                                className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm font-bold"
+                              />
+                              <span className="font-bold text-xs">%</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="flex-1 h-8 text-[10px] font-bold"
+                                onClick={() => setGlobalRate(p => Math.max(0, p - 0.5))}
+                              >
+                                -0.5%
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="flex-1 h-8 text-[10px] font-bold"
+                                onClick={() => setGlobalRate(p => p + 0.5)}
+                              >
+                                +0.5%
+                              </Button>
+                            </div>
+                            <Button 
+                              variant="coral" 
+                              size="sm" 
+                              className="w-full text-[9px] uppercase font-bold h-9 shadow-lg"
+                              onClick={() => {
+                                if (confirm(`Strategic Action: You are about to set a UNIFIED commission rate of ${globalRate}% for ALL ${shops.length} verified print labs. Do you wish to proceed?`)) {
+                                  bulkUpdateCommissionMutation.mutate(globalRate);
+                                }
+                              }}
+                              disabled={bulkUpdateCommissionMutation.isPending}
+                            >
+                              Push Global Update
+                            </Button>
+                          </div>
+
                         </div>
                       </div>
 
@@ -1543,6 +1665,145 @@ const AdminDashboard = () => {
                     context="supplier" 
                     title="Platform HQ"
                   />
+                </motion.div>
+              )}
+              {activeTab === "collaborations" && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Add/Edit Form */}
+                    <div className="bg-card rounded-3xl border border-border p-8 shadow-card h-fit">
+                      <h3 className="font-display font-bold text-xl mb-6">Partner Details</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block">Partner Name</label>
+                          <input 
+                            value={collabForm.name}
+                            onChange={e => setCollabForm(p => ({ ...p, name: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl border border-border bg-background/50 text-sm"
+                            placeholder="e.g. Delhivery Logistics"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block">Category</label>
+                          <select 
+                            value={collabForm.category}
+                            onChange={e => setCollabForm(p => ({ ...p, category: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl border border-border bg-background/50 text-sm"
+                          >
+                            <option>Machinery</option>
+                            <option>Logistics</option>
+                            <option>Raw Materials</option>
+                            <option>Software</option>
+                            <option>Growth & Capital</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block">Description</label>
+                          <textarea 
+                            value={collabForm.description}
+                            onChange={e => setCollabForm(p => ({ ...p, description: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl border border-border bg-background/50 text-sm resize-none"
+                            rows={3}
+                            placeholder="How does this partnership help users?"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block">Logo/Icon URL</label>
+                          <input 
+                            value={collabForm.logo_url}
+                            onChange={e => setCollabForm(p => ({ ...p, logo_url: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl border border-border bg-background/50 text-sm"
+                            placeholder="https://..."
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block">Destination Link</label>
+                          <input 
+                            value={collabForm.cta_link}
+                            onChange={e => setCollabForm(p => ({ ...p, cta_link: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl border border-border bg-background/50 text-sm"
+                            placeholder="https://partner-site.com"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-muted-foreground uppercase mb-2 block">Visible To</label>
+                          <div className="flex flex-wrap gap-2">
+                            {['customer', 'shop_owner', 'supplier'].map(role => (
+                              <button 
+                                key={role}
+                                onClick={() => {
+                                  setCollabForm(p => ({
+                                    ...p,
+                                    target_roles: p.target_roles.includes(role) 
+                                      ? p.target_roles.filter(r => r !== role)
+                                      : [...p.target_roles, role]
+                                  }));
+                                }}
+                                className={`px-3 py-1.5 rounded-full text-[10px] font-bold border transition-colors ${
+                                  collabForm.target_roles.includes(role) 
+                                    ? "bg-accent/10 border-accent text-accent" 
+                                    : "bg-secondary border-border text-muted-foreground"
+                                }`}
+                              >
+                                {role.replace('_', ' ')}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <Button 
+                          className="w-full rounded-xl h-12 font-bold mt-4" 
+                          variant="coral"
+                          onClick={() => {
+                            if (!collabForm.name || !collabForm.cta_link) {
+                                toast.error("Name and link are required");
+                                return;
+                            }
+                            collaborationMutation.mutate({ mode: 'create', data: collabForm });
+                            setCollabForm({ name: "", description: "", category: "Machinery", logo_url: "", cta_link: "", target_roles: ["shop_owner"] });
+                          }}
+                          disabled={collaborationMutation.isPending}
+                        >
+                          Add Partner Link
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Partner List */}
+                    <div className="lg:col-span-2 space-y-4">
+                      {collaborations.map((collab: any) => (
+                        <div key={collab.id} className="bg-card rounded-2xl border border-border p-6 shadow-sm flex items-center justify-between group hover:border-accent/30 transition-all">
+                          <div className="flex items-center gap-5">
+                            <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center overflow-hidden border border-border">
+                              {collab.logo_url ? <img src={collab.logo_url} className="w-full h-full object-cover" /> : <Briefcase className="w-6 h-6 text-muted-foreground" />}
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-bold text-foreground">{collab.name}</h4>
+                                  <Badge variant="outline" className="text-[9px] h-4 py-0">{collab.category}</Badge>
+                                </div>
+                                <p className="text-xs text-muted-foreground leading-relaxed mt-1">{collab.description}</p>
+                                <div className="flex gap-1.5 mt-2">
+                                  {collab.target_roles?.map((r: string) => (
+                                    <span key={r} className="text-[8px] font-black uppercase text-accent/60 bg-accent/5 px-1.5 py-0.5 rounded-sm">{r.replace('_', ' ')}</span>
+                                  ))}
+                                </div>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:bg-destructive/10" onClick={() => collaborationMutation.mutate({ mode: 'delete', id: collab.id })}>
+                              <XCircle className="w-5 h-5" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                      {collaborations.length === 0 && (
+                        <div className="p-20 text-center border-2 border-dashed border-border rounded-3xl">
+                          <Briefcase className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+                          <p className="text-muted-foreground">No active partnerships added yet.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </>

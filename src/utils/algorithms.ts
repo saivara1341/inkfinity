@@ -119,7 +119,8 @@ export const calculateCustomerLTVRank = (
  */
 export const calculateNetEarnings = (
   salePrice: number,
-  category: string = "general"
+  category: string = "general",
+  customRate?: number
 ): { gross: number; commission: number; taxOnCommission: number; net: number } => {
   // Tiered commission (Diginaat style)
   const TIERED_RATES: Record<string, number> = {
@@ -128,7 +129,10 @@ export const calculateNetEarnings = (
     general: 0.15  // Standard products
   };
 
-  const rate = TIERED_RATES[category] || TIERED_RATES.general;
+  // Use custom rate if provided (divided by 100 as it comes as percentage like 5.0)
+  // Otherwise fall back to category-based logic
+  const rate = customRate !== undefined ? (customRate / 100) : (TIERED_RATES[category] || TIERED_RATES.general);
+  
   const commission = salePrice * rate;
   const taxOnCommission = commission * 0.18; // GST on Platform Service
   const net = salePrice - commission - taxOnCommission;

@@ -52,13 +52,13 @@ const AIDesignGenerator = ({ productType, onDesignSelected }: AIDesignGeneratorP
       for (let i = 0; i < count; i++) {
         // Constructing a high-quality prompt for Pollinations
         const promptParams = encodeURIComponent(
-          `Professional ${productType} design for "${formData.businessName}", 
-          Tagline: "${formData.tagline}", 
+          `Photorealistic professional ${productType} mockup for "${formData.businessName}", 
+          Subtext: "${formData.tagline}", 
           Style: ${styleConfig?.prompt}, 
-          Colors: ${formData.colors}, 
-          graphic design, high resolution, vector style, 4k, print-ready, seed=${Math.random() * 10000}`
+          Color Palette: ${formData.colors}, 
+          graphic design, offset print quality, clean typography, 8k resolution, centered composition, high-end commercial branding, seed=${Math.round(Math.random() * 1000000)}`
         );
-        newImages.push(`https://pollinations.ai/p/${promptParams}?width=1024&height=1024&nologo=true`);
+        newImages.push(`https://pollinations.ai/p/${promptParams}?width=1280&height=1280&nologo=true`);
         
         // Add a small artificial delay for better UX and rate limiting
         if (i % 2 === 0) await new Promise(r => setTimeout(r, 200));
@@ -158,8 +158,9 @@ const AIDesignGenerator = ({ productType, onDesignSelected }: AIDesignGeneratorP
       </div>
 
       <Button
-        variant={generationMode === "insane" ? "coral" : "珊瑚"} // Note: "珊瑚" might be a typo for "coral" in your themes but I'll stick to logic
+        variant="coral"
         className={`w-full h-14 rounded-2xl gap-3 text-lg font-black italic shadow-lg hover:shadow-xl transition-all relative overflow-hidden group ${generationMode === "insane" ? "bg-accent text-white" : "bg-primary text-white"}`}
+
         onClick={handleGenerate}
         disabled={isGenerating}
       >

@@ -100,7 +100,9 @@ class PaymentService {
                   payment_id: response.razorpay_payment_id,
                   status: "confirmed"
                 })
-                .filter("order_number", "ilike", `${options.orderId}%`);
+                .eq("purchase_id", options.orderId);
+
+
 
               if (error) throw error;
               resolve(response);

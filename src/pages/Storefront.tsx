@@ -3,7 +3,7 @@ import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Search, Star, Clock, ShoppingCart, MapPin, Store, ChevronRight, SlidersHorizontal, X,
-  Instagram, Facebook, Twitter, Phone, Flame, ArrowRight, CheckCircle2, Package
+  Instagram, Facebook, Twitter, Phone, Flame, ArrowRight as ArrowRightIcon, CheckCircle2, Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -655,7 +655,7 @@ const Storefront = () => {
                           to={`/store?view=products&shop=${shop.id}`}
                           className="h-10 px-5 bg-foreground text-background rounded-2xl text-[11px] font-black flex items-center gap-2 transition-all hover:bg-accent hover:text-white"
                         >
-                          OPEN SHOP <ArrowRight className="w-4 h-4" />
+                          OPEN SHOP <ArrowRightIcon className="w-4 h-4" />
                         </Link>
                       </div>
                     </div>

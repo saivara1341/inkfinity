@@ -4,7 +4,7 @@ import {
   TrendingUp, TrendingDown, DollarSign, PieChart, 
   FileText, Download, Upload, AlertCircle, Info,
   Calculator, Receipt, Building2, History, Sparkles,
-  ArrowUpRight, ArrowDownRight, Printer, Zap
+  ArrowUpRight, ArrowDownRight, Printer, Zap, ShieldCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -12,7 +12,7 @@ import {
   Tooltip, ResponsiveContainer, BarChart, Bar,
   Cell, Legend
 } from "recharts";
-import { useShopData } from "@/hooks/useShopData";
+import { useShopData, useShopTransactions } from "@/hooks/useShopData";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { format, subMonths, isWithinInterval, startOfMonth, endOfMonth } from "date-fns";
@@ -44,8 +44,9 @@ interface AccountantProps {
 
 export const AIAccountantHub = ({ orders: pOrders, context = "shop", title }: AccountantProps) => {
   const shopData = useShopData();
+  const { data: transactions = [], isLoading: loadingTx } = useShopTransactions(shopData.shop?.id);
   const orders = useMemo(() => pOrders || shopData.orders || [], [pOrders, shopData.orders]);
-  const [activeView, setActiveView] = useState<"overview" | "ledger" | "upload" | "reports">("overview");
+  const [activeView, setActiveView] = useState<"overview" | "ledger" | "upload">("overview");
 
   // Real-time financial aggregation
   const financialStats = useMemo(() => {
@@ -280,6 +281,54 @@ export const AIAccountantHub = ({ orders: pOrders, context = "shop", title }: Ac
     </div>
   );
 
+  const renderLedger = () => (
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+        <div className="p-6 border-b border-border bg-secondary/5 flex items-center justify-between">
+          <h3 className="font-bold flex items-center gap-2">
+            <History className="w-5 h-5 text-accent" /> Financial Ledger
+          </h3>
+          <Badge variant="outline">Verified Transactions</Badge>
+        </div>
+        <div className="divide-y divide-border">
+          {loadingTx ? (
+            <div className="p-12 text-center text-muted-foreground animate-pulse">Loading ledger...</div>
+          ) : transactions.length === 0 ? (
+            <div className="p-12 text-center text-muted-foreground space-y-4">
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto opacity-50">
+                <Receipt className="w-8 h-8" />
+              </div>
+              <p className="font-bold">No transactions found</p>
+              <p className="text-xs">Your financial ledger will populate as orders are processed.</p>
+            </div>
+          ) : (
+            transactions.map((tx: any) => (
+              <div key={tx.id} className="p-5 flex items-center justify-between hover:bg-secondary/5 transition-all">
+                <div className="flex items-center gap-4">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.type === 'credit' ? 'bg-green-500/10 text-green-600' : 'bg-destructive/10 text-destructive'}`}>
+                    {tx.type === 'credit' ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground">{tx.description || (tx.type === 'credit' ? 'Order Earning' : 'Wallet Withdrawal')}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{format(new Date(tx.created_at), "MMM d, yyyy • h:mm a")}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className={`text-sm font-black ${tx.type === 'credit' ? 'text-green-600' : 'text-foreground'}`}>
+                    {tx.type === 'credit' ? '+' : '-'} ₹{Number(tx.amount).toLocaleString("en-IN")}
+                  </p>
+                  <Badge variant="outline" className={`text-[8px] h-4 mt-1 border-none bg-secondary/20 ${tx.status === 'completed' ? 'text-success' : 'text-warning'}`}>
+                    {tx.status}
+                  </Badge>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   const renderUpload = () => (
     <div className="p-16 rounded-[4rem] bg-card border-2 border-border border-dashed text-center space-y-6 group hover:border-accent/50 transition-all">
       <div className="w-24 h-24 rounded-[2.5rem] bg-accent/10 flex items-center justify-center mx-auto transition-transform group-hover:scale-110">
@@ -344,8 +393,8 @@ export const AIAccountantHub = ({ orders: pOrders, context = "shop", title }: Ac
             <PieChart className="w-4 h-4" /> Intelligence
           </Button>
           <Button 
-            variant={activeView === 'upload' ? 'coral' : 'ghost'} 
-            onClick={() => setActiveView('upload')}
+            variant={activeView === 'ledger' ? 'coral' : 'ghost'} 
+            onClick={() => setActiveView('ledger')}
             className="rounded-xl h-10 gap-2 px-6 font-bold"
           >
             <History className="w-4 h-4" /> Shared Data
@@ -366,6 +415,7 @@ export const AIAccountantHub = ({ orders: pOrders, context = "shop", title }: Ac
 
       <div className="bg-background rounded-[3rem] p-2 print:p-0">
         {activeView === 'overview' && renderOverview()}
+        {activeView === 'ledger' && renderLedger()}
         {activeView === 'upload' && renderUpload()}
       </div>
       

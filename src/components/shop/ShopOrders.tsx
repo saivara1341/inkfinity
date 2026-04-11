@@ -37,6 +37,8 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
   const [messagingOrderId, setMessagingOrderId] = useState<string | null>(null);
   const [printingOrder, setPrintingOrder] = useState<Order | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [trackingOrderId, setTrackingOrderId] = useState<string | null>(null);
+  const [trackingForm, setTrackingForm] = useState({ carrier: "", number: "" });
 
   const filtered = orders.filter((o) => {
     const statusMatch = statusFilter === "all" || o.status === statusFilter;
@@ -52,12 +54,37 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
   });
 
   const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
+    if (newStatus === "shipped") {
+      setTrackingOrderId(orderId);
+      return;
+    }
+
     setUpdatingId(orderId);
     try {
       await onUpdateStatus(orderId, newStatus);
       toast.success(`Order updated to ${statusLabels[newStatus]}`);
     } catch (error) {
       toast.error("Failed to update order status");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const submitTrackingAndShip = async () => {
+    if (!trackingOrderId) return;
+    setUpdatingId(trackingOrderId);
+    try {
+      // 1. Update tracking info
+      if (onUpdateTracking) {
+        await onUpdateTracking(trackingOrderId, trackingForm);
+      }
+      // 2. Update status to shipped
+      await onUpdateStatus(trackingOrderId, "shipped");
+      toast.success("Order marked as shipped with tracking info");
+      setTrackingOrderId(null);
+      setTrackingForm({ carrier: "", number: "" });
+    } catch (error) {
+      toast.error("Failed to ship order");
     } finally {
       setUpdatingId(null);
     }
@@ -111,14 +138,77 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
     const labelWindow = window.open("", "_blank");
     if (!labelWindow) return;
 
-    const content = `<html><body>${selectedOrders.map(o => `<div>${o.order_number}</div>`).join("")}</body></html>`;
+    const content = `
+      <html>
+        <head>
+          <title>Shipping Labels - Inkfinity</title>
+          <style>
+            @media print {
+              @page { margin: 0; }
+              body { margin: 1cm; }
+            }
+            body { font-family: sans-serif; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; }
+            .label-card { border: 2px solid #eee; padding: 20px; border-radius: 8px; position: relative; }
+            .order-no { font-weight: bold; font-size: 18px; margin-bottom: 10px; color: #E11D48; }
+            .section-title { font-size: 10px; text-transform: uppercase; color: #666; margin-bottom: 4px; font-weight: bold; }
+            .address { font-size: 14px; line-height: 1.4; margin-bottom: 15px; }
+            .product { font-size: 12px; font-weight: bold; padding: 4px 8px; background: #f3f4f6; border-radius: 4px; display: inline-block; }
+            .barcode-placeholder { height: 40px; border-top: 1px dashed #ccc; margin-top: 20px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #999; }
+          </style>
+        </head>
+        <body>
+          ${selectedOrders.map(o => `
+            <div class="label-card">
+              <div class="order-no">${o.order_number}</div>
+              <div class="section-title">Ship To:</div>
+              <div class="address">
+                <strong>${(o as any).customer?.full_name || 'Guest'}</strong><br/>
+                ${o.delivery_address || 'No address provided'}
+              </div>
+              <div class="section-title">Item:</div>
+              <div class="product">${o.product_name}</div>
+              <div class="barcode-placeholder">SCAN AT HUB - INKFINITY SHIPMENT</div>
+            </div>
+          `).join("")}
+          <script>window.onload = () => { window.print(); }</script>
+        </body>
+      </html>
+    `;
     labelWindow.document.write(content);
     labelWindow.document.close();
   };
 
   const handleExportCSV = () => {
-    // Basic CSV logic
-    toast.success("CSV Exported");
+    if (filtered.length === 0) {
+      toast.error("No orders to export");
+      return;
+    }
+
+    const headers = ["Order Number", "Customer", "Product", "Status", "Amount", "Date"];
+    const rows = filtered.map(o => [
+      o.order_number,
+      (o as any).customer?.full_name || "Guest",
+      o.product_name,
+      statusLabels[o.status],
+      `₹${o.grand_total}`,
+      format(new Date(o.created_at), "yyyy-MM-dd HH:mm")
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(r => r.map(cell => `"${cell}"`).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `orders_export_${format(new Date(), "yyyyMMdd")}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("CSV Exported successfully");
   };
 
   return (
@@ -145,6 +235,14 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
             ))}
           </div>
         </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="gap-2" onClick={handleExportCSV}>
+            <Download className="w-4 h-4" /> Export CSV
+          </Button>
+          <Button variant="outline" size="sm" className="gap-2" onClick={handleGenerateLabels}>
+            <Printer className="w-4 h-4" /> Bulk Labels
+          </Button>
+        </div>
       </div>
 
       <div className="bg-card rounded-xl border border-border shadow-card overflow-x-auto">
@@ -161,7 +259,10 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
             {filtered.map((order) => (
               <tr key={order.id} className="border-b border-border hover:bg-secondary/30">
                 <td className="px-5 py-4">
-                  <p className="text-sm font-bold truncate max-w-[120px]">{order.order_number}</p>
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-sm font-bold truncate max-w-[120px]">{order.order_number}</p>
+                    <Badge variant="outline" className="text-[8px] h-4">{(order as any).customer?.full_name?.split(' ')[0] || 'Guest'}</Badge>
+                  </div>
                   <p className="text-xs text-muted-foreground truncate max-w-[150px]">{order.product_name}</p>
                   <Button variant="link" size="sm" className="p-0 h-auto text-[10px] text-accent font-bold" onClick={() => setSelectedOrder(order)}>
                     View Full Details
@@ -206,13 +307,26 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
                     <Badge className={statusColors[order.status]}>{statusLabels[order.status]}</Badge>
                 </td>
                 <td className="px-5 py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline" className="gap-1 h-8" onClick={() => setMessagingOrderId(order.id)}>
-                            <MessageSquare className="w-3 h-3" /> Discuss
+                    <div className="flex justify-end gap-2 items-center">
+                        <Button size="sm" variant="outline" className="gap-1 h-8 px-2" onClick={() => setMessagingOrderId(order.id)}>
+                            <MessageSquare className="w-3 h-3" />
                         </Button>
-                        <Button size="sm" variant="coral" className="h-8" onClick={() => handleStatusChange(order.id, "confirmed")}>
-                            Quick Update
-                        </Button>
+                        <Select
+                          disabled={updatingId === order.id}
+                          value={order.status}
+                          onValueChange={(value) => handleStatusChange(order.id, value as OrderStatus)}
+                        >
+                          <SelectTrigger className="w-[130px] h-8 text-[11px] font-bold">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ORDER_STATUSES.map((status) => (
+                              <SelectItem key={status} value={status} className="text-[11px] font-bold">
+                                {statusLabels[status]}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                     </div>
                 </td>
               </tr>
@@ -220,6 +334,47 @@ export const ShopOrders = ({ orders, onUpdateStatus, onUpdatePayment, onUpdateTr
           </tbody>
         </table>
       </div>
+
+      {/* Tracking Input Dialog */}
+      <Dialog open={!!trackingOrderId} onOpenChange={(open) => !open && setTrackingOrderId(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <div className="p-6 space-y-6">
+            <div className="space-y-2 text-center">
+              <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto">
+                <Truck className="w-6 h-6 text-accent" />
+              </div>
+              <h3 className="text-xl font-bold">Shipping Information</h3>
+              <p className="text-sm text-muted-foreground">Provide courier details to notify the customer.</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Courier / Carrier</label>
+                <Input 
+                  placeholder="e.g., Delhivery, BlueDart, DTDC" 
+                  value={trackingForm.carrier}
+                  onChange={(e) => setTrackingForm(prev => ({ ...prev, carrier: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Tracking Number</label>
+                <Input 
+                  placeholder="Paste tracking ID here" 
+                  value={trackingForm.number}
+                  onChange={(e) => setTrackingForm(prev => ({ ...prev, number: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button variant="outline" className="flex-1" onClick={() => setTrackingOrderId(null)}>Cancel</Button>
+              <Button variant="coral" className="flex-1" onClick={submitTrackingAndShip} disabled={!trackingForm.carrier || !trackingForm.number}>
+                Confirm & Ship
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Messaging Portal */}
       <Dialog open={!!messagingOrderId} onOpenChange={(open) => !open && setMessagingOrderId(null)}>

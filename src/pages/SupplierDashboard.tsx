@@ -15,8 +15,13 @@ import {
   Facebook,
   Twitter,
   MessageSquare,
-  FileWarning
+  FileWarning,
+  Handshake,
+  Activity,
+  IndianRupee,
+  Calculator
 } from "lucide-react";
+
 import { ReportModal } from "@/components/modals/ReportModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,13 +38,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CardSkeleton, DashboardHeroSkeleton, ListSkeleton } from "@/components/ui/Skeletons";
 import { AIAccountantHub } from "@/components/shop/AIAccountantHub";
 import { Calculator } from "lucide-react";
+import PartnerNetwork from "@/components/shared/PartnerNetwork";
 
 const SupplierDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [supplier, setSupplier] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"catalog" | "quotes" | "coupons" | "segments" | "settings" | "support" | "accountant">("catalog");
+  const [activeTab, setActiveTab] = useState<"catalog" | "quotes" | "coupons" | "segments" | "wallet" | "settings" | "support" | "accountant" | "partners">("catalog");
+
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const fetchSupplierData = async () => {
@@ -223,12 +230,20 @@ const SupplierDashboard = () => {
                 Segments
             </Button>
             <Button 
+                variant={activeTab === "wallet" ? "coral" : "outline"}
+                className="rounded-xl px-6 h-12 flex-none shadow-sm text-sm md:text-lg font-bold gap-2"
+                onClick={() => setActiveTab("wallet")}
+            >
+                <IndianRupee className="w-5 h-5" /> Payments
+            </Button>
+            <Button 
                 variant={activeTab === "settings" ? "coral" : "outline"}
                 className="rounded-xl px-6 h-12 flex-none shadow-sm text-sm md:text-lg font-bold"
                 onClick={() => setActiveTab("settings")}
             >
                 Settings
             </Button>
+
             <Button 
                 variant={activeTab === "accountant" ? "coral" : "outline"}
                 className="rounded-xl px-6 h-12 flex-none shadow-sm text-sm md:text-lg font-bold gap-2"
@@ -242,6 +257,13 @@ const SupplierDashboard = () => {
                 onClick={() => setActiveTab("support")}
             >
                 Support
+            </Button>
+            <Button 
+                variant={activeTab === "partners" ? "coral" : "outline"}
+                className="rounded-xl px-6 h-12 flex-none shadow-sm text-sm md:text-lg font-bold gap-2"
+                onClick={() => setActiveTab("partners")}
+            >
+                <Handshake className="w-5 h-5" /> Partner Hub
             </Button>
           </div>
         </header>
@@ -277,9 +299,33 @@ const SupplierDashboard = () => {
               <CustomerSegments ownerId={supplier.id} />
             )}
 
-            {activeTab === "settings" && (
-              <SupplierSettings supplier={supplier} onSave={handleSaveSupplier} />
+            {activeTab === "wallet" && (
+                <div className="space-y-6">
+                    <div className="bg-card rounded-[2rem] border border-border p-8 shadow-card flex items-center justify-between">
+                        <div>
+                            <h2 className="text-3xl font-display font-bold text-foreground italic flex items-center gap-2">
+                                <IndianRupee className="w-8 h-8 text-success" /> Supplier Wallet
+                            </h2>
+                            <p className="text-muted-foreground mt-1">Manage your earnings and payout history.</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Current Balance</p>
+                            <p className="text-4xl font-display font-black text-foreground">₹{(user?.user_metadata?.wallet_balance || 0).toLocaleString()}</p>
+                        </div>
+                    </div>
+                    {/* Placeholder for real transaction list - reusable component needed or direct table */}
+                    <div className="bg-secondary/20 rounded-3xl p-12 text-center border border-dashed border-border">
+                        <Activity className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+                        <h3 className="font-display font-bold text-lg">Transaction History Coming Soon</h3>
+                        <p className="text-sm text-muted-foreground max-w-sm mx-auto">We are finalizing the manufacturer payout gateway integration. Your balance tracks all confirmed quote payments.</p>
+                    </div>
+                </div>
             )}
+
+            {activeTab === "settings" && (
+                <SupplierSettings supplier={supplier} onSave={handleSaveSupplier} />
+            )}
+
 
             {activeTab === "accountant" && (
                <AIAccountantHub 
@@ -305,6 +351,12 @@ const SupplierDashboard = () => {
                   subjectId={supplier?.id}
                   subjectType="shop"
                 />
+              </div>
+            )}
+
+            {activeTab === "partners" && (
+              <div className="p-4 md:p-0">
+                <PartnerNetwork userRole="supplier" />
               </div>
             )}
           </div>

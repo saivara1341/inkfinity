@@ -391,7 +391,8 @@ export const ShopProducts = ({ shop }: Props) => {
                 {/* PricingAnalyzer logic */}
                 {(() => {
                   const price = Number(form.base_price) || 0;
-                  const stats = calculateNetEarnings(price, form.category.toLowerCase().includes('bulk') ? 'bulk' : 'general');
+                  const shopCommission = (shop as any)?.platform_commission_rate ?? 5.0;
+                  const stats = calculateNetEarnings(price, form.category.toLowerCase().includes('bulk') ? 'bulk' : 'general', shopCommission);
                   const gatewayFee = price * 0.02; // Placeholder 2% for Razorpay
                   const takeHome = stats.net - gatewayFee;
 

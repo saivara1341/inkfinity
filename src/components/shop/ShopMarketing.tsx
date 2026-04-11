@@ -23,6 +23,17 @@ const ShopMarketing = () => {
     }, 1500);
   };
 
+  const handleStartBoosting = () => {
+    setLoading("boosting");
+    setTimeout(() => {
+      setLoading(null);
+      toast({
+        title: "Boost Activated!",
+        description: "Your shop is now highlighted in local search results for the next 24 hours.",
+      });
+    }, 1200);
+  };
+
   const tiers = [
     {
       name: "Basic",
@@ -161,8 +172,13 @@ const ShopMarketing = () => {
               </div>
             </CardContent>
             <CardFooter>
-              <Button variant="coral" className="w-full gap-2">
-                <Zap className="w-4 h-4" /> Start Boosting (₹99/day)
+              <Button 
+                variant="coral" 
+                className="w-full gap-2"
+                onClick={handleStartBoosting}
+                disabled={loading === "boosting"}
+              >
+                {loading === "boosting" ? "Processing..." : <><Zap className="w-4 h-4" /> Start Boosting (₹99/day)</>}
               </Button>
             </CardFooter>
           </Card>

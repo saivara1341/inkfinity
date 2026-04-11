@@ -9,6 +9,7 @@ import {
 import { 
   InfoPopover
 } from "@/components/ui/InfoPopover";
+import { useShopTransactions } from "@/hooks/useShopData";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -74,18 +75,7 @@ export const ShopWallet = ({ shopId }: Props) => {
     }
   }, [shop]);
 
-  const { data: transactions = [], isLoading: loadingTx } = useQuery({
-    queryKey: ["shop-transactions", shopId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("wallet_transactions" as any)
-        .select("*")
-        .eq("shop_id", shopId)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data || [];
-    enabled: !!shopId,
-  });
+  const { data: transactions = [], isLoading: loadingTx } = useShopTransactions(shopId);
 
   const { data: payouts = [], isLoading: loadingPayouts } = useQuery({
     queryKey: ["shop-payouts", shopId],

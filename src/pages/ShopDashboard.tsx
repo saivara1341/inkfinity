@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   LayoutDashboard, ShoppingCart, BarChart3, Settings,
   ChevronDown, Printer, Bell, LogOut, Package, Sparkles, Megaphone, FileWarning, ShoppingBag, X, Menu,
@@ -50,13 +51,6 @@ const ShopDashboard = () => {
   const { shop, orders, loading, updateOrderStatus, updateOrderPayment, updateOrderTracking, updateShopProfile } = useShopData();
   const queryClient = useQueryClient();
   const [initializing, setInitializing] = useState(false);
-  const [initialWait, setInitialWait] = useState(true);
-
-  // Allow a short buffer for data to settle after fresh login
-  useState(() => {
-    const timer = setTimeout(() => setInitialWait(false), 2500);
-    return () => clearTimeout(timer);
-  });
 
   const handleAutoInitialize = async () => {
     if (!user) return;
@@ -118,20 +112,69 @@ const ShopDashboard = () => {
     return null;
   }
 
-  if (loading || (initialWait && !shop)) {
+  if (loading && !shop) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-20 h-20 rounded-2xl bg-primary/5 flex items-center justify-center mb-8 relative">
-          <Loader2 className="w-10 h-10 text-primary animate-spin" />
-          <div className="absolute inset-0 border-4 border-primary/10 rounded-2xl animate-pulse" />
-        </div>
-        <h1 className="text-2xl font-display font-bold text-foreground mb-3">Syncing Your Print Hub</h1>
-        <div className="space-y-1.5">
-          <p className="text-muted-foreground text-sm flex items-center justify-center gap-2">
-            <Database className="w-4 h-4" /> Authenticating store records...
-          </p>
-          <p className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.2em] font-medium">Please do not refresh</p>
-        </div>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
+        {/* Animated Background Elements */}
+        <motion.div 
+          animate={{ rotate: 360 }} 
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-32 -right-32 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"
+        />
+        <motion.div 
+          animate={{ rotate: -360 }} 
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          className="absolute -bottom-32 -left-32 w-80 h-80 bg-accent/5 rounded-full blur-3xl pointer-events-none"
+        />
+
+        <motion.div
+           initial={{ scale: 0.8, opacity: 0 }}
+           animate={{ scale: 1, opacity: 1 }}
+           transition={{ type: "spring", bounce: 0.5 }}
+           className="relative z-10 flex flex-col items-center"
+        >
+          {/* Printer Animation Container */}
+          <div className="relative w-32 h-32 mb-8 flex items-center justify-center bg-card rounded-3xl shadow-xl shadow-accent/10 border border-border">
+            {/* Paper Sliding Out */}
+            <motion.div
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: [ -20, -5, 20 ], opacity: [ 0, 1, 0 ] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute top-2 w-16 h-12 bg-white rounded-sm shadow-sm border border-gray-200 z-0"
+            />
+            {/* Printer Body */}
+            <div className="relative z-10 w-20 h-16 bg-primary/10 rounded-xl flex items-center justify-center border border-primary/20 backdrop-blur-md">
+              <Printer className="w-10 h-10 text-primary" />
+              {/* Scanning Laser Effect */}
+              <motion.div
+                initial={{ top: "10%" }}
+                animate={{ top: "90%" }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "linear", repeatType: "reverse" }}
+                className="absolute left-[10%] right-[10%] h-[2px] bg-accent blur-[1px] shadow-[0_0_8px_rgba(255,115,0,0.8)] z-20"
+              />
+            </div>
+          </div>
+
+          <motion.h1 
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-3xl font-display font-bold text-foreground mb-3"
+          >
+            Starting Print Hub...
+          </motion.h1>
+          
+          <motion.div 
+             initial={{ y: 10, opacity: 0 }}
+             animate={{ y: 0, opacity: 1 }}
+             transition={{ delay: 0.3 }}
+             className="space-y-3 flex flex-col items-center"
+          >
+            <p className="text-muted-foreground text-sm flex items-center justify-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-accent" /> Booting up dashboard features
+            </p>
+          </motion.div>
+        </motion.div>
       </div>
     );
   }

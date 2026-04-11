@@ -1,4 +1,8 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { ArrowRight, Store } from "lucide-react";
 
 const CTASection = () => {
   const { user } = useAuth();

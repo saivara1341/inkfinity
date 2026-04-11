@@ -44,7 +44,10 @@ serve(async (req) => {
     const event = payload.event
 
     if (event === "payment.captured" || event === "order.paid") {
-      const orderId = payload.payload.order?.entity?.receipt || payload.payload.payment.entity.notes.order_number
+      let cleanOrderId = orderId;
+      if (cleanOrderId && cleanOrderId.startsWith('receipt_')) {
+        cleanOrderId = cleanOrderId.replace('receipt_', '');
+      }
       
       const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!)
       
@@ -54,7 +57,7 @@ serve(async (req) => {
           payment_status: "paid",
           status: "confirmed"
         })
-        .eq("order_number", orderId)
+        .filter("order_number", "ilike", `${cleanOrderId}%`)
 
       if (error) throw error
     }

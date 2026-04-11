@@ -226,7 +226,7 @@ const Checkout = () => {
 
 
   const placeOrderMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (initialStatus?: { paymentStatus?: string; orderStatus?: string }) => {
       if (!user) throw new Error("You must be logged in to place an order");
       
       const designFromCustomize = sessionStorage.getItem("design_file_url");
@@ -270,7 +270,9 @@ const Checkout = () => {
           total_price: itemSubtotal,
           gst_amount: itemGst,
           delivery_charge: itemDelivery,
-          platform_commission_rate: 5.0, // Default for financial triggers
+          status: (initialStatus?.orderStatus || "pending") as any,
+          payment_status: (initialStatus?.paymentStatus || "pending") as any,
+          platform_commission_rate: 5.0,
           specifications: {
             ...(item.specifications as object || {}),
             shipping_method: shippingMethod,
@@ -361,26 +363,35 @@ const Checkout = () => {
     // 1. Automated Razorpay Payment Flow
     if (paymentMethod === "upi" || paymentMethod === "card") {
       try {
-        const tempOrderId = "ORD-TMP-" + Date.now().toString().slice(-6);
-        
+        // Create the order in "Pending" state first to avoid ghost orders
+        const orderNumber = await placeOrderMutation.mutateAsync({
+          paymentStatus: "pending",
+          orderStatus: "pending"
+        });
+
         const response = await paymentService.initiateRazorpayPayment({
           amount: grandTotal,
           currency: "INR",
-          orderId: tempOrderId,
+          orderId: orderNumber, // Use the real order number
           customerName: addressForm.name,
           customerEmail: user?.email || "",
           customerPhone: addressForm.phone,
+          keyId: currentShop?.use_custom_razorpay ? currentShop?.razorpay_key_id : undefined
         });
 
         if (response.razorpay_payment_id) {
-          toast.success("Payment successful! Finalizing your order...");
-          // Record Razorpay details in state for order creation
-          setTransactionId(response.razorpay_payment_id);
-          placeOrderMutation.mutate();
+          // Success! Clear cart and move on
+          clearCart();
+          sessionStorage.removeItem("design_file_url");
+          sessionStorage.removeItem("back_design_file_url");
+          sessionStorage.removeItem("customize_product");
+          toast.success("Payment Received & Order Confirmed! 🎉");
+          navigate(`/order-success?order=${orderNumber}`);
         }
       } catch (error: any) {
         console.error("Payment Error:", error);
-        toast.error(error.message || "Payment attempt failed. Please try again.");
+        toast.error(error.message || "Payment attempt failed.");
+        // We don't delete the order here; it stays as "pending" so user can try again or admin can follow up
       }
       return;
     }

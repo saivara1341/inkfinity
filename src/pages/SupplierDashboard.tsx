@@ -31,13 +31,15 @@ import { CustomerSegments } from "@/components/crm/CustomerSegments";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CardSkeleton, DashboardHeroSkeleton, ListSkeleton } from "@/components/ui/Skeletons";
+import { AIAccountantHub } from "@/components/shop/AIAccountantHub";
+import { Calculator } from "lucide-react";
 
 const SupplierDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [supplier, setSupplier] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"catalog" | "quotes" | "coupons" | "segments" | "settings" | "support">("catalog");
+  const [activeTab, setActiveTab] = useState<"catalog" | "quotes" | "coupons" | "segments" | "settings" | "support" | "accountant">("catalog");
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const fetchSupplierData = async () => {
@@ -60,6 +62,25 @@ const SupplierDashboard = () => {
   useEffect(() => {
     fetchSupplierData();
   }, [user]);
+
+  const { data: quotes = [] } = useQuery({
+    queryKey: ["supplier-accountant-quotes", supplier?.id],
+    queryFn: async () => {
+      if (!supplier?.id) return [];
+      const { data } = await supabase
+        .from("quotes")
+        .select("*")
+        .eq("supplier_id", supplier.id);
+      return data || [];
+    },
+    enabled: !!supplier?.id
+  });
+
+  const accountantOrders = quotes.map(q => ({
+    grand_total: q.estimated_budget || 0,
+    status: q.status,
+    created_at: q.created_at
+  }));
 
   useEffect(() => {
     // If user is a registered shop owner but not a supplier, send them to their dashboard
@@ -209,6 +230,13 @@ const SupplierDashboard = () => {
                 Settings
             </Button>
             <Button 
+                variant={activeTab === "accountant" ? "coral" : "outline"}
+                className="rounded-xl px-6 h-12 flex-none shadow-sm text-sm md:text-lg font-bold gap-2"
+                onClick={() => setActiveTab("accountant")}
+            >
+                <Calculator className="w-5 h-5" /> AI Accountant
+            </Button>
+            <Button 
                 variant={activeTab === "support" ? "coral" : "outline"}
                 className="rounded-xl px-6 h-12 flex-none shadow-sm text-sm md:text-lg font-bold"
                 onClick={() => setActiveTab("support")}
@@ -251,6 +279,14 @@ const SupplierDashboard = () => {
 
             {activeTab === "settings" && (
               <SupplierSettings supplier={supplier} onSave={handleSaveSupplier} />
+            )}
+
+            {activeTab === "accountant" && (
+               <AIAccountantHub 
+                 orders={accountantOrders} 
+                 context="supplier" 
+                 title="Manufacturer"
+               />
             )}
 
             {activeTab === "support" && (

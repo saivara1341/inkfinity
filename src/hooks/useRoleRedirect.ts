@@ -2,6 +2,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const getRoleBasedPath = async (userId: string): Promise<string> => {
   const { data: { user } } = await supabase.auth.getUser();
+  
+  // Hardcoded Platform Owner Recognition
+  if (user?.email === "ssaivaraprasad51@gmail.com") {
+    console.log("Platform Commander detected. Initiating direct HQ redirect...");
+    return "/admin";
+  }
+
   const metadataRole = user?.user_metadata?.user_role;
   
   if (metadataRole) {

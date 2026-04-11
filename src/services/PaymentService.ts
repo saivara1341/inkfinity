@@ -17,7 +17,7 @@ declare global {
 }
 
 class PaymentService {
-  private keyId: string = "rzp_test_SUbNNEet5R53rM";
+  private keyId: string = import.meta.env.VITE_RAZORPAY_KEY_ID || "";
 
   async initiateRazorpayPayment(options: PaymentOptions): Promise<any> {
     try {
@@ -98,9 +98,9 @@ class PaymentService {
                 .update({ 
                   payment_status: "paid",
                   payment_id: response.razorpay_payment_id,
-                  status: "processing"
+                  status: "confirmed"
                 })
-                .eq("id", options.orderId);
+                .filter("order_number", "ilike", `${options.orderId}%`);
 
               if (error) throw error;
               resolve(response);

@@ -11,6 +11,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
   setUserRole: (role: string) => Promise<{ error: Error | null }>;
+  isPlatformCommander: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,6 +20,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const isPlatformCommander = user?.email === "ssaivaraprasad51@gmail.com";
 
   useEffect(() => {
     let mounted = true;
@@ -224,7 +226,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut, signInWithGoogle, setUserRole }}>
+    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut, signInWithGoogle, setUserRole, isPlatformCommander }}>
       {children}
     </AuthContext.Provider>
   );

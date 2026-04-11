@@ -659,12 +659,6 @@ export const ShopProducts = ({ shop }: Props) => {
       {/* Product List */}
       {loading ? (
         <div className="text-center py-10 text-muted-foreground animate-pulse">Loading products...</div>
-      ) : products.length === 0 ? (
-        <div className="bg-card rounded-xl border border-border p-10 text-center shadow-card">
-          <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground mb-2">No products yet</p>
-          <p className="text-sm text-muted-foreground">Add your first product to start receiving orders</p>
-        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map((product) => (

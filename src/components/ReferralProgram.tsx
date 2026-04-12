@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Gift, Copy, Check, Share2, Users, X, User as UserIcon, Calendar } from "lucide-react";
+import { Gift, Copy, Check, Share2, Users, X, User as UserIcon, Calendar, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -40,9 +40,33 @@ const ReferralProgram = () => {
 
   const referralCode = profile?.referral_code || "---";
   const totalEarned = Number(profile?.wallet_balance || 0);
+  const [generating, setGenerating] = useState(false);
+
+  const handleGenerateCode = async () => {
+    if (!user) return;
+    setGenerating(true);
+    try {
+      const newCode = `INK-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+      const { error } = await supabase
+        .from("profiles")
+        .update({ referral_code: newCode })
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+      toast.success("Referral code generated!");
+      // The query will automatically refetch
+    } catch (err) {
+      toast.error("Failed to generate code");
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const handleCopy = () => {
-    if (!profile?.referral_code) return;
+    if (referralCode === "---") {
+      handleGenerateCode();
+      return;
+    }
     navigator.clipboard.writeText(`Use my code ${referralCode} to get ₹50 off on your first print at PrintFlow!`);
     setCopied(true);
     toast.success("Referral code copied!");
@@ -76,17 +100,25 @@ const ReferralProgram = () => {
 
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2 bg-background/50 border border-border rounded-lg p-3 group hover:border-accent/30 transition-colors">
-              <code className="flex-1 font-mono text-sm font-bold text-center tracking-wider text-foreground">
+              <code className={`flex-1 font-mono text-sm font-bold text-center tracking-wider ${referralCode === "---" ? "text-muted-foreground opacity-50" : "text-foreground"}`}>
                 {referralCode}
               </code>
               <Button 
-                variant="ghost" 
+                variant={referralCode === "---" ? "coral" : "ghost"}
                 size="sm" 
-                className="h-8 w-8 p-0" 
+                className={referralCode === "---" ? "h-8 px-4 text-[10px] font-bold uppercase rounded-lg" : "h-8 w-8 p-0"} 
                 onClick={handleCopy}
-                disabled={!profile?.referral_code}
+                disabled={generating}
               >
-                {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
+                {generating ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : referralCode === "---" ? (
+                  "Claim Your Code"
+                ) : copied ? (
+                  <Check className="w-4 h-4 text-success" />
+                ) : (
+                  <Copy className="w-4 h-4" />
+                )}
               </Button>
             </div>
 

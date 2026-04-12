@@ -52,11 +52,11 @@ const AIDesignGenerator = ({ productType, onDesignSelected }: AIDesignGeneratorP
       for (let i = 0; i < count; i++) {
         // Constructing a high-quality prompt for Pollinations
         const promptParams = encodeURIComponent(
-          `Photorealistic professional ${productType} mockup for "${formData.businessName}", 
+          `Ultra-realistic professional ${productType} print mockup for "${formData.businessName}", 
           Subtext: "${formData.tagline}", 
-          Style: ${styleConfig?.prompt}, 
+          Visual Style: ${styleConfig?.prompt}, 
           Color Palette: ${formData.colors}, 
-          graphic design, offset print quality, clean typography, 8k resolution, centered composition, high-end commercial branding, seed=${Math.round(Math.random() * 1000000)}`
+          commercial branding, offset print quality, flat vector graphic design, premium typography, 8k resolution, centered studio lighting, commercial photography, high-end paper texture, die-cut details, seed=${Math.round(Math.random() * 1000000)}`
         );
         newImages.push(`https://pollinations.ai/p/${promptParams}?width=1280&height=1280&nologo=true`);
         

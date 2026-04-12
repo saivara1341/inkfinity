@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import AdobeExpressEditor from "../AdobeExpressEditor";
 import AIDesignGenerator from "../AIDesignGenerator";
+import CanvaEditor from "../CanvaEditor";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
@@ -26,6 +27,7 @@ const RESIZE_PRESETS = [
 
 const ShopAIHub = () => {
   const [showAdobe, setShowAdobe] = useState(false);
+  const [showCanva, setShowCanva] = useState(false);
   const [showGenerator, setShowGenerator] = useState(false);
   const [selectedDesign, setSelectedDesign] = useState<any>(null);
   const [showResize, setShowResize] = useState(false);
@@ -272,14 +274,21 @@ const ShopAIHub = () => {
                 className="h-16 flex-1 rounded-2xl gap-3 text-xl font-black italic shadow-xl shadow-coral/20 group"
                 onClick={() => setShowGenerator(true)}
               >
-                <Sparkles className="w-6 h-6 group-hover:rotate-12 transition-transform" /> Generate New Identity
+                <Sparkles className="w-6 h-6 group-hover:rotate-12 transition-transform" /> Native AI Engine
               </Button>
               <Button 
                 variant="outline" 
                 className="h-16 flex-1 rounded-2xl gap-3 text-xl font-black italic border-2 hover:bg-accent/5"
                 onClick={() => setShowAdobe(true)}
               >
-                <Edit3 className="w-6 h-6" /> Edit in Adobe Suite
+                <Edit3 className="w-6 h-6 text-[#FA0F00]" /> Adobe Suite
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-16 flex-1 rounded-2xl gap-3 text-xl font-black italic border-2 hover:bg-[#00C4CC]/5"
+                onClick={() => setShowCanva(true)}
+              >
+                <Layout className="w-6 h-6 text-[#00C4CC]" /> Canva Studio
               </Button>
             </div>
           </CardContent>
@@ -543,6 +552,13 @@ const ShopAIHub = () => {
             setShowAdobe(false);
             setSelectedDesign(null);
           }}
+        />
+      )}
+      {/* Canva integration */}
+      {showCanva && (
+        <CanvaEditor 
+          productType={workshopData.category}
+          onClose={() => setShowCanva(false)}
         />
       )}
     </div>

@@ -105,6 +105,8 @@ const emptyForm = {
   sizes: [] as string[],
   materials: [] as string[],
   gst_percentage: "18",
+  sizesInput: "",
+  materialsInput: "",
 };
 
 export const ShopProducts = ({ shop }: Props) => {
@@ -153,6 +155,8 @@ export const ShopProducts = ({ shop }: Props) => {
       sizes: (product.specifications as any)?.sizes || [],
       materials: (product.specifications as any)?.materials || [],
       gst_percentage: (product.specifications as any)?.gst_percentage?.toString() || "18",
+      sizesInput: ((product.specifications as any)?.sizes || []).join(", "),
+      materialsInput: ((product.specifications as any)?.materials || []).join(", "),
     });
     setShowForm(true);
   };
@@ -220,8 +224,8 @@ export const ShopProducts = ({ shop }: Props) => {
             min: Number(t.min),
             price_per_unit: Number(t.price_per_unit)
           })),
-          sizes: form.sizes,
-          materials: form.materials,
+          sizes: form.sizesInput.split(",").map(s => s.trim()).filter(Boolean),
+          materials: form.materialsInput.split(",").map(s => s.trim()).filter(Boolean),
           gst_percentage: Number(form.gst_percentage || 18),
         },
         price_includes_gst: form.price_includes_gst
@@ -637,8 +641,8 @@ export const ShopProducts = ({ shop }: Props) => {
                 <label className="text-sm font-semibold text-foreground mb-1.5 block">Available Sizes (comma separated)</label>
                 <input
                   type="text"
-                  value={form.sizes.join(", ")}
-                  onChange={(e) => setForm({ ...form, sizes: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
+                  value={form.sizesInput}
+                  onChange={(e) => setForm({ ...form, sizesInput: e.target.value })}
                   placeholder="e.g. A4, A3, 3.5x2 inch"
                   className="w-full px-4 py-2.5 rounded-xl border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all"
                 />
@@ -647,8 +651,8 @@ export const ShopProducts = ({ shop }: Props) => {
                 <label className="text-sm font-semibold text-foreground mb-1.5 block">Materials (comma separated)</label>
                 <input
                   type="text"
-                  value={form.materials.join(", ")}
-                  onChange={(e) => setForm({ ...form, materials: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
+                  value={form.materialsInput}
+                  onChange={(e) => setForm({ ...form, materialsInput: e.target.value })}
                   placeholder="e.g. 300gsm Glossy, Matte, Vinyl"
                   className="w-full px-4 py-2.5 rounded-xl border border-input bg-background/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all"
                 />
